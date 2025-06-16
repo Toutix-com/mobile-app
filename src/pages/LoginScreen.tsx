@@ -17,8 +17,9 @@ import GradientLayout from '../components/layouts/GradientLayout';
 import GoogleIcon from '../assets/icons/google.svg';
 import AppleIcon from '../assets/icons/apple.svg';
 import GoogleSignInService from '../services/GoogleSignInService';
-import { loginWithOtp } from '../services/ApiService';
+import { loginWithOtp, loginWithGoogle } from '../services/ApiService';
 import { rootStore, setUser } from '../store/rootStore';
+import * as Keychain from 'react-native-keychain';
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
 const { width } = Dimensions.get('window');
@@ -42,37 +43,28 @@ const LoginScreen: React.FC = () => {
     setIsLoading(true);
     try {
       const result = await GoogleSignInService.signIn();
-      if (result && result.email) {
-        // Split name into first and last
-        let firstName = '';
-        let lastName = '';
-        if (result.name) {
-          const nameParts = result.name.trim().split(' ');
-          firstName = nameParts[0];
-          lastName = nameParts.slice(1).join(' ');
-        }
-        // Save user data in store
-        setUser({
-          ...rootStore.value.user,
-          email: result.email,
-          firstName,
-          lastName
-        });
-        // Call loginWithOtp API
-        const response = await loginWithOtp({ email: result.email });
-        if (response && response.ok) {
-          navigation.navigate('OTPVerification', {
+      
+      if (result && result.idToken) {
+        const response: any = await loginWithGoogle(result.idToken);
+        const [firstName, lastName] = result?.name?.split(" ") || '';
+        
+        if (response && response.status === 200) {
+          const userData = response
+          setUser({
+            ...rootStore.value.user,
             email: result.email,
-            type: 'email',
+            firstName,
+            lastName,
+            isAuthenticated: true,
           });
+          await Keychain.setGenericPassword('auth', response.data.token);
         } else {
-          Alert.alert('Error', response?.message || 'Failed to send OTP');
+          Alert.alert('Error', (response as any)?.message ? (response as any).message : 'Failed to login with Google');
         }
       } else {
         Alert.alert('Error', 'Failed to sign in with Google');
       }
     } catch (error) {
-      console.error('Google Sign In Error:', error);
       Alert.alert('Error', 'Failed to sign in with Google');
     } finally {
       setIsLoading(false);
@@ -107,7 +99,6 @@ const LoginScreen: React.FC = () => {
         setUser({ ...rootStore.value.user, mobileNumber: valid.value, email: undefined });
         response = await loginWithOtp({ mobileNumber: valid.value });
       }
-      console.log("Response",response?.ok);
       
       if (response && response?.ok) {
         navigation.navigate('OTPVerification', {

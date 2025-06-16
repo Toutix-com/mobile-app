@@ -15,6 +15,9 @@ import { currentTheme } from '../store';
 
 export function HomeScreen(): React.JSX.Element {
   const isDarkMode = currentTheme.value === 'dark';
+  const store = rootStore.value
+
+  
 
   const handleLogout = async () => {
     try {
@@ -22,7 +25,6 @@ export function HomeScreen(): React.JSX.Element {
       await Keychain.resetGenericPassword();
       setUser({});
     } catch (error) {
-      console.error('Logout error:', error);
     }
   };
 

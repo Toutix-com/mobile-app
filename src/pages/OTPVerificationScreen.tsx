@@ -15,7 +15,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { ChevronLeft } from 'lucide-react-native';
 import { AuthStackParamList } from '../navigation/AuthStack';
 import GradientLayout from '../components/layouts/GradientLayout';
-import { verifyOtp } from '../services/ApiService';
+import { verifyOtp, loginWithOtp } from '../services/ApiService';
 import { rootStore, setUser } from '../store/rootStore';
 import * as Keychain from 'react-native-keychain';
 
@@ -108,10 +108,19 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
     }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     if (timeLeft === 0) {
-      setTimeLeft(45);
-      // TODO: Implement resend logic
+      try {
+        if (route.params.type === 'email' && route.params.email) {
+          await loginWithOtp({ email: route.params.email });
+        } else if (route.params.type === 'mobile' && route.params.mobileNumber) {
+          await loginWithOtp({ mobileNumber: route.params.mobileNumber });
+        }
+        setTimeLeft(45);
+        Alert.alert('Success', 'OTP resent successfully');
+      } catch (e) {
+        Alert.alert('Error', 'Failed to resend OTP');
+      }
     }
   };
 
@@ -182,7 +191,6 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           <TouchableOpacity 
             style={styles.resendButton} 
             onPress={handleResend}
-            disabled={timeLeft > 0}
           >
             <Text style={[
               styles.resendText,

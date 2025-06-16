@@ -46,4 +46,17 @@ export const updateUserProfile = async ({ firstName, lastName, dateOfBirth }: { 
     throw new Error('Failed to update profile');
   }
   return response.json();
+};
+
+export const loginWithGoogle = async (idToken: string) => {
+  const url = `${API_BASE_URL}/user/login/google-login`
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' , 'idToken': idToken},
+    
+  });
+  if (!response.ok) {
+    throw new Error('Failed to login with Google');
+  }
+  return response.json();
 }; 
