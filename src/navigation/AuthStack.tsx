@@ -1,9 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import LoginScreen from '../pages/LoginScreen';
-import RegisterScreen from '../pages/RegisterScreen';
-import VerificationScreen from '../pages/VerificationScreen';
-import OTPVerificationScreen from '../pages/OTPVerificationScreen';
+import HomeScreen from '../pages/HomeScreen';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -26,10 +23,7 @@ const AuthStack = () => {
       screenOptions={{
         headerShown: false,
       }}>
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="Verification" component={VerificationScreen} />
-      <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
     </Stack.Navigator>
   );
 };
