@@ -26,16 +26,26 @@ class GoogleSignInService {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
+      console.log("sasasasa", userInfo);
       
       const userData = userInfo?.data;
       
       return userInfo ? {
-        email: userData?.user?.email || '',
-        name: userData?.user?.name || '',
-        photo: userData?.user?.photo || '',
-        idToken: userData?.idToken || '',
+        email: userData.user?.email,
+        name: userData.user?.name,
+        photo: userData.user?.photo,
+        idToken: userData.idToken,
       } : null;
     } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log('User cancelled the login flow');
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        console.log('Operation is in progress already');
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        console.log('Play services not available or outdated');
+      } else {
+        console.log('Some other error happened:', error.toString());
+      }
       return null;
     }
   }
@@ -43,8 +53,9 @@ class GoogleSignInService {
   static async signOut(): Promise<void> {
     try {
       await GoogleSignin.signOut();
-    } catch (error: any) {
-      
+      console.log('User signed out successfully');
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   }
 
@@ -58,8 +69,17 @@ class GoogleSignInService {
         idToken: currentUser.idToken,
       } : null;
     } catch (error) {
-      
+      console.error('Error getting current user:', error);
       return null;
+    }
+  }
+
+  static async isSignedIn(): Promise<boolean> {
+    try {
+      return await GoogleSignin.isSignedIn();
+    } catch (error) {
+      console.error('Error checking sign in status:', error);
+      return false;
     }
   }
 }

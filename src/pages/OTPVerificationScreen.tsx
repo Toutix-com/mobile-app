@@ -18,6 +18,7 @@ import GradientLayout from '../components/layouts/GradientLayout';
 import { verifyOtp, loginWithOtp } from '../services/ApiService';
 import { rootStore, setUser } from '../store/rootStore';
 import * as Keychain from 'react-native-keychain';
+import { InlineArrayResult } from '../lib/promise-util';
 
 type OTPVerificationScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'OTPVerification'>;
 
@@ -31,12 +32,23 @@ interface OTPVerificationScreenProps {
   };
 }
 
+interface VerifyOtpResponse {
+  isNewUser: boolean;
+  role: string;
+  token: string;
+}
+
 const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) => {
   const navigation = useNavigation<OTPVerificationScreenNavigationProp>();
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timeLeft, setTimeLeft] = useState(45);
-  const store = rootStore.value;
   const inputRefs = useRef<Array<TextInput | null>>([]);
+
+  useEffect(() => {
+    setUser({
+      ...rootStore.value.user,
+      otp: Array(6).fill(''),
+    });
+  }, []);
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -45,63 +57,72 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
     }
   }, [timeLeft]);
 
+  useEffect(() => {
+    const unsubscribe = rootStore.subscribe((value) => {
+      console.log('[Component] rootStore changed:', value);
+    });
+  
+    return () => unsubscribe();
+  }, []);
+
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleOtpChange = (value: string, index: number) => {
+    const newOtp = [...(rootStore.value.user.otp || [])];
+    
     if (value.length > 1) {
       const digits = value.split('').slice(0, 6);
-      const newOtp = [...otp];
       digits.forEach((digit, i) => {
         if (index + i < 6) {
           newOtp[index + i] = digit;
         }
       });
-      setOtp(newOtp);
-      
       const nextIndex = Math.min(index + digits.length, 5);
       inputRefs.current[nextIndex]?.focus();
-      return;
-    }
-
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
-    if (value === '') {
-      if (index > 0) {
+    } else {
+      newOtp[index] = value;
+      if (value === '' && index > 0) {
         inputRefs.current[index - 1]?.focus();
+      } else if (value !== '' && index < 5) {
+        inputRefs.current[index + 1]?.focus();
       }
-      return;
     }
-
-    if (index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
+    
+    setUser({
+      ...rootStore.value.user,
+      otp: newOtp,
+    });
   };
 
   const handleKeyPress = (event: any, index: number) => {
-    if (event.nativeEvent.key === 'Backspace' && otp[index] === '' && index > 0) {
+    if (event.nativeEvent.key === 'Backspace' && rootStore.value.user.otp?.[index] === '' && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
   const handleVerify = async () => {
-    const otpString = otp.join('');
+    const otpString = rootStore.value.user.otp?.join('') || '';
     try {
-      const res = await verifyOtp({ email: route.params.email || '', otp: otpString });
-      if (res && res.status === 200 && res.data) {
+      const [data, error] = await verifyOtp({ email: route.params.email || '', otp: otpString }) as InlineArrayResult<VerifyOtpResponse>;
+
+      if (error) {
+        Alert.alert('Error', (error as any).response?.data?.message || 'Invalid OTP');
+        return;
+      }
+      
+      if (data) {
         setUser({
           ...rootStore.value.user,
-          isNewUser: res.data.isNewUser,
-          role: res.data.role,
-          isAuthenticated: res.data.isNewUser ? false : true
+          isNewUser: data.isNewUser,
+          role: data.role,
+          isAuthenticated: !data.isNewUser,
         });
-        await Keychain.setGenericPassword('auth', res.data.token);
-        res.data.isNewUser && navigation.navigate('Register');
-      } else {
-        Alert.alert('Error', res?.message || 'Invalid OTP');
+        await Keychain.setGenericPassword('auth', data.token);
+        if (data.isNewUser) {
+          navigation.navigate('Register');
+        }
       }
     } catch (e) {
       Alert.alert('Error', 'Failed to verify OTP');
@@ -111,11 +132,14 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
   const handleResend = async () => {
     if (timeLeft === 0) {
       try {
-        if (route.params.type === 'email' && route.params.email) {
-          await loginWithOtp({ email: route.params.email });
-        } else if (route.params.type === 'mobile' && route.params.mobileNumber) {
-          await loginWithOtp({ mobileNumber: route.params.mobileNumber });
+        const payload = route.params.email ? { email: route.params.email } : { mobileNumber: route.params.mobileNumber };
+        const [, error] = await loginWithOtp(payload);
+
+        if (error) {
+          Alert.alert('Error', (error as any).response?.data?.message || 'Failed to resend OTP');
+          return;
         }
+        
         setTimeLeft(45);
         Alert.alert('Success', 'OTP resent successfully');
       } catch (e) {
@@ -152,7 +176,8 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           </Text>
 
           <View style={styles.otpContainer}>
-            {otp.map((digit, index) => (
+            {console.log(rootStore.value.user.otp,"rootStore.value.user.otp")}
+            {rootStore.value.user.otp?.map((digit, index) => (
               <React.Fragment key={index}>
                 <TextInput
                   ref={(ref) => {
@@ -181,7 +206,7 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           <TouchableOpacity 
             style={[
               styles.verifyButton,
-              otp.every(digit => digit !== '') && styles.verifyButtonActive
+              rootStore.value.user.otp?.every(d => d) && styles.verifyButtonActive
             ]} 
             onPress={handleVerify}
           >

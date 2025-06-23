@@ -20,54 +20,72 @@ import GoogleSignInService from '../services/GoogleSignInService';
 import { loginWithOtp, loginWithGoogle } from '../services/ApiService';
 import { rootStore, setUser } from '../store/rootStore';
 import * as Keychain from 'react-native-keychain';
+import { useSignal } from '@preact/signals-react';
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
 const { width } = Dimensions.get('window');
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+  const user = useSignal(() => rootStore.value.user);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     GoogleSignInService.init();
   }, []);
 
-  const handleRegisterPress = () => {
-    navigation.navigate('Register');
-  };
+  useEffect(() => {
+    const unsubscribe = rootStore.subscribe((value) => {
+      console.log('[Component] rootStore changed:', value);
+    });
+  
+    return () => unsubscribe(); // Clean up
+  }, []);
+
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
+    setUser({
+      ...rootStore.value.user,
+      isLoading: true
+    });
     try {
       const result = await GoogleSignInService.signIn();
       
       if (result && result.idToken) {
         const response: any = await loginWithGoogle(result.idToken);
         const [firstName, lastName] = result?.name?.split(" ") || '';
+        console.log(response,"response");
         
-        if (response && response.status === 200) {
-          const userData = response
+        const [data, error] = response;
+        console.log("data",data, error);
+        if (!error) {
+          console.log("asasasasas");
+          
           setUser({
             ...rootStore.value.user,
             email: result.email,
             firstName,
             lastName,
             isAuthenticated: true,
+            isNewUser: data.isNewUser,
+            role: data.role,
           });
-          await Keychain.setGenericPassword('auth', response.data.token);
+          await Keychain.setGenericPassword('auth', data.token);
         } else {
           Alert.alert('Error', (response as any)?.message ? (response as any).message : 'Failed to login with Google');
         }
       } else {
-        Alert.alert('Error', 'Failed to sign in with Google');
+        Alert.alert('Error', 'Failed to sign in with Googleee');
       }
     } catch (error) {
+      console.log("error",error);
+      
       Alert.alert('Error', 'Failed to sign in with Google');
     } finally {
-      setIsLoading(false);
+      setUser({
+        ...rootStore.value.user,
+        isLoading: false
+      });
     }
   };
 
@@ -80,16 +98,20 @@ const LoginScreen: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    if (!email) {
+    const input = rootStore.value.user.email;
+    if (!input) {
       Alert.alert('Error', 'Please enter your email or mobile number');
       return;
     }
-    const valid = validateInput(email.trim());
+    const valid = validateInput(input.trim());
     if (!valid) {
       Alert.alert('Error', 'Please enter a valid email or mobile number');
       return;
     }
-    setIsLoading(true);
+    setUser({
+      ...rootStore.value.user,
+      isLoading: true
+    });
     try {
       let response;
       if (valid.type === 'email') {
@@ -99,20 +121,27 @@ const LoginScreen: React.FC = () => {
         setUser({ ...rootStore.value.user, mobileNumber: valid.value, email: undefined });
         response = await loginWithOtp({ mobileNumber: valid.value });
       }
+      console.log("response",response);
+      const [data, error] = response;
+
       
-      if (response && response?.ok) {
+      
+      if (!error) {
         navigation.navigate('OTPVerification', {
           email: valid.type === 'email' ? valid.value : undefined,
           mobileNumber: valid.type === 'mobileNumber' ? valid.value : undefined,
           type: valid.type === 'email' ? 'email' : 'mobile',
         });
       } else {
-        Alert.alert('Error', response?.message || 'Failed to send OTP');
+        Alert.alert('Error', error?.message || 'Failed to send OTP');
       }
     } catch (e) {
       Alert.alert('Error', 'Failed to send OTP');
     } finally {
-      setIsLoading(false);
+      setUser({
+        ...rootStore.value.user,
+        isLoading: false
+      });
     }
   };
 
@@ -141,8 +170,15 @@ const LoginScreen: React.FC = () => {
             style={styles.input}
             placeholder="Email/ mobile number"
             placeholderTextColor="#A0A0A0"
-            value={email}
-            onChangeText={setEmail}
+            value={user?.email}
+            onChangeText={(e) => {
+              console.log("text",e);
+              
+              setUser({
+                ...rootStore.value.user,
+                email: e,
+              });
+            }}
             keyboardType="email-address"
             autoCapitalize="none"
             editable={!isLoading}

@@ -17,6 +17,8 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../navigation/AuthStack';
 import GradientLayout from '../components/layouts/GradientLayout';
+import auth from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Calendar, ChevronLeft } from 'lucide-react-native';
 import { rootStore, setUser } from '../store/rootStore';
@@ -37,6 +39,14 @@ const RegisterScreen: React.FC = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const store = rootStore.value
 
+
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: '912281763788-9vfavok5rl5pmhca64e9jcek89g44ik0.apps.googleusercontent.com', // TODO: Replace with your Firebase project's web client ID
+    });
+    console.log("store", store)
+  }, []);
+
   const handleInputChange = (field: string, value: string | Date | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -56,6 +66,7 @@ const RegisterScreen: React.FC = () => {
         dateOfBirth,
       });
       // Save necessary fields in store
+      console.log("RESPONSE",response);
       
       setUser({
         ...rootStore.value.user,
@@ -69,8 +80,13 @@ const RegisterScreen: React.FC = () => {
         role: response.role,
         isNewUser: response.isNewUser,
         image: response.image,
-        isAuthenticated: true, 
       });
+      console.log("USER STORE",JSON.stringify(store));
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      });
+      // TODO: Navigate to the next screen (e.g., home)
     } catch (e) {
       Alert.alert('Error', 'Failed to update profile');
     }
@@ -81,6 +97,11 @@ const RegisterScreen: React.FC = () => {
       <TouchableOpacity style={styles.backButton} onPress={handleLoginPress}>
         <ChevronLeft color="#FFFFFF" size={24} />
       </TouchableOpacity>
+
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoidingView}
+      >
         <ScrollView 
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
@@ -180,6 +201,7 @@ const RegisterScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         </ScrollView>
+      </KeyboardAvoidingView>
     </GradientLayout>
   );
 };
@@ -187,7 +209,7 @@ const RegisterScreen: React.FC = () => {
 const styles = StyleSheet.create({
     backButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 50,
+    top: Platform.OS === 'ios' ? 50 : 20,
     left: 20,
     width: 40,
     height: 40,
@@ -225,7 +247,7 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: Platform.OS === 'ios' ? 120 : 120,
+    marginTop: Platform.OS === 'ios' ? 120 : 90,
     paddingHorizontal: 20,
   },
   logo: {
@@ -237,7 +259,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 28,
     fontWeight: '600',
-    marginTop: 14,
+    marginTop: 24,
     textAlign: 'center',
   },
   loginLinkContainer: {
@@ -261,10 +283,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 24,
     marginTop: "20%",
-    width: '100%',
-    height: '70%',
-    bottom: 0,
-    position: 'absolute',
+    flex: 1
   },
   title: {
     fontSize: 24,

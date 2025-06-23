@@ -8,12 +8,14 @@ export interface UserState {
   firstName?: string;
   lastName?: string;
   isNewUser?: boolean;
+  isAuthenticated?: boolean;
   role?: string;
   contactNumber?: string;
   address?: string | null;
   dateOfBirth?: string;
   image?: string | null;
-  isAuthenticated?: boolean;
+  isLoading?: boolean;
+  otp?: string[];
 }
 
 export interface EventState {
@@ -26,7 +28,9 @@ export interface RootState {
 }
 
 export const rootStore = signal<RootState>({
-  user: {},
+  user: {
+    otp: ['', '', '', '', '', '']
+  },
   events: { events: [] },
 });
 
@@ -53,4 +57,14 @@ export const setUser = (user: UserState) => {
 
 export const setEvents = (events: any[]) => {
   rootStore.value = { ...rootStore.value, events: { events } };
+};
+
+export const updateUser = (fields: Partial<UserState>) => {
+  rootStore.value = {
+    ...rootStore.value,
+    user: {
+      ...rootStore.value.user,
+      ...fields,
+    },
+  };
 }; 
