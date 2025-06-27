@@ -10,6 +10,9 @@ import {
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
+  Animated,
+  Modal,
+  TouchableWithoutFeedback
 } from 'react-native';
 import {
   Search,
@@ -20,10 +23,14 @@ import {
   Users,
   ArrowRight,
   Heart,
+  FileText,
+  Baby,
+  X
 } from 'lucide-react-native';
 import { normalize } from '../utils/responsive';
 import { BlurView } from '@react-native-community/blur';
 import { getEvents } from '../services/eventService';
+import { Easing } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -31,7 +38,9 @@ const categories = [
   { name: 'Music', icon: Music },
   { name: 'Theater', icon: Drama },
   { name: 'Sports', icon: Dribbble },
-  { name: 'Family', icon: Users },
+  { name: 'Family', icon: Baby },
+  { name: 'Workshops', icon: FileText },
+  { name: 'Saved', icon: Heart },
 ];
 
 const featuredEvents = [
@@ -96,6 +105,73 @@ const HomeScreen = () => {
   const [hasMore, setHasMore] = useState(true);
   const LIMIT = 9;
 
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Filter modal state and animation
+  const [filterVisible, setFilterVisible] = useState(false);
+  const slideAnim = useRef(new Animated.Value(-width)).current;
+
+  // Filter options (mock data)
+  const cityOptions = ['South Carolina', 'Texas', 'California', 'Florida', 'New York'];
+  const venueOptions = [
+    'Indiana Convention Center',
+    'Dallas Exhibition Center',
+    'Los Angeles Convention Center',
+    'Miami Beach Convention Center',
+    'Grand Central Terminal',
+  ];
+  const categoryOptions = ['Music', 'Theater', 'Sports', 'Family', 'Festivals', 'Workshops'];
+  const dateOptions = ['Any date', 'This week', 'This weekend'];
+
+  // Filter state
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const [selectedVenues, setSelectedVenues] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [startDate, setStartDate] = useState('Any date');
+  const [endDate, setEndDate] = useState('Any date');
+
+  // Open filter: reset animation and show modal
+  const openFilter = () => {
+    slideAnim.setValue(-width);
+    setFilterVisible(true);
+  };
+
+  // Close filter: animate out, then hide modal
+  const handleCloseFilter = () => {
+    Animated.timing(slideAnim, {
+      toValue: -width,
+      duration: 300,
+      easing: Easing.in(Easing.ease),
+      useNativeDriver: false,
+    }).start(() => setFilterVisible(false));
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (featuredEvents.length > 1) {
+        const nextIndex = (activeIndex + 1) % featuredEvents.length;
+        setActiveIndex(nextIndex);
+        flatListRef.current?.scrollToIndex({
+          animated: true,
+          index: nextIndex,
+        });
+      }
+    }, 7000);
+
+    return () => clearInterval(interval);
+  }, [activeIndex, featuredEvents.length]);
+
+  useEffect(() => {
+    if (filterVisible) {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [filterVisible]);
+
   const loadMoreEvents = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
@@ -107,29 +183,30 @@ const HomeScreen = () => {
       
       if (newEvents.length > 0) {
         const formattedEvents = newEvents.map((event: any) => {
-          const eventDate = new Date(event.start_date_time || new Date());
+          const eventDate = new Date(event.startTimeStamp || new Date());
           const month = eventDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
           const day = eventDate.getDate();
 
           let tag = null;
-          if (event.tags && event.tags.length > 0) {
-            const tagData = event.tags[0];
-            if (tagData.name?.toLowerCase() === 'resale') {
-              tag = { text: 'Resale', color: '#5A677D' };
-            } else if (tagData.name?.toLowerCase() === 'limited tickets') {
-              tag = { text: 'Limited tickets', color: '#B08F2B' };
+          if (event.status) {
+            const tagData = event.status;
+            if (tagData === 'PUBLISHED') {
+              tag = { text: 'Published', color: '#5A677D' };
+            } else if (tagData === 'SOLD_OUT') {
+              tag = { text: 'Sold out', color: '#B08F2B' };
             }
           }
 
           return {
             id: event.id,
             title: event.name || 'Untitled Event',
-            venue: event.venue?.name || 'TBA',
+            venue: event.location?.name || '',
             price: event.price_range || 'N/A',
-            image: event.images?.[0]?.url || 'https://i.imgur.com/KzX9efA.jpeg',
+            image: event.image,
             date: { month, day },
             tag: tag,
             isLiked: false,
+            category: event.category,
           };
         });
 
@@ -174,6 +251,30 @@ const HomeScreen = () => {
     return <ActivityIndicator style={{ marginVertical: 20 }} size="large" color="#0C0453" />;
   };
 
+  const filteredEvents = selectedCategory
+    ? moreEvents.filter(event => event.category?.name === selectedCategory)
+    : moreEvents;
+
+  // Checkbox handler
+  const toggleSelection = (value: string, selected: string[], setSelected: (v: string[]) => void) => {
+    if (selected.includes(value)) {
+      setSelected(selected.filter(item => item !== value));
+    } else {
+      setSelected([...selected, value]);
+    }
+  };
+
+  // Radio handler
+  const selectRadio = (value: string, setter: (v: string) => void) => {
+    setter(value);
+  };
+
+  // Apply filters (placeholder)
+  const handleApplyFilters = () => {
+    // TODO: Connect to event filtering logic
+    handleCloseFilter();
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -187,7 +288,7 @@ const HomeScreen = () => {
                   style={styles.searchInput}
                   placeholderTextColor="#666"
                 />
-                <TouchableOpacity style={styles.filterButton}>
+                <TouchableOpacity style={styles.filterButton} onPress={openFilter}>
                   <SlidersHorizontal color="#fff" size={normalize(20)} />
                 </TouchableOpacity>
               </View>
@@ -196,9 +297,21 @@ const HomeScreen = () => {
             <View style={styles.categoriesContainer}>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {categories.map((category, index) => (
-                  <TouchableOpacity key={index} style={styles.categoryChip}>
-                    <category.icon color="#333" size={normalize(18)} />
-                    <Text style={styles.categoryText}>{category.name}</Text>
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.categoryChip,
+                      selectedCategory === category.name && { backgroundColor: '#0C0453' }
+                    ]}
+                    onPress={() => setSelectedCategory(selectedCategory === category.name ? null : category.name)}
+                  >
+                    <category.icon color={selectedCategory === category.name ? "#fff" : "#333"} size={normalize(18)} />
+                    <Text style={[
+                      styles.categoryText,
+                      selectedCategory === category.name && { color: '#fff' }
+                    ]}>
+                      {category.name}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -257,7 +370,7 @@ const HomeScreen = () => {
             </View>
           </>
         }
-        data={moreEvents}
+        data={filteredEvents}
         renderItem={({ item }) => <MoreEventCard event={item} />}
         keyExtractor={item => item.id}
         onEndReached={loadMoreEvents}
@@ -265,6 +378,165 @@ const HomeScreen = () => {
         ListFooterComponent={renderFooter}
         showsVerticalScrollIndicator={false}
       />
+      <View style={styles.gap}/>
+
+      {/* Filter Modal */}
+      <Modal
+        visible={filterVisible}
+        animationType="none"
+        transparent
+        onRequestClose={handleCloseFilter}
+      >
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          {/* Overlay */}
+          <TouchableOpacity
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' }}
+            activeOpacity={1}
+            onPress={handleCloseFilter}
+          />
+          {/* Sliding Panel */}
+          <Animated.View
+            style={{
+              width: width,
+              backgroundColor: '#fff',
+              transform: [{ translateX: slideAnim }],
+              padding: 20,
+              height: '100%',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+            }}
+          >
+            <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={{  marginTop: normalize(50) }}>
+              <TouchableOpacity onPress={handleCloseFilter}>
+                <X color="#000" size={normalize(20)} />
+              </TouchableOpacity>
+              <Text style={{ fontWeight: 'bold', fontSize: 22, marginTop:normalize(20) }}>Filter events</Text>
+            </View>
+
+            {/* Cities */}
+            <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(30), marginBottom: normalize(10), color: '#444' }}>Cities</Text>
+            {cityOptions.map(city => (
+              <TouchableOpacity
+                key={city}
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}
+                onPress={() => toggleSelection(city, selectedCities, setSelectedCities)}
+              >
+                <View style={{
+                  width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: '#1a237e',
+                  marginRight: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: selectedCities.includes(city) ? '#1a237e' : '#fff'
+                }}>
+                  {selectedCities.includes(city) && <View style={{ width: 12, height: 12, backgroundColor: '#fff', borderRadius: 2, justifyContent: 'center', alignItems: 'center', }} />}
+                </View>
+                <Text style={{ color: '#222', fontSize: 15 }}>{city}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={{ marginBottom: 16 }}>
+              <Text style={{ color: '#2a2aee', textDecorationLine: 'underline', fontSize: 15 }}>Show all cities</Text>
+            </TouchableOpacity>
+
+            {/* Venues */}
+            <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(10), marginBottom: normalize(10), color: '#444' }}>Venues</Text>
+            {venueOptions.map(venue => (
+              <TouchableOpacity
+                key={venue}
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}
+                onPress={() => toggleSelection(venue, selectedVenues, setSelectedVenues)}
+              >
+                <View style={{
+                  width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: '#1a237e',
+                  marginRight: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: selectedVenues.includes(venue) ? '#1a237e' : '#fff'
+                }}>
+                  {selectedVenues.includes(venue) && <View style={{ width: 12, height: 12, backgroundColor: '#fff', borderRadius: 2 }} />}
+                </View>
+                <Text style={{ color: '#222', fontSize: 15 }}>{venue}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={{ marginBottom: 16 }}>
+              <Text style={{ color: '#2a2aee', textDecorationLine: 'underline', fontSize: 15 }}>Show all venues</Text>
+            </TouchableOpacity>
+
+            {/* Categories */}
+            <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(10), marginBottom: normalize(10), color: '#444' }}>Categories</Text>
+            {categoryOptions.map(category => (
+              <TouchableOpacity
+                key={category}
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}
+                onPress={() => toggleSelection(category, selectedCategories, setSelectedCategories)}
+              >
+                <View style={{
+                  width: 20, height: 20, borderRadius: 4, borderWidth: 2, borderColor: '#1a237e',
+                  marginRight: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: selectedCategories.includes(category) ? '#1a237e' : '#fff'
+                }}>
+                  {selectedCategories.includes(category) && <View style={{ width: 12, height: 12, backgroundColor: '#fff', borderRadius: 2 }} />}
+                </View>
+                <Text style={{ color: '#222', fontSize: 15 }}>{category}</Text>
+              </TouchableOpacity>
+            ))}
+
+            {/* Start date */}
+            <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(18), marginBottom: normalize(10), color: '#444' }}>Start date</Text>
+            {dateOptions.map(opt => (
+              <TouchableOpacity
+                key={opt}
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}
+                onPress={() => selectRadio(opt, setStartDate)}
+              >
+                <View style={{
+                  width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#1a237e',
+                  marginRight: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff'
+                }}>
+                  {startDate === opt && <View style={{ width: 12, height: 12, backgroundColor: '#1a237e', borderRadius: 6 }} />}
+                </View>
+                <Text style={{ color: '#222', fontSize: 15 }}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={{ marginBottom: 8 }}>
+              <Text style={{ color: '#2a2aee', textDecorationLine: 'underline', fontSize: 15 }}>Choose a date</Text>
+            </TouchableOpacity>
+
+            {/* End date */}
+            <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(18), marginBottom: normalize(10), color: '#444' }}>End date</Text>
+            {dateOptions.map(opt => (
+              <TouchableOpacity
+                key={opt}
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}
+                onPress={() => selectRadio(opt, setEndDate)}
+              >
+                <View style={{
+                  width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#1a237e',
+                  marginRight: 10, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff'
+                }}>
+                  {endDate === opt && <View style={{ width: 12, height: 12, backgroundColor: '#1a237e', borderRadius: 6 }} />}
+                </View>
+                <Text style={{ color: '#222', fontSize: 15 }}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={{ marginBottom: 16 }}>
+              <Text style={{ color: '#2a2aee', textDecorationLine: 'underline', fontSize: 15 }}>Choose a date</Text>
+            </TouchableOpacity>
+
+            {/* Footer buttons */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: normalize(30), marginBottom: normalize(20) }}>
+              <TouchableOpacity
+                onPress={handleCloseFilter}
+                style={{ flex: 1, marginRight: 10, backgroundColor: '#f5f5f5', borderRadius: 8, paddingVertical: 14, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#0C0453', fontWeight: 'bold', fontSize: 16 }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleApplyFilters}
+                style={{ flex: 1, marginLeft: 10, backgroundColor: '#0C0453', borderRadius: 8, paddingVertical: 14, alignItems: 'center' }}
+              >
+                <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Apply filters</Text>
+              </TouchableOpacity>
+            </View>
+            </ScrollView>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -488,6 +760,9 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
     fontWeight: '500',
   },
+  gap:{
+    height: normalize(100),
+  }
 });
 
 export default HomeScreen; 
