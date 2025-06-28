@@ -18,7 +18,7 @@ import GoogleIcon from '../assets/icons/google.svg';
 import AppleIcon from '../assets/icons/apple.svg';
 import GoogleSignInService from '../services/GoogleSignInService';
 import { loginWithOtp, loginWithGoogle } from '../services/ApiService';
-import { rootStore, setUser } from '../store/rootStore';
+import { rootStore, setUser, userStore } from '../store/rootStore';
 import * as Keychain from 'react-native-keychain';
 import { useSignal } from '@preact/signals-react';
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
@@ -26,6 +26,7 @@ type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'
 const { width } = Dimensions.get('window');
 
 const LoginScreen: React.FC = () => {
+  useSignal();
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const user = useSignal(() => rootStore.value.user);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,18 +35,9 @@ const LoginScreen: React.FC = () => {
     GoogleSignInService.init();
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = rootStore.subscribe((value) => {
-      console.log('[Component] rootStore changed:', value);
-    });
-  
-    return () => unsubscribe(); // Clean up
-  }, []);
-
-
   const handleGoogleSignIn = async () => {
     setUser({
-      ...rootStore.value.user,
+      ...userStore.value,
       isLoading: true
     });
     try {
@@ -54,15 +46,12 @@ const LoginScreen: React.FC = () => {
       if (result && result.idToken) {
         const response: any = await loginWithGoogle(result.idToken);
         const [firstName, lastName] = result?.name?.split(" ") || '';
-        console.log(response,"response");
         
         const [data, error] = response;
-        console.log("data",data, error);
         if (!error) {
-          console.log("asasasasas");
           
           setUser({
-            ...rootStore.value.user,
+            ...userStore.value,
             email: result.email,
             firstName,
             lastName,
@@ -78,12 +67,11 @@ const LoginScreen: React.FC = () => {
         Alert.alert('Error', 'Failed to sign in with Googleee');
       }
     } catch (error) {
-      console.log("error",error);
       
       Alert.alert('Error', 'Failed to sign in with Google');
     } finally {
       setUser({
-        ...rootStore.value.user,
+        ...userStore.value,
         isLoading: false
       });
     }
@@ -98,7 +86,7 @@ const LoginScreen: React.FC = () => {
   };
 
   const handleContinue = async () => {
-    const input = rootStore.value.user.email;
+    const input = userStore.value.email;
     if (!input) {
       Alert.alert('Error', 'Please enter your email or mobile number');
       return;
@@ -109,26 +97,25 @@ const LoginScreen: React.FC = () => {
       return;
     }
     setUser({
-      ...rootStore.value.user,
+      ...userStore.value,
       isLoading: true
     });
     try {
       let response;
       if (valid.type === 'email') {
-        setUser({ ...rootStore.value.user, email: valid.value, mobileNumber: undefined });
+        setUser({ ...userStore.value, email: valid.value, mobileNumber: undefined });
         response = await loginWithOtp({ email: valid.value });
       } else {
-        setUser({ ...rootStore.value.user, mobileNumber: valid.value, email: undefined });
+        setUser({ ...userStore.value, mobileNumber: valid.value, email: undefined });
         response = await loginWithOtp({ mobileNumber: valid.value });
       }
-      console.log("response",response);
       const [data, error] = response;
 
       
       
       if (!error) {
         navigation.navigate('OTPVerification', {
-          email: valid.type === 'email' ? valid.value : undefined,
+          email: valid.type === 'email' ? valid.value : 'test@gmail.com',
           mobileNumber: valid.type === 'mobileNumber' ? valid.value : undefined,
           type: valid.type === 'email' ? 'email' : 'mobile',
         });
@@ -139,7 +126,7 @@ const LoginScreen: React.FC = () => {
       Alert.alert('Error', 'Failed to send OTP');
     } finally {
       setUser({
-        ...rootStore.value.user,
+        ...userStore.value,
         isLoading: false
       });
     }
@@ -170,12 +157,11 @@ const LoginScreen: React.FC = () => {
             style={styles.input}
             placeholder="Email/ mobile number"
             placeholderTextColor="#A0A0A0"
-            value={user?.email}
+            value={userStore?.value.email}
             onChangeText={(e) => {
-              console.log("text",e);
               
               setUser({
-                ...rootStore.value.user,
+                ...userStore.value,
                 email: e,
               });
             }}

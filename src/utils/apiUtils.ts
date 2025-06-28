@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
-import { inlinePromise, InlineArrayResult } from '../lib/promise-util';
+import { inlinePromise, InlineArrayResult } from './promise-util';
 import { API_BASE_URL } from '@env';
 
 export const api: AxiosInstance = axios.create({

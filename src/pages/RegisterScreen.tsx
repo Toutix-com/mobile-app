@@ -19,22 +19,23 @@ import { AuthStackParamList } from '../navigation/AuthStack';
 import GradientLayout from '../components/layouts/GradientLayout';
 import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DatePicker from 'react-native-date-picker';
 import { Calendar, ChevronLeft } from 'lucide-react-native';
-import { rootStore, setUser } from '../store/rootStore';
 import { updateUserProfile } from '../services/ApiService';
+import { rootStore, updateUser, setUser, userStore } from '../store/rootStore';
+import { useSignal, useComputed } from '@preact/signals-react';
+import moment from 'moment';
 
 type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
 
 const RegisterScreen: React.FC = () => {
+  useSignal()
   const navigation = useNavigation<RegisterScreenNavigationProp>();
+  const user = useComputed(() => rootStore.value.user);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    mobileNumber: '',
     firstName: '',
     lastName: '',
-    birthday: undefined as Date | undefined,
+    birthday: Date.now(),
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
   const store = rootStore.value
@@ -42,14 +43,21 @@ const RegisterScreen: React.FC = () => {
 
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId: '912281763788-9vfavok5rl5pmhca64e9jcek89g44ik0.apps.googleusercontent.com', // TODO: Replace with your Firebase project's web client ID
+      webClientId: '912281763788-9vfavok5rl5pmhca64e9jcek89g44ik0.apps.googleusercontent.com',
     });
-    console.log("store", store)
   }, []);
 
   const handleInputChange = (field: string, value: string | Date | undefined) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  let finalValue = value;
+
+  if (field === 'birthday' && value && !(value instanceof Date)) {
+    try {
+      finalValue = new Date(value as string);
+    } catch (e) {
+    }
+  }
+  updateUser({ [field]: finalValue });
+};
 
   const handleLoginPress = () => {
     navigation.navigate('Login');
@@ -57,17 +65,15 @@ const RegisterScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      const dateOfBirth = formData.birthday
-        ? formData.birthday.toISOString().split('T')[0]
+      const dateOfBirth = userStore.value.birthday
+        ? userStore.value.birthday.toISOString().split('T')[0]
         : undefined;
       const response = await updateUserProfile({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
+        firstName: userStore.value.firstName || '',
+        lastName: userStore.value.lastName || '',
         dateOfBirth,
       });
-      // Save necessary fields in store
-      console.log("RESPONSE",response);
-      
+
       setUser({
         ...rootStore.value.user,
         id: response.id,
@@ -76,12 +82,11 @@ const RegisterScreen: React.FC = () => {
         email: response.email,
         contactNumber: response.contactNumber,
         address: response.address,
-        dateOfBirth: response.dateOfBirth,
+        birthday: response.dateOfBirth,
         role: response.role,
         isNewUser: response.isNewUser,
         image: response.image,
       });
-      console.log("USER STORE",JSON.stringify(store));
       navigation.reset({
         index: 0,
         routes: [{ name: 'Home' }],
@@ -98,11 +103,11 @@ const RegisterScreen: React.FC = () => {
         <ChevronLeft color="#FFFFFF" size={24} />
       </TouchableOpacity>
 
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
-        <ScrollView 
+        <ScrollView
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContentContainer}
@@ -116,18 +121,18 @@ const RegisterScreen: React.FC = () => {
             <Text style={styles.tagline}>Find It, Book It, Live It</Text>
           </View>
 
-          
+
 
           <View style={styles.formContainer}>
             <Text style={styles.title}>Register with Toutix</Text>
-            
+
             <View style={styles.inputContainer}>
               <Text style={styles.label}>First name</Text>
               <TextInput
                 style={styles.input}
                 placeholder="First name"
                 placeholderTextColor="#A0A0A0"
-                value={formData.firstName}
+                value={user.firstName}
                 onChangeText={(value) => handleInputChange('firstName', value)}
               />
             </View>
@@ -138,7 +143,7 @@ const RegisterScreen: React.FC = () => {
                 style={styles.input}
                 placeholder="Last name"
                 placeholderTextColor="#A0A0A0"
-                value={formData.lastName}
+                value={user.lastName}
                 onChangeText={(value) => handleInputChange('lastName', value)}
               />
             </View>
@@ -150,50 +155,24 @@ const RegisterScreen: React.FC = () => {
                 onPress={() => setShowDatePicker(true)}
               >
                 <Text style={{ flex: 1, color: formData.birthday ? '#000' : '#A0A0A0' }}>
-                  {formData.birthday
-                    ? formData.birthday.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                  {userStore.value.birthday
+                    ? moment(userStore.value.birthday).format('DD/MM/YYYY')
                     : 'Select your date of birth'}
                 </Text>
                 <Calendar color="#A0A0A0" size={20} />
               </Pressable>
-              {showDatePicker && Platform.OS === 'ios' && (
-                <Modal
-                  transparent
-                  animationType="slide"
-                  visible={showDatePicker}
-                  onRequestClose={() => setShowDatePicker(false)}
-                >
-                  <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.3)' }}>
-                    <View style={{ backgroundColor: '#fff', borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 16 }}>
-                      <DateTimePicker
-                        value={formData.birthday || new Date(2000, 0, 1)}
-                        mode="date"
-                        display="spinner"
-                        onChange={(_, date) => {
-                          setShowDatePicker(false);
-                          if (date) handleInputChange('birthday', date);
-                        }}
-                        maximumDate={new Date()}
-                      />
-                      <TouchableOpacity onPress={() => setShowDatePicker(false)} style={{ alignItems: 'center', marginTop: 8 }}>
-                        <Text style={{ color: '#0C0453', fontWeight: '600', fontSize: 16 }}>Done</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </Modal>
-              )}
-              {showDatePicker && Platform.OS === 'android' && (
-                <DateTimePicker
-                  value={formData.birthday || new Date(2000, 0, 1)}
-                  mode="date"
-                  display="calendar"
-                  onChange={(_, date) => {
-                    setShowDatePicker(false);
-                    if (date) handleInputChange('birthday', date);
-                  }}
-                  maximumDate={new Date()}
-                />
-              )}
+              <DatePicker
+                modal
+                open={showDatePicker}
+                date={userStore.value.birthday instanceof Date ? userStore.value.birthday : new Date(2000, 0, 1)}
+                onCancel={() => setShowDatePicker(false)}
+                onConfirm={(date) => {
+                  setShowDatePicker(false);
+                  if (date) handleInputChange('birthday', date);
+                }}
+                mode="date"
+                maximumDate={new Date()}
+              />
             </View>
 
             <TouchableOpacity style={styles.registerButton} onPress={handleSubmit}>
@@ -207,7 +186,7 @@ const RegisterScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-    backButton: {
+  backButton: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 50 : 20,
     left: 20,

@@ -11,19 +11,19 @@ import { SplashScreen } from './src/pages/SplashScreen';
 import AuthStack from './src/navigation/AuthStack';
 import AppStack from './src/navigation/AppStack';
 import GoogleSignInService from './src/services/GoogleSignInService';
-import { rootStore } from './src/store/rootStore';
+import { userStore } from './src/store/rootStore';
 
 function App(): React.JSX.Element {
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(
-    Boolean(rootStore.value.user?.isAuthenticated)
+    Boolean(userStore.value.isAuthenticated)
   );
 
   useEffect(() => {
     // Initialize Google Sign-In
     GoogleSignInService.init();
     const interval = setInterval(() => {
-      setIsAuthenticated(Boolean(rootStore.value.user?.isAuthenticated));
+      setIsAuthenticated(Boolean(userStore.value.isAuthenticated));
     }, 500); // crude polling approach
 
     return () => clearInterval(interval);

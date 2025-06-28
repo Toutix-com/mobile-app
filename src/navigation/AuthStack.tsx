@@ -5,6 +5,7 @@ import RegisterScreen from '../pages/RegisterScreen';
 import VerificationScreen from '../pages/VerificationScreen';
 import OTPVerificationScreen from '../pages/OTPVerificationScreen';
 
+
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
@@ -27,7 +28,7 @@ const AuthStack = () => {
       screenOptions={{
         headerShown: false,
       }}>
-              
+             
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="Verification" component={VerificationScreen} />

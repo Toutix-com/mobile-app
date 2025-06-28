@@ -6,7 +6,8 @@ export const loginWithOtp = (payload: { email?: string; mobileNumber?: string })
 };
 
 export const verifyOtp = (payload: { email: string; otp: string | number }) => {
-  return commonApiWrapper(api.post('/user/verify-otp', payload));
+  console.log("payload", payload);
+  return commonApiWrapper(api.post('/user/login/with-otp', payload));
 };
 
 export const updateUserProfile = async ({ firstName, lastName, dateOfBirth }: { firstName: string; lastName: string; dateOfBirth?: string; }) => {

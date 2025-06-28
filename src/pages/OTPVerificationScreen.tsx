@@ -16,9 +16,8 @@ import { ChevronLeft } from 'lucide-react-native';
 import { AuthStackParamList } from '../navigation/AuthStack';
 import GradientLayout from '../components/layouts/GradientLayout';
 import { verifyOtp, loginWithOtp } from '../services/ApiService';
-import { rootStore, setUser } from '../store/rootStore';
+import { setUser , userStore} from '../store/rootStore';
 import * as Keychain from 'react-native-keychain';
-import { InlineArrayResult } from '../lib/promise-util';
 
 type OTPVerificationScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'OTPVerification'>;
 
@@ -45,7 +44,7 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
 
   useEffect(() => {
     setUser({
-      ...rootStore.value.user,
+      ...userStore.value,
       otp: Array(6).fill(''),
     });
   }, []);
@@ -57,20 +56,12 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
     }
   }, [timeLeft]);
 
-  useEffect(() => {
-    const unsubscribe = rootStore.subscribe((value) => {
-      console.log('[Component] rootStore changed:', value);
-    });
-  
-    return () => unsubscribe();
-  }, []);
-
   const handleBack = () => {
     navigation.goBack();
   };
 
   const handleOtpChange = (value: string, index: number) => {
-    const newOtp = [...(rootStore.value.user.otp || [])];
+    const newOtp = [...(userStore.value.otp || [])];
     
     if (value.length > 1) {
       const digits = value.split('').slice(0, 6);
@@ -91,21 +82,22 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
     }
     
     setUser({
-      ...rootStore.value.user,
+      ...userStore.value,
       otp: newOtp,
     });
   };
 
   const handleKeyPress = (event: any, index: number) => {
-    if (event.nativeEvent.key === 'Backspace' && rootStore.value.user.otp?.[index] === '' && index > 0) {
+    if (event.nativeEvent.key === 'Backspace' && userStore.value.otp?.[index] === '' && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
   const handleVerify = async () => {
-    const otpString = rootStore.value.user.otp?.join('') || '';
+    const otpString = userStore.value.otp?.join('') || '';
     try {
-      const [data, error] = await verifyOtp({ email: route.params.email || '', otp: otpString }) as InlineArrayResult<VerifyOtpResponse>;
+      const [data, error] = await verifyOtp({ email: route.params.email || '', otp: otpString });
+      
 
       if (error) {
         Alert.alert('Error', (error as any).response?.data?.message || 'Invalid OTP');
@@ -114,10 +106,10 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
       
       if (data) {
         setUser({
-          ...rootStore.value.user,
+          ...userStore.value,
           isNewUser: data.isNewUser,
           role: data.role,
-          isAuthenticated: !data.isNewUser,
+          isAuthenticated: true,
         });
         await Keychain.setGenericPassword('auth', data.token);
         if (data.isNewUser) {
@@ -176,8 +168,7 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           </Text>
 
           <View style={styles.otpContainer}>
-            {console.log(rootStore.value.user.otp,"rootStore.value.user.otp")}
-            {rootStore.value.user.otp?.map((digit, index) => (
+            {userStore.value.otp?.map((digit, index) => (
               <React.Fragment key={index}>
                 <TextInput
                   ref={(ref) => {
@@ -206,7 +197,7 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           <TouchableOpacity 
             style={[
               styles.verifyButton,
-              rootStore.value.user.otp?.every(d => d) && styles.verifyButtonActive
+              userStore.value.otp?.every(d => d) && styles.verifyButtonActive
             ]} 
             onPress={handleVerify}
           >

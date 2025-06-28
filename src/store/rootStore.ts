@@ -12,10 +12,11 @@ export interface UserState {
   role?: string;
   contactNumber?: string;
   address?: string | null;
-  dateOfBirth?: string;
+  birthday?: Date;
   image?: string | null;
   isLoading?: boolean;
   otp?: string[];
+  timer?: any;
 }
 
 export interface EventState {
@@ -27,9 +28,14 @@ export interface RootState {
   events: EventState;
 }
 
+export const dateOfBirth = signal<Date>(new Date(2000, 0, 1));
+export const userStore = signal<UserState>({
+  birthday: new Date(2000, 0, 1)
+});
+
 export const rootStore = signal<RootState>({
   user: {
-    otp: ['', '', '', '', '', '']
+    birthday: new Date(2000, 0, 1)
   },
   events: { events: [] },
 });
@@ -40,8 +46,15 @@ const ROOT_STORE_KEY = 'rootStore';
 AsyncStorage.getItem(ROOT_STORE_KEY).then((json) => {
   if (json) {
     try {
-      rootStore.value = JSON.parse(json);
-    } catch {}
+      const parsed = JSON.parse(json);
+     
+      if (parsed.user?.birthday) {
+        parsed.user.birthday = new Date(parsed.user.birthday);
+      }
+      rootStore.value = parsed;
+    } catch (err) {
+      console.error('Failed to load root store', err);
+    }
   }
 });
 
@@ -50,9 +63,11 @@ rootStore.subscribe((value) => {
   AsyncStorage.setItem(ROOT_STORE_KEY, JSON.stringify(value));
 });
 
-// Example setters
 export const setUser = (user: UserState) => {
-  rootStore.value = { ...rootStore.value, user };
+  userStore.value = {
+    ...userStore.value,
+    ...user,
+  }
 };
 
 export const setEvents = (events: any[]) => {
@@ -60,11 +75,8 @@ export const setEvents = (events: any[]) => {
 };
 
 export const updateUser = (fields: Partial<UserState>) => {
-  rootStore.value = {
-    ...rootStore.value,
-    user: {
-      ...rootStore.value.user,
-      ...fields,
-    },
-  };
+  userStore.value = {
+    ...userStore.value,
+    ...fields,
+  }
 }; 
