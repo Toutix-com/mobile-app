@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 import { Home, Ticket, Store, User } from 'lucide-react-native';
 import { BlurView } from '@react-native-community/blur';
 
-import HomeScreen from '../pages/HomeScreen';
+import HomeScreen from '../pages/home/HomeScreen';
 import TicketsScreen from '../pages/TicketsScreen';
 import MarketplaceScreen from '../pages/MarketplaceScreen';
 import ProfileScreen from '../pages/ProfileScreen';
