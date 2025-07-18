@@ -5,28 +5,22 @@
  * @format
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { SplashScreen } from './src/pages/SplashScreen';
 import AuthStack from './src/navigation/AuthStack';
 import AppStack from './src/navigation/AppStack';
 import GoogleSignInService from './src/services/GoogleSignInService';
-import { userStore } from './src/store/rootStore';
+import { showSplash, setShowSplash } from './src/store/rootStore';
+import { userStore } from './src/pages/login/store/login.store';
+import { useSignals } from '@preact/signals-react/runtime';
 
 function App(): React.JSX.Element {
-  const [showSplash, setShowSplash] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    Boolean(userStore.value.isAuthenticated)
-  );
+  useSignals();
 
   useEffect(() => {
     // Initialize Google Sign-In
     GoogleSignInService.init();
-    const interval = setInterval(() => {
-      setIsAuthenticated(Boolean(userStore.value.isAuthenticated));
-    }, 500); // crude polling approach
-
-    return () => clearInterval(interval);
   }, []);
 
 
@@ -35,11 +29,11 @@ function App(): React.JSX.Element {
   };
 
 
-  return showSplash ? (
+  return showSplash.value ? (
     <SplashScreen onComplete={handleSplashComplete} />
   ) : (
     <NavigationContainer>
-      {isAuthenticated ? <AppStack /> : <AuthStack />}
+      {userStore.value.isAuthenticated ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   );
 }

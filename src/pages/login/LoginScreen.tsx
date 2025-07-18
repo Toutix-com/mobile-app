@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,18 +8,15 @@ import {
   Image,
   Platform,
   Dimensions,
-  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AuthStackParamList } from '../navigation/AuthStack';
-import GradientLayout from '../components/layouts/GradientLayout';
-import GoogleIcon from '../assets/icons/google.svg';
-import AppleIcon from '../assets/icons/apple.svg';
-import GoogleSignInService from '../services/GoogleSignInService';
-import { loginWithOtp, loginWithGoogle } from '../services/ApiService';
-import { rootStore, setUser, userStore } from '../store/rootStore';
-import * as Keychain from 'react-native-keychain';
+import { AuthStackParamList } from '../../navigation/AuthStack';
+import GradientLayout from '../../components/layouts/GradientLayout';
+import GoogleIcon from '@assets/icons/google.svg';
+import AppleIcon from '@assets/icons/apple.svg';
+import GoogleSignInService from '../../services/GoogleSignInService';
+import { setUser, userStore, handleGoogleSignIn, handleContinue } from './store/login.store';
 import { useSignal } from '@preact/signals-react';
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -28,109 +25,10 @@ const { width } = Dimensions.get('window');
 const LoginScreen: React.FC = () => {
   useSignal();
   const navigation = useNavigation<LoginScreenNavigationProp>();
-  const user = useSignal(() => rootStore.value.user);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     GoogleSignInService.init();
   }, []);
-
-  const handleGoogleSignIn = async () => {
-    setUser({
-      ...userStore.value,
-      isLoading: true
-    });
-    try {
-      const result = await GoogleSignInService.signIn();
-      
-      if (result && result.idToken) {
-        const response: any = await loginWithGoogle(result.idToken);
-        const [firstName, lastName] = result?.name?.split(" ") || '';
-        
-        const [data, error] = response;
-        if (!error) {
-          
-          setUser({
-            ...userStore.value,
-            email: result.email,
-            firstName,
-            lastName,
-            isAuthenticated: true,
-            isNewUser: data.isNewUser,
-            role: data.role,
-          });
-          await Keychain.setGenericPassword('auth', data.token);
-        } else {
-          Alert.alert('Error', (response as any)?.message ? (response as any).message : 'Failed to login with Google');
-        }
-      } else {
-        Alert.alert('Error', 'Failed to sign in with Googleee');
-      }
-    } catch (error) {
-      
-      Alert.alert('Error', 'Failed to sign in with Google');
-    } finally {
-      setUser({
-        ...userStore.value,
-        isLoading: false
-      });
-    }
-  };
-
-  const validateInput = (value: string) => {
-    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-    const phoneRegex = /^\+?\d{10,15}$/;
-    if (emailRegex.test(value)) return { type: 'email', value };
-    if (phoneRegex.test(value)) return { type: 'mobileNumber', value };
-    return null;
-  };
-
-  const handleContinue = async () => {
-    const input = userStore.value.email;
-    if (!input) {
-      Alert.alert('Error', 'Please enter your email or mobile number');
-      return;
-    }
-    const valid = validateInput(input.trim());
-    if (!valid) {
-      Alert.alert('Error', 'Please enter a valid email or mobile number');
-      return;
-    }
-    setUser({
-      ...userStore.value,
-      isLoading: true
-    });
-    try {
-      let response;
-      if (valid.type === 'email') {
-        setUser({ ...userStore.value, email: valid.value, mobileNumber: undefined });
-        response = await loginWithOtp({ email: valid.value });
-      } else {
-        setUser({ ...userStore.value, mobileNumber: valid.value, email: undefined });
-        response = await loginWithOtp({ mobileNumber: valid.value });
-      }
-      const [data, error] = response;
-
-      
-      
-      if (!error) {
-        navigation.navigate('OTPVerification', {
-          email: valid.type === 'email' ? valid.value : 'test@gmail.com',
-          mobileNumber: valid.type === 'mobileNumber' ? valid.value : undefined,
-          type: valid.type === 'email' ? 'email' : 'mobile',
-        });
-      } else {
-        Alert.alert('Error', error?.message || 'Failed to send OTP');
-      }
-    } catch (e) {
-      Alert.alert('Error', 'Failed to send OTP');
-    } finally {
-      setUser({
-        ...userStore.value,
-        isLoading: false
-      });
-    }
-  };
 
   return (
     <GradientLayout>
@@ -140,13 +38,12 @@ const LoginScreen: React.FC = () => {
 
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/logos/toutix_logo_full.png')}
+          source={require('../../assets/logos/toutix_logo_full.png')}
           style={styles.logo}
           resizeMode="contain"
         />
         <Text style={styles.tagline}>Find It, Book It, Live It</Text>
       </View>
-
 
       <View style={styles.formContainer}>
         <Text style={styles.title}>Log in or sign up</Text>
@@ -159,7 +56,6 @@ const LoginScreen: React.FC = () => {
             placeholderTextColor="#A0A0A0"
             value={userStore?.value.email}
             onChangeText={(e) => {
-              
               setUser({
                 ...userStore.value,
                 email: e,
@@ -167,20 +63,18 @@ const LoginScreen: React.FC = () => {
             }}
             keyboardType="email-address"
             autoCapitalize="none"
-            editable={!isLoading}
+            editable={!userStore.value.isLoading}
           />
         </View>
         <Text style={styles.description}>We'll send you a code to log in to your account</Text>
         
-
         <TouchableOpacity 
-          style={[styles.loginButton, isLoading && { opacity: 0.7 }]} 
-          disabled={isLoading}
-          onPress={handleContinue}
+          style={[styles.loginButton, userStore.value.isLoading && { opacity: 0.7 }]} 
+          disabled={userStore.value.isLoading}
+          onPress={() => handleContinue(navigation)}
         >
           <Text style={styles.loginButtonText}>Continue</Text>
         </TouchableOpacity>
-
 
         <View style={styles.dividerContainer}>
           <View style={styles.divider} />
@@ -190,22 +84,20 @@ const LoginScreen: React.FC = () => {
 
         <View style={styles.socialButtonsContainer}>
           <TouchableOpacity 
-            style={[styles.socialButton, isLoading && { opacity: 0.7 }]} 
-            onPress={handleGoogleSignIn}
-            disabled={isLoading}
+            style={[styles.socialButton, userStore.value.isLoading && { opacity: 0.7 }]} 
+            onPress={() => handleGoogleSignIn(navigation)}
+            disabled={userStore.value.isLoading}
           >
             <GoogleIcon width={20} height={20} />
             <Text style={styles.socialButtonText}>
-              {isLoading ? 'Connecting...' : 'Continue with Google'}
+              {userStore.value.isLoading ? 'Connecting...' : 'Continue with Google'}
             </Text>
           </TouchableOpacity>
-
-          
         </View>
         <View style={styles.socialButtonsContainer}>
         <TouchableOpacity 
-            style={[styles.socialButton, isLoading && { opacity: 0.7 }]}
-            disabled={isLoading}
+            style={[styles.socialButton, userStore.value.isLoading && { opacity: 0.7 }]}
+            disabled={userStore.value.isLoading}
           >
             <AppleIcon width={20} height={20} />
             <Text style={styles.socialButtonText}>Continue with Apple</Text>
