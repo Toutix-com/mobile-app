@@ -5,12 +5,28 @@ import {
   StyleSheet,
   Image,
   SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Keychain from 'react-native-keychain';
+import { rootStore, setUser } from '../store/rootStore';
 
 import { currentTheme } from '../store';
 
 export function HomeScreen(): React.JSX.Element {
   const isDarkMode = currentTheme.value === 'dark';
+  const store = rootStore.value
+
+  
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.clear();
+      await Keychain.resetGenericPassword();
+      setUser({});
+    } catch (error) {
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -23,6 +39,9 @@ export function HomeScreen(): React.JSX.Element {
         <Text style={styles.text}>
           App initialization is done (Home page)
         </Text>
+        <TouchableOpacity style={styles.button} onPress={handleLogout}>
+          <Text style={styles.buttonText}>Logout</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -49,5 +68,14 @@ const styles = StyleSheet.create({
     color: '#333333',
     textAlign: 'center',
     fontWeight: '400',
+  },
+  button: {
+    backgroundColor: '#DDDDDD',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 20,
+  },
+  buttonText: {
+    fontSize: 16,
   },
 }); 

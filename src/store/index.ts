@@ -30,12 +30,12 @@ export const isLoading = computed(() => appState.value.loading);
 
 // Debug effect to log state changes
 effect(() => {
-  console.log('Store State Updated:', {
-    theme: appState.value.theme,
-    isAuthenticated: appState.value.isAuthenticated,
-    hasUser: !!appState.value.user,
-    loading: appState.value.loading
-  });
+  // console.log('Store State Updated:', {
+  //   theme: appState.value.theme,
+  //   isAuthenticated: appState.value.isAuthenticated,
+  //   hasUser: !!appState.value.user,
+  //   loading: appState.value.loading
+  // });
 });
 
 // Store actions
@@ -58,7 +58,7 @@ export const storeActions = {
 
   toggleTheme: () => {
     const newTheme = appState.value.theme === 'light' ? 'dark' : 'light';
-    console.log('Toggling theme to:', newTheme);
+    // console.log('Toggling theme to:', newTheme);
     
     // Update the entire state object
     appState.value = {

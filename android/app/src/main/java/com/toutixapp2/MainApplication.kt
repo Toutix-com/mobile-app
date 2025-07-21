@@ -1,4 +1,4 @@
-package com.toutixapp
+package com.toutixapp2
 
 import android.app.Application
 import com.facebook.react.PackageList

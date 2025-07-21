@@ -1,4 +1,4 @@
-package com.toutixapp
+package com.toutixapp2
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

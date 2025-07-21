@@ -7,10 +7,6 @@ export const useAppStore = () => {
   const theme = useComputed(() => appState.value.theme);
   const loading = useComputed(() => appState.value.loading);
 
-  useSignalEffect(() => {
-    console.log('Hook updated with theme:', theme.value);
-  });
-
   return {
     // State
     isAuthenticated: isAuthenticated.value,
