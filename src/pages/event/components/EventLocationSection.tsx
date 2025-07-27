@@ -1,21 +1,30 @@
 import { normalize } from '@utils/responsive';
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import EventMap from './EventMap';
 
 interface EventLocationSectionProps {
   venue: string;
   address: string;
   onShowMap: () => void;
-  imageUrl: string;
+  lat: number;
+  lon: number;
 }
 
-const EventLocationSection: React.FC<EventLocationSectionProps> = ({ venue, address, onShowMap, imageUrl }) => {
+const EventLocationSection: React.FC<EventLocationSectionProps> = ({ venue, address, onShowMap, lat, lon }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Location</Text>
       <Text style={styles.venue}>{venue}</Text>
       <Text style={styles.address} numberOfLines={2}>{address}</Text>
-      <Image source={{ uri: imageUrl }} style={styles.mapImage} resizeMode="cover" />
+      {lat && lon && (
+            <EventMap
+              lat={lat}
+              lon={lon}
+              name={venue}
+              address={address}
+            />
+          )}
       <TouchableOpacity style={styles.mapBtn} onPress={onShowMap}>
         <Text style={styles.mapBtnText}>Show on map</Text>
       </TouchableOpacity>

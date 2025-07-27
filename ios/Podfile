@@ -33,4 +33,5 @@ target 'toutixApp' do
       # :ccache_enabled => true
     )
   end
+  pod 'GoogleMaps'
 end

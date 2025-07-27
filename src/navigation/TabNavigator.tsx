@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native';
 import { Home, Ticket, Store, User } from 'lucide-react-native';
 import { BlurView } from '@react-native-community/blur';
 
-import HomeScreen from '../pages/home/HomeScreen';
+
 import HomeStack from './HomeStack';
 import TicketsScreen from '../pages/TicketsScreen';
 import MarketplaceScreen from '../pages/MarketplaceScreen';
@@ -16,20 +16,31 @@ const Tab = createBottomTabNavigator();
 const TabNavigator = () => {
   return (
     <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarShowLabel: true,
-        tabBarStyle: styles.tabBar,
-        tabBarLabelStyle: styles.tabBarLabel,
-        tabBarActiveTintColor: '#0C0453',
-        tabBarInactiveTintColor: '#8E8E93',
-        tabBarBackground: () => (
-          <BlurView
-            style={StyleSheet.absoluteFill}
-            blurType="light"
-            blurAmount={15}
-          />
-        ),
+      screenOptions={({ route, navigation }) => {
+        const routeName = route.name;
+        const state = navigation.getState();
+        const currentRoute = state.routes[state.index];
+
+        const isSearchScreen = currentRoute?.name === 'HomeStack' && 
+          currentRoute?.state?.routes && 
+          currentRoute.state.index !== undefined &&
+          currentRoute.state.routes[currentRoute.state.index]?.name === 'Search';
+        
+        return {
+          headerShown: false,
+          tabBarShowLabel: true,
+          tabBarStyle: isSearchScreen ? { display: 'none' } : styles.tabBar,
+          tabBarLabelStyle: styles.tabBarLabel,
+          tabBarActiveTintColor: '#0C0453',
+          tabBarInactiveTintColor: '#8E8E93',
+          tabBarBackground: () => (
+            <BlurView
+              style={StyleSheet.absoluteFill}
+              blurType="light"
+              blurAmount={15}
+            />
+          ),
+        };
       }}>
       <Tab.Screen
         name="HomeStack"

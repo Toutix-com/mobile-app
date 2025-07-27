@@ -38,6 +38,7 @@ import AllCitiesBottomSheet from './components/AllCitiesBottomSheet';
 import AllVenuesBottomSheet from './components/AllVenuesBottomSheet';
 import FilterModal from './components/FilterModal';
 import DatePickerBottomSheet from './components/DatePickerBottomSheet';
+import EventCard from '../../components/EventCard';
 import { startDate, endDate, selectedCities,
       selectedCategories,setStartDate, setEndDate, setSelectedCities, 
       setSelectedCategories, setDateType,
@@ -76,41 +77,6 @@ const featuredEvents = [
     image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80',
   },
 ];
-
-const MoreEventCard = ({ event }: { event: any }) => (
-  <View style={styles.moreEventCard}>
-    <ImageBackground
-      source={{ uri: event.image }}
-      style={styles.moreEventImage}
-      imageStyle={{ borderRadius: normalize(15) }}>
-      <View style={styles.imageOverlay}>
-        <View style={styles.dateBox}>
-          <Text style={styles.dateMonth}>{moment(event.startTimeStamp).format('MMM')}</Text>
-          <Text style={styles.dateDay}>{moment(event.startTimeStamp).format('DD')}</Text>
-        </View>
-        <TouchableOpacity style={styles.heartButton}>
-          <Heart
-            size={normalize(22)}
-            color={event.isLiked ? '#FF6B6B' : 'white'}
-            fill={event.isLiked ? '#FF6B6B' : 'transparent'}
-          />
-        </TouchableOpacity>
-      </View>
-    </ImageBackground>
-    <View style={styles.moreEventDetailsRow}>
-      <View style={styles.moreEventInfo}>
-        <Text style={styles.moreEventTitle}>{event.name}</Text>
-      </View>
-      {event.status && (
-        <View style={[styles.tagContainer, { backgroundColor: event.tag?.color }]}>
-          <Text style={styles.tagText}>{event.status}</Text>
-        </View>
-      )}
-    </View>
-    <Text style={styles.moreEventVenue}>{event.location?.name}</Text>
-    <Text style={styles.moreEventPrice}>{event.price}</Text>
-  </View>
-);
 
 const HomeScreen = () => {
   useSignals();
@@ -413,17 +379,18 @@ const HomeScreen = () => {
         ListHeaderComponent={
           <>
             <View style={styles.header}>
-              <View style={styles.searchContainer}>
+              <TouchableOpacity style={styles.searchContainer} onPress={() => navigation.navigate('Search')}>
                 <Search color="#666" size={normalize(20)} />
                 <TextInput
                   placeholder="Search events"
                   style={styles.searchInput}
                   placeholderTextColor="#666"
+                  editable={false}
                 />
                 <TouchableOpacity style={styles.filterButton} onPress={openFilter}>
                   <SlidersHorizontal color="#fff" size={normalize(20)} />
                 </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
             </View>
 
             {!hasActiveFilters() && (
@@ -519,21 +486,27 @@ const HomeScreen = () => {
         }
         data={filteredEvents}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={async () => {
-            try {
-              await fetchEventById(item.id);
-              navigation.navigate('EventDetails');
-            } catch (error) {
-            }
-          }}>
-            <MoreEventCard event={item} />
-          </TouchableOpacity>
+          <EventCard 
+            event={item} 
+            onPress={async () => {
+              try {
+                await fetchEventById(item.id);
+                navigation.navigate('EventDetails');
+              } catch (error) {
+              }
+            }}
+            showTag={true}
+            showPrice={true}
+          />
         )}
         keyExtractor={item => item.id}
         onEndReached={loadMoreEvents}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        showsVerticalScrollIndicator={false}
+        ListFooterComponent={
+          loading.value ? (
+            <ActivityIndicator size="large" color="#0C0453" style={styles.loadingIndicator} />
+          ) : null
+        }
       />
       <View style={styles.gap} />
 
@@ -830,7 +803,10 @@ const styles = StyleSheet.create({
   },
   gap: {
     height: normalize(120),
-  }
+  },
+  loadingIndicator: {
+    marginVertical: normalize(20),
+  },
 });
 
 export default HomeScreen; 
