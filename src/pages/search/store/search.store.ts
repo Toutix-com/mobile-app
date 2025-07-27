@@ -133,6 +133,10 @@ export const clearSelectedCategory = () => {
   categoryResults.value = [];
 };
 
+export const clearSearchResults = () => {
+  searchResults.value = [];
+};
+
 // Mock API fetchers (replace with real API calls as needed)
 const mockTrendingEvents = [
   { id: '1', name: 'Music Festival' },

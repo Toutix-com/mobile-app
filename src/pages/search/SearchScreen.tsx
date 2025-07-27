@@ -11,7 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { X, Search, MapPin, Building2, Calendar, Flame } from 'lucide-react-native';
+import { X, Search, MapPin, Building2, Calendar, Flame, ArrowLeft , ChevronLeft } from 'lucide-react-native';
 import { useSignals } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
 import {
@@ -51,11 +51,17 @@ import {
   handleInputFocus,
   performSearch,
   selectCategory,
+  searchResults,
+  selectedCategory,
+  categoryResults,
+  clearSelectedCategory,
+  clearSearchResults,
 } from './store/search.store';
 import { moreEvents } from '../home/store/home.store';
 import CitySelectionBottomSheet from './components/CitySelectionBottomSheet';
 import VenueSelectionBottomSheet from './components/VenueSelectionBottomSheet';
 import DatePickerBottomSheet from './components/DatePickerBottomSheet';
+import EventCard from '../../components/EventCard';
 import { Music, Drama, Dribbble, Baby, FileText, Heart } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -76,6 +82,8 @@ const SearchScreen: React.FC = () => {
   // --- UI State Logic ---
   const isInputFocused = activeInputField.value === 'eventName';
   const query = searchQuery.value.trim();
+  const isShowingResults = searchResults.value.length > 0 || categoryResults.value.length > 0;
+  const currentCategory = selectedCategory.value;
 
   // Filter trendingEvents and moreEvents by query (case-insensitive, no duplicates)
   type SimpleEvent = { id: string; name: string };
@@ -98,17 +106,34 @@ const SearchScreen: React.FC = () => {
   const showSearchResults = isInputFocused && !!query;
 
   const handleClose = () => {
-    navigation.goBack();
+    if (isShowingResults) {
+      // Clear results and go back to search form
+      clearSearchQuery();
+      clearSelectedCategory();
+      clearSearchResults();
+    } else {
+      navigation.goBack();
+    }
   };
 
   const handleSearch = () => {
     performSearch();
-    navigation.navigate('SearchResults' as never);
   };
 
   const handleCancel = () => {
+    clearSearchQuery();
     clearAllFilters();
-    navigation.goBack();
+    setActiveInputField('');
+  };
+
+  const handleEventPress = (event: any) => {
+    // Navigate to event details
+    // navigation.navigate('EventDetails', { eventId: event.id });
+  };
+
+  const handleFavoritePress = (eventId: string) => {
+    // Toggle favorite status
+    console.log('Toggle favorite for event:', eventId);
   };
 
   const handleSuggestionPress = (suggestion: string) => {
@@ -133,190 +158,240 @@ const SearchScreen: React.FC = () => {
 
   const handleClearCity = () => {
     setSelectedCity('');
-    updateEventCount();
   };
 
   const handleClearVenue = () => {
     setSelectedVenue('');
-    updateEventCount();
   };
 
   const handleClearDate = () => {
     setSelectedDate('');
     setSelectedMonth('');
-    updateEventCount();
   };
 
   const handleUseSelectedCity = () => {
     setCitySheetOpen(false);
-    updateEventCount();
   };
 
   const handleUseSelectedVenue = () => {
     setVenueSheetOpen(false);
-    updateEventCount();
   };
 
   const handleUseSelectedDate = () => {
     setDateSheetOpen(false);
-    updateEventCount();
+  };
+
+  const getResultsTitle = () => {
+    if (currentCategory) {
+      return (
+        <Text style={styles.resultsTitle}>
+          Showing all <Text style={styles.boldText}>{currentCategory}</Text> <Text style={styles.boldText}>category</Text> events
+        </Text>
+      );
+    }
+    return (
+      <Text style={styles.resultsTitle}>
+        Showing <Text style={styles.boldText}>{searchResults.value.length}</Text> <Text style={styles.boldText}>matched</Text> events for your search
+      </Text>
+    );
+  };
+
+  const getResultsData = () => {
+    if (currentCategory) {
+      return categoryResults.value;
+    }
+    return searchResults.value;
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-          <X color="#000" size={24} />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>Search events</Text>
-
-        {/* Search Input Fields */}
-        <View style={styles.searchContainer}>
-          {/* Event Name Search */}
-          <View style={styles.inputContainer}>
-            <Search color="#666" size={20} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Search event name..."
-              placeholderTextColor="#A0A0A0"
-              value={searchQuery.value}
-              onChangeText={setSearchQuery}
-              onFocus={() => setActiveInputField('eventName')}
-              onBlur={() => setActiveInputField('')}
-            />
-            {searchQuery.value.length > 0 && (
-              <TouchableOpacity onPress={clearSearchQuery} style={styles.clearButton}>
-                <X color="#666" size={16} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* City Filter */}
-          <TouchableOpacity style={styles.inputContainer} onPress={handleCityPress}>
-            <MapPin color="#666" size={20} style={styles.inputIcon} />
-            <Text style={[styles.input, selectedCity.value ? styles.selectedText : styles.placeholderText]}>
-              {selectedCity.value || 'Select a city...'}
-            </Text>
-            {selectedCity.value && (
-              <TouchableOpacity onPress={handleClearCity} style={styles.clearButton}>
-                <X color="#666" size={16} />
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity>
-
-          {/* Venue Filter */}
-          <TouchableOpacity style={styles.inputContainer} onPress={handleVenuePress}>
-            <Building2 color="#666" size={20} style={styles.inputIcon} />
-            <Text style={[styles.input, selectedVenue.value ? styles.selectedText : styles.placeholderText]}>
-              {selectedVenue.value || 'Select a venue...'}
-            </Text>
-            {selectedVenue.value && (
-              <TouchableOpacity onPress={handleClearVenue} style={styles.clearButton}>
-                <X color="#666" size={16} />
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity>
-
-          {/* Date Filter */}
-          <TouchableOpacity style={styles.inputContainer} onPress={handleDatePress}>
-            <Calendar color="#666" size={20} style={styles.inputIcon} />
-            <Text style={[styles.input, (selectedDate.value || selectedMonth.value) ? styles.selectedText : styles.placeholderText]}>
-              {selectedDate.value || selectedMonth.value || 'Pick a date...'}
-            </Text>
-            {(selectedDate.value || selectedMonth.value) && (
-              <TouchableOpacity onPress={handleClearDate} style={styles.clearButton}>
-                <X color="#666" size={16} />
-              </TouchableOpacity>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Categories Section */}
-        {showOnlyCategories && (
-          <View style={styles.categoriesContainer}>
-            <Text style={styles.categoriesTitle}>Browse by category</Text>
-            <View style={styles.categoriesGrid}>
-              {categories.map((category, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.categoryButton}
-                  onPress={() => {
-                    selectCategory(category.name);
-                    navigation.navigate('CategoryResults' as never);
-                  }}
-                >
-                  <category.icon color="#0C0453" size={20} style={styles.categoryIcon} />
-                  <Text style={styles.categoryText}>{category.name}</Text>
+      {isShowingResults ? (
+        // Results View with Gradient Header
+        <View style={styles.resultsContainer}>
+          <View style={styles.gradientContainer}>
+            <View style={styles.gradientTop} />
+            <View style={styles.gradientHeader}>
+              <View style={styles.resultsHeader}>
+                <TouchableOpacity onPress={handleClose} style={styles.backButtonResults}>
+                  <ChevronLeft color="#000" size={24} />
                 </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* Trending Section */}
-        {showOnlyTrending && (
-          <View style={styles.trendingContainer}>
-            <Text style={styles.trendingTitle}>Trending</Text>
-            {trendingEvents.value.map((event) => (
-              <TouchableOpacity
-                key={event.id}
-                style={styles.trendingItem}
-                onPress={() => setSearchQuery(event.name)}
-              >
-                <Flame color="#FF6B6B" size={16} style={styles.trendingIcon} />
-                <Text style={styles.trendingText}>{event.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        {/* Search Results Section */}
-        {showSearchResults && (
-          <View style={styles.suggestionsContainer}>
-            {filteredResults.length > 0 ? (
-              filteredResults.map((event) => (
-                <TouchableOpacity
-                  key={event.id}
-                  style={styles.suggestionItem}
-                  onPress={() => setSearchQuery(event.name)}
-                >
-                  <Search color="#666" size={16} style={styles.suggestionIcon} />
-                  <Text style={styles.suggestionText}>{event.name}</Text>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <View style={styles.noResultsContainer}>
-                <View style={styles.noResultsIcon}>
-                  <Text style={styles.ticketIcon}>🎫</Text>
-                  <Text style={styles.xIcon}>✕</Text>
+                <View style={styles.resultsTitleContainer}>
+                  {getResultsTitle()}
                 </View>
-                <Text style={styles.noResultsText}>
-                  Sorry! couldn't find any event with this name
+              </View>
+            </View>
+            <View style={styles.gradientBottom} />
+          </View>
+          <ScrollView style={styles.resultsScrollView} showsVerticalScrollIndicator={false}>
+            {getResultsData().map((event: any) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onPress={() => handleEventPress(event)}
+                onFavoritePress={handleFavoritePress}
+                showTag={true}
+                showPrice={true}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      ) : (
+        // Search Form View
+        <>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+              <ArrowLeft color="#000" size={24} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            <Text style={styles.title}>Search events</Text>
+
+            <View style={styles.searchContainer}>
+              {/* Event Name Search */}
+              <View style={styles.inputContainer}>
+                <Search color="#666" size={20} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Search an event name..."
+                  placeholderTextColor="#666"
+                  value={searchQuery.value}
+                  onChangeText={setSearchQuery}
+                  onFocus={() => handleInputFocus('eventName')}
+                  onBlur={() => setActiveInputField('')}
+                />
+                {searchQuery.value && (
+                  <TouchableOpacity onPress={clearSearchQuery} style={styles.clearButton}>
+                    <X color="#666" size={16} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* City Filter */}
+              <TouchableOpacity style={styles.inputContainer} onPress={handleCityPress}>
+                <MapPin color="#666" size={20} style={styles.inputIcon} />
+                <Text style={[styles.input, selectedCity.value ? styles.selectedText : styles.placeholderText]}>
+                  {selectedCity.value || 'Select a city...'}
                 </Text>
+                {selectedCity.value && (
+                  <TouchableOpacity onPress={handleClearCity} style={styles.clearButton}>
+                    <X color="#666" size={16} />
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+
+              {/* Venue Filter */}
+              <TouchableOpacity style={styles.inputContainer} onPress={handleVenuePress}>
+                <Building2 color="#666" size={20} style={styles.inputIcon} />
+                <Text style={[styles.input, selectedVenue.value ? styles.selectedText : styles.placeholderText]}>
+                  {selectedVenue.value || 'Select a venue...'}
+                </Text>
+                {selectedVenue.value && (
+                  <TouchableOpacity onPress={handleClearVenue} style={styles.clearButton}>
+                    <X color="#666" size={16} />
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+
+              {/* Date Filter */}
+              <TouchableOpacity style={styles.inputContainer} onPress={handleDatePress}>
+                <Calendar color="#666" size={20} style={styles.inputIcon} />
+                <Text style={[styles.input, (selectedDate.value || selectedMonth.value) ? styles.selectedText : styles.placeholderText]}>
+                  {selectedDate.value || selectedMonth.value || 'Pick a date...'}
+                </Text>
+                {(selectedDate.value || selectedMonth.value) && (
+                  <TouchableOpacity onPress={handleClearDate} style={styles.clearButton}>
+                    <X color="#666" size={16} />
+                  </TouchableOpacity>
+                )}
+              </TouchableOpacity>
+            </View>
+
+            {/* Categories Section */}
+            {showOnlyCategories && (
+              <View style={styles.categoriesContainer}>
+                <Text style={styles.categoriesTitle}>Browse by category</Text>
+                <View style={styles.categoriesGrid}>
+                  {categories.map((category, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.categoryButton}
+                      onPress={() => {
+                        selectCategory(category.name);
+                      }}
+                    >
+                      <category.icon color="#0C0453" size={20} style={styles.categoryIcon} />
+                      <Text style={styles.categoryText}>{category.name}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
             )}
+
+            {/* Trending Section */}
+            {showOnlyTrending && (
+              <View style={styles.trendingContainer}>
+                <Text style={styles.trendingTitle}>Trending</Text>
+                {trendingEvents.value.map((event) => (
+                  <TouchableOpacity
+                    key={event.id}
+                    style={styles.trendingItem}
+                    onPress={() => setSearchQuery(event.name)}
+                  >
+                    <Flame color="#FF6B6B" size={16} style={styles.trendingIcon} />
+                    <Text style={styles.trendingText}>{event.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {/* Search Results Section */}
+            {showSearchResults && (
+              <View style={styles.suggestionsContainer}>
+                {filteredResults.length > 0 ? (
+                  filteredResults.map((event) => (
+                    <TouchableOpacity
+                      key={event.id}
+                      style={styles.suggestionItem}
+                      onPress={() => setSearchQuery(event.name)}
+                    >
+                      <Search color="#666" size={16} style={styles.suggestionIcon} />
+                      <Text style={styles.suggestionText}>{event.name}</Text>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <View style={styles.noResultsContainer}>
+                    <View style={styles.noResultsIcon}>
+                      <Text style={styles.ticketIcon}>🎫</Text>
+                      <Text style={styles.xIcon}>✕</Text>
+                    </View>
+                    <Text style={styles.noResultsText}>
+                      Sorry! couldn't find any event with this name
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+          </ScrollView>
+
+          {/* Footer Buttons */}
+          <View style={styles.footer}>
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+              <Text style={styles.searchButtonText}>
+                Search {eventCount.value > 0 ? `(${eventCount.value})` : ''}
+              </Text>
+            </TouchableOpacity>
           </View>
-        )}
-
-      </ScrollView>
-
-      {/* Footer Buttons */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-          <Text style={styles.searchButtonText}>
-            Search {eventCount.value > 0 ? `(${eventCount.value})` : ''}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        </>
+      )}
 
       {/* City Selection Bottom Sheet */}
       <CitySelectionBottomSheet
@@ -363,9 +438,73 @@ const styles = StyleSheet.create({
     height: 40,
     marginTop: normalize(10),
   },
+  resultsContainer: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  gradientContainer: {
+    position: 'relative',
+  },
+  gradientTop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: Platform.OS === 'ios' ? 50 : 20,
+    backgroundColor: '#f0f2f5',
+  },
+  gradientHeader: {
+    paddingTop: Platform.OS === 'ios' ? 50 : 20,
+    paddingBottom: 20,
+    backgroundColor: '#f8f9fa',
+    position: 'relative',
+    zIndex: 1,
+  },
+  gradientBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 20,
+    backgroundColor: '#ffffff',
+    zIndex: 1,
+  },
+  resultsHeader: {
+    paddingHorizontal: 20,
+  },
+  backButtonResults: {
+    width: 40,
+    height: 40,
+    marginBottom: 15,
+    marginTop: normalize(10),
+  },
+  resultsTitleContainer: {
+    marginBottom: 10,
+  },
+  resultsTitle: {
+    fontSize: normalize(18),
+    fontWeight: '400',
+    color: '#000',
+    lineHeight: normalize(24),
+  },
+  boldText: {
+    fontWeight: 'bold',
+  },
+  headerTitle: {
+    fontSize: normalize(16),
+    fontWeight: '600',
+    color: '#000',
+    flex: 1,
+    marginLeft: 15,
+  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  resultsScrollView: {
+    flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: normalize(28),
@@ -396,145 +535,23 @@ const styles = StyleSheet.create({
     fontSize: normalize(16),
     color: '#000',
   },
-  clearButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#f0f0f0',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  trendingContainer: {
-    marginBottom: normalize(30),
-  },
-  trendingTitle: {
-    fontSize: normalize(18),
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: normalize(16),
-  },
-  trendingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: normalize(12),
-    paddingHorizontal: normalize(16),
-    backgroundColor: '#fff',
-    borderRadius: normalize(8),
-    marginBottom: normalize(8),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  trendingIcon: {
-    marginRight: normalize(12),
-  },
-  trendingText: {
-    fontSize: normalize(16),
-    color: '#000',
-    flex: 1,
-  },
-  suggestionsContainer: {
-    marginBottom: normalize(30),
-  },
-  suggestionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: normalize(12),
-    paddingHorizontal: normalize(16),
-    backgroundColor: '#fff',
-    borderRadius: normalize(8),
-    marginBottom: normalize(8),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  suggestionIcon: {
-    marginRight: normalize(12),
-  },
-  suggestionText: {
-    fontSize: normalize(16),
-    color: '#000',
-    flex: 1,
-  },
-  noResultsContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: normalize(60),
-  },
-  noResultsIcon: {
-    position: 'relative',
-    marginBottom: normalize(20),
-  },
-  ticketIcon: {
-    fontSize: normalize(60),
-  },
-  xIcon: {
-    position: 'absolute',
-    top: normalize(10),
-    right: normalize(10),
-    fontSize: normalize(24),
-    color: '#FF6B6B',
-    fontWeight: 'bold',
-  },
-  noResultsText: {
-    fontSize: normalize(16),
+  placeholderText: {
     color: '#666',
-    textAlign: 'center',
-    lineHeight: normalize(24),
-  },
-  footer: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-    paddingTop: 20,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: normalize(16),
-    marginRight: normalize(12),
-    borderRadius: normalize(8),
-    borderWidth: 1,
-    borderColor: '#0C0453',
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    fontSize: normalize(16),
-    fontWeight: '600',
-    color: '#0C0453',
-  },
-  searchButton: {
-    flex: 1,
-    paddingVertical: normalize(16),
-    backgroundColor: '#0C0453',
-    borderRadius: normalize(8),
-    alignItems: 'center',
-  },
-  searchButtonText: {
-    fontSize: normalize(16),
-    fontWeight: '600',
-    color: '#fff',
   },
   selectedText: {
     color: '#000',
   },
-  placeholderText: {
-    color: '#A0A0A0',
+  clearButton: {
+    padding: normalize(4),
   },
   categoriesContainer: {
-    marginBottom: 30,
+    marginBottom: normalize(30),
   },
   categoriesTitle: {
-    fontSize: normalize(16),
-    fontWeight: '400',
-    color: '#5C636E',
-    marginBottom: 13,
+    fontSize: normalize(20),
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: normalize(20),
   },
   categoriesGrid: {
     flexDirection: 'row',
@@ -543,23 +560,112 @@ const styles = StyleSheet.create({
   },
   categoryButton: {
     width: (width - 60) / 3,
-    height: 80,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    backgroundColor: '#F8F9FA',
+    borderRadius: normalize(12),
+    padding: normalize(16),
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
+    marginBottom: normalize(12),
   },
   categoryIcon: {
-    marginBottom: 8,
+    marginBottom: normalize(8),
   },
   categoryText: {
-    fontSize: normalize(12),
-    fontWeight: '600',
-    color: '#0D1117',
+    fontSize: normalize(14),
+    fontWeight: '500',
+    color: '#0C0453',
     textAlign: 'center',
+  },
+  trendingContainer: {
+    marginBottom: normalize(30),
+  },
+  trendingTitle: {
+    fontSize: normalize(20),
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: normalize(20),
+  },
+  trendingItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: normalize(12),
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  trendingIcon: {
+    marginRight: normalize(12),
+  },
+  trendingText: {
+    fontSize: normalize(16),
+    color: '#000',
+  },
+  suggestionsContainer: {
+    marginBottom: normalize(30),
+  },
+  suggestionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: normalize(12),
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  suggestionIcon: {
+    marginRight: normalize(12),
+  },
+  suggestionText: {
+    fontSize: normalize(16),
+    color: '#000',
+  },
+  noResultsContainer: {
+    alignItems: 'center',
+    paddingVertical: normalize(40),
+  },
+  noResultsIcon: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: normalize(20),
+  },
+  ticketIcon: {
+    fontSize: normalize(40),
+  },
+  xIcon: {
+    fontSize: normalize(30),
+    marginLeft: normalize(10),
+    color: '#FF6B6B',
+  },
+  noResultsText: {
+    fontSize: normalize(16),
+    color: '#666',
+    textAlign: 'center',
+  },
+  footer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    gap: normalize(12),
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    borderRadius: normalize(12),
+    paddingVertical: normalize(16),
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    fontSize: normalize(16),
+    fontWeight: '600',
+    color: '#666',
+  },
+  searchButton: {
+    flex: 1,
+    backgroundColor: '#0C0453',
+    borderRadius: normalize(12),
+    paddingVertical: normalize(16),
+    alignItems: 'center',
+  },
+  searchButtonText: {
+    fontSize: normalize(16),
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
 });
 
