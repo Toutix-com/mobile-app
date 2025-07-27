@@ -32,50 +32,26 @@ import {
 import { normalize } from '../../utils/responsive';
 import { BlurView } from '@react-native-community/blur';
 import { getCities, getEvents, getVenues } from '../../services/eventService';
-import BottomSheet from '../../components/bottomsheet';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { categories, featuredEvents } from '../../contants/HomeConstant';
 import AllCitiesBottomSheet from './components/AllCitiesBottomSheet';
 import AllVenuesBottomSheet from './components/AllVenuesBottomSheet';
 import FilterModal from './components/FilterModal';
 import DatePickerBottomSheet from './components/DatePickerBottomSheet';
-import { startDate, endDate, selectedCities,
-      selectedCategories,setStartDate, setEndDate, setSelectedCities, 
-      setSelectedCategories, setDateType,
-      allCities, allVenues, setAllCities, setAllVenues,
-      filteredCities, allCitiesSheetOpen, selectedVenues, filteredVenues, allVenuesSheetOpen, selectVenue, deselectVenue, clearSelectedVenues,
-      setSelectedVenues, citySearch, venueSearch, setCitySearch, setVenueSearch, moreEvents, setMoreEvents, offset, hasMore, loading, setOffset, setHasMore, setLoading,
-      filterVisible, setFilterVisible, dateSheetOpen, setDateSheetOpen, activeIndex, setActiveIndex,
-      calendarMonth, calendarYear, setCalendarMonth, setCalendarYear
-      } from './store/home.store';
+import { 
+  selectedCities,
+  setStartDate, setDateType, allCitiesSheetOpen, selectedVenues, filteredVenues, allVenuesSheetOpen,
+  setSelectedVenues, venueSearch, setVenueSearch,
+  loading, setLoading,
+  filterVisible, setFilterVisible, dateSheetOpen, setDateSheetOpen, activeIndex, setActiveIndex,
+  calendarMonth, calendarYear, setCalendarMonth, setCalendarYear,
+  loadMoreEvents, handleNextPress, openFilter, handleShowAllCities, handleShowAllVenues,
+  handleUseSelectedCities, handleUseSelectedVenues, handleClearVenues,
+  clearAllFilters, mapFilteredAllCities, mapFilteredAllVenues, getFilteredEvents,
+  hasActiveFilters, initializeData, initializeSelectedItems, handleSelectVenueInSheet
+} from './store/home.store';
 import { useSignals } from '@preact/signals-react/runtime';
 import { fetchEventById } from '../event/store/event.store';
 const { width } = Dimensions.get('window');
-
-const categories = [
-  { name: 'Music', icon: Music },
-  { name: 'Theater', icon: Drama },
-  { name: 'Sports', icon: Dribbble },
-  { name: 'Family', icon: Baby },
-  { name: 'Workshops', icon: FileText },
-  { name: 'Saved', icon: Heart },
-];
-
-const featuredEvents = [
-  {
-    id: '1',
-    title: 'Moshing music fest - 2025',
-    venue: 'Belgrave Music hall',
-    date: 'August 13 2025 at 3:30 AM',
-    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',
-  },
-  {
-    id: '2',
-    title: 'Indie Rock Concert',
-    venue: 'The Garage',
-    date: 'September 5 2025 at 8:00 PM',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80',
-  },
-];
 
 const MoreEventCard = ({ event }: { event: any }) => (
   <View style={styles.moreEventCard}>
@@ -122,54 +98,14 @@ const HomeScreen = () => {
 
 
   useEffect(() => {
-    getCities().then(res => {
-      setAllCities(res?.[0]?.list || []);
-    }).catch(err => {
-      console.log(err, "err Cities");
-    });
-    getVenues(0, 100).then(res => {
-      setAllVenues(res?.[0]?.list || []);
-    }).catch(err => {
-      console.log(err, "err Venues");
-    });
+    initializeData();
   }, []);
-
-  // Date picker bottom sheet state - now using signals
 
   useEffect(() => {
-    if ((selectedCities.value || []).length === 0) {
-      setSelectedCities((allCities.value || []).slice(0, 5));
-    }
-    if ((selectedVenues.value || []).length === 0) {
-      setSelectedVenues((allVenues.value || []).slice(0, 5));
-    }
+    initializeSelectedItems();
   }, []);
 
-  // Handle select in bottom sheet
-  const handleSelectCityInSheet = (cityId: string) => {
-    const city = (allCities.value || []).find(c => c.id === cityId);
-    if (!city) return;
-    if ((selectedCities.value || []).find(c => c.id === cityId)) {
-      setSelectedCities((selectedCities.value || []).filter(c => c.id !== cityId));
-    } else {
-      setSelectedCities([...(selectedCities.value || []), city]);
-    }
-  };
 
-  const handleSelectVenueInSheet = (venueId: string) => {
-    const venue = (allVenues.value || []).find(v => v.id === venueId);
-    if (!venue) return;
-    if ((selectedVenues.value || []).find(v => v.id === venueId)) {
-      setSelectedVenues((selectedVenues.value || []).filter(v => v.id !== venueId));
-    } else {
-      setSelectedVenues([...(selectedVenues.value || []), venue]);
-    }
-  };
-
-  // Open filter: reset animation and show modal
-  const openFilter = () => {
-    setFilterVisible(true);
-  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -186,55 +122,9 @@ const HomeScreen = () => {
     return () => clearInterval(interval);
   }, [activeIndex.value, featuredEvents.length]);
 
-  const loadMoreEvents = useCallback(async () => {
-    if (loading.value || !hasMore.value) return;
-    setLoading(true);
-    try {
-      const apiResponse = await getEvents(offset.value, LIMIT);
-
-
-      const newEvents = apiResponse?.[0]?.list || [];
-
-      if (newEvents.length > 0) {
-        const formattedEvents = newEvents.map((event: any) => {
-          const eventDate = new Date(event.startTimeStamp || new Date());
-          const month = eventDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
-          const day = eventDate.getDate();
-
-          let tag = null;
-          if (event.status) {
-            const tagData = event.status;
-            if (tagData === 'PUBLISHED') {
-              tag = { text: 'Published', color: '#5A677D' };
-            } else if (tagData === 'SOLD_OUT') {
-              tag = { text: 'Sold out', color: '#B08F2B' };
-            }
-          }
-
-          return {
-            ...event,
-            tag: tag,
-          };
-        });
-
-        setMoreEvents([...moreEvents.value, ...formattedEvents]);
-        setLoading(false);
-        setOffset(offset.value + LIMIT);
-        if (newEvents.length < LIMIT) {
-          setHasMore(false);
-        }
-      } else {
-        setHasMore(false);
-      }
-    } catch (error) {
-    } finally {
-      setLoading(false);
-    }
-  }, [loading, hasMore, offset]);
-
   useEffect(() => {
     loadMoreEvents();
-  }, [loadMoreEvents]);
+  }, []);
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 51 }).current;
 
@@ -244,168 +134,20 @@ const HomeScreen = () => {
     }
   }).current;
 
-  const handleNextPress = () => {
-    if (activeIndex.value < featuredEvents.length - 1) {
-      flatListRef.current?.scrollToIndex({
-        animated: true,
-        index: activeIndex.value + 1,
-      });
-    }
-  };
-
   const renderFooter = () => {
     if (!loading.value) return null;
     return <ActivityIndicator style={{ marginVertical: 20 }} size="large" color="#0C0453" />;
   };
 
-  // Show all cities handler
-  const handleShowAllCities = () => {
-    setFilterVisible(false)
-    setTimeout(() => {
-      allCitiesSheetOpen.value = true;
-      setCitySearch('');
-    }, 100);
-  };
-
-  // Show all venues handler
-  const handleShowAllVenues = () => {
-    setFilterVisible(false)
-    setTimeout(() => {
-      allVenuesSheetOpen.value = true;
-      setVenueSearch('');
-    }, 100);
-  };
-
-
-  // Use selected handler
-  const handleUseSelectedCities = () => {
-    allCitiesSheetOpen.value = false;
-    setTimeout(() => {
-      openFilter()
-    }, 600);
-  };
-
-  // Use selected venues handler
-  const handleUseSelectedVenues = () => {
-    allVenuesSheetOpen.value = false;
-    setTimeout(() => {
-      openFilter()
-    }, 600);
-  };
-
-  // Clear selection handler
-  const handleClearCities = () => {
-    setSelectedCities([]);
-  };
-
-  // Clear venues selection handler
-  const handleClearVenues = () => {
-    setSelectedVenues([]);
-  };
-
-  // Clear all filters handler
-  const clearAllFilters = () => {
-    setSelectedCities([]);
-    setSelectedVenues([]);
-    setSelectedCategories([]);
-    setStartDate(null);
-    setEndDate(null);
-    setSelectedCategory(null);
-  };
-
   useEffect(() => {
     mapFilteredAllCities();
-  }, [selectedCities]);
+  }, [selectedCities.value]);
 
   useEffect(() => {
     mapFilteredAllVenues();
-  }, [selectedVenues]);
+  }, [selectedVenues.value]);
 
-  // Filtered city list for search
-  const mapFilteredAllCities = () => {
-    filteredCities.value = (allCities.value || []).filter(city =>
-      city.name.toLowerCase().includes(citySearch.value.toLowerCase())
-    );
-  };
-
-  // Filtered venue list for search
-  const mapFilteredAllVenues = () => {
-    filteredVenues.value = (allVenues.value || []).filter(venue =>
-      venue.name.toLowerCase().includes(venueSearch.value.toLowerCase())
-    );
-  };
-
-  // Comprehensive filtering method
-  const filterEvents = (events: any[]) => {
-    return events.filter(event => {
-      // 1. Filter by selected cities
-      const selectedCityIds = (selectedCities.value || []).map(city => city.id);
-      if (selectedCityIds.length > 0) {
-        const eventCityId = event.location?.city?.id;
-        if (!eventCityId || !selectedCityIds.includes(eventCityId)) {
-          return false;
-        }
-      }
-      // 2. Filter by selected venues
-      const selectedVenueIds = (selectedVenues.value || []).map(venue => venue.id);
-      if (selectedVenueIds.length > 0) {
-        const eventVenueId = event.location?.id;
-        if (!eventVenueId || !selectedVenueIds.includes(eventVenueId)) {
-          return false;
-        }
-      }
-      // 3. Filter by selected categories
-      const selectedCategoryNames = selectedCategories.value
-        .map(category => typeof category === 'string' ? category : category.name)
-        .filter(Boolean);
-      if (selectedCategoryNames.length > 0) {
-        const eventCategory = event.category?.name;
-        if (!eventCategory || !selectedCategoryNames.includes(eventCategory)) {
-          return false;
-        }
-      }
-      // 4. Filter by start date
-      if (startDate.value) {
-        const eventStartDate = new Date(event.startTimeStamp);
-        if (eventStartDate < startDate.value) {
-          return false;
-        }
-      }
-      // 5. Filter by end date
-      if (endDate.value) {
-        const eventEndDate = new Date(event.endTimeStamp);
-        if (eventEndDate > endDate.value) {
-          return false;
-        }
-      }
-      // If all filters pass, include the event
-      return true;
-    });
-  };
-
-  // Get filtered events for display
-  const getFilteredEvents = () => {
-    // First apply category filter (from chip selection)
-    let events = selectedCategory
-      ? moreEvents.value.filter(event => event.category?.name === selectedCategory)
-      : moreEvents.value;
-
-    // Then apply all other filters from the filter modal
-    events = filterEvents(events);
-
-    return events;
-  };
-
-  const filteredEvents = getFilteredEvents();
-
-  // Check if any filters are active
-  const hasActiveFilters = () => {
-    const hasCityFilters = (selectedCities.value || []).length > 0;
-    const hasVenueFilters = (selectedVenues.value || []).length > 0;
-    const hasCategoryFilters = selectedCategories.value.length > 0;
-    const hasDateFilters = startDate.value !== null || endDate.value !== null;
-    return hasCityFilters || hasVenueFilters || hasCategoryFilters || hasDateFilters || selectedCategory !== null;
-  };
+  const filteredEvents = getFilteredEvents(selectedCategory);
 
   return (
     <View style={styles.container}>
@@ -476,7 +218,7 @@ const HomeScreen = () => {
                             <Text style={styles.featuredVenue}>{item.venue}</Text>
                             <Text style={styles.featuredDate}>{item.date}</Text>
                           </View>
-                          <TouchableOpacity style={styles.arrowButton} onPress={handleNextPress}>
+                          <TouchableOpacity style={styles.arrowButton} onPress={() => handleNextPress(flatListRef)}>
                             <ArrowRight color="#0C0453" size={normalize(24)} />
                           </TouchableOpacity>
                         </View>
@@ -522,7 +264,7 @@ const HomeScreen = () => {
           <TouchableOpacity onPress={async () => {
             try {
               await fetchEventById(item.id);
-              navigation.navigate('EventDetails');
+              (navigation as any).navigate('EventDetails');
             } catch (error) {
             }
           }}>
@@ -541,7 +283,7 @@ const HomeScreen = () => {
       <FilterModal
         visible={filterVisible.value}
         onClose={() => setFilterVisible(false)}
-        allCitiesList={allCities.value}
+        setSelectedVenues={setSelectedVenues}
         onShowAllCities={handleShowAllCities}
         onShowAllVenues={handleShowAllVenues}
         onShowDatePicker={(dateType: string) => {
@@ -553,7 +295,7 @@ const HomeScreen = () => {
         }}
         onApplyFilters={() => {
           // Apply filters and show results
-          getFilteredEvents();
+          getFilteredEvents(selectedCategory);
           setFilterVisible(false);
         }}
         onClearAllFilters={clearAllFilters}
