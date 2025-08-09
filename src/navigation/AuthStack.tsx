@@ -1,9 +1,8 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import LoginScreen from '../pages/LoginScreen';
-import RegisterScreen from '../pages/RegisterScreen';
-import VerificationScreen from '../pages/VerificationScreen';
-import OTPVerificationScreen from '../pages/OTPVerificationScreen';
+import LoginScreen from '../pages/login/LoginScreen';
+import RegisterScreen from '../pages/register/RegisterScreen';
+import OTPVerificationScreen from '../pages/otpVerification/OTPVerificationScreen';
 
 
 export type AuthStackParamList = {
@@ -31,7 +30,6 @@ const AuthStack = () => {
              
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="Verification" component={VerificationScreen} />
       <Stack.Screen name="OTPVerification" component={OTPVerificationScreen} />
     </Stack.Navigator>
   );

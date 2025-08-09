@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,36 +9,28 @@ import {
   Platform,
   ScrollView,
   KeyboardAvoidingView,
-  Alert,
   Pressable,
-  Modal,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { AuthStackParamList } from '../navigation/AuthStack';
-import GradientLayout from '../components/layouts/GradientLayout';
-import auth from '@react-native-firebase/auth';
+import { AuthStackParamList } from '../../navigation/AuthStack';
+import GradientLayout from '../../components/layouts/GradientLayout';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import DatePicker from 'react-native-date-picker';
 import { Calendar, ChevronLeft } from 'lucide-react-native';
-import { updateUserProfile } from '../services/ApiService';
-import { rootStore } from '../store/rootStore';
-import { useSignal, useComputed } from '@preact/signals-react';
+import { rootStore } from '../../store/rootStore';
+import { useComputed } from '@preact/signals-react';
 import moment from 'moment';
-import { handleInputChange, handleSubmit, showDatePicker, setShowDatePicker } from './register/store/register.store';
+import { handleInputChange, handleSubmit, showDatePicker, setShowDatePicker } from './store/register.store';
+import { RegisterFormFields } from '../login/enums/auth-enum';
+import { useSignals } from '@preact/signals-react/runtime';
 
 type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
 
 const RegisterScreen: React.FC = () => {
-  useSignal()
+  useSignals()
   const navigation = useNavigation<RegisterScreenNavigationProp>();
   const user = useComputed(() => rootStore.value.user);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    birthday: Date.now(),
-  });
-  const store = rootStore.value
 
 
   useEffect(() => {
@@ -68,7 +60,7 @@ const RegisterScreen: React.FC = () => {
         >
           <View style={styles.logoContainer}>
             <Image
-              source={require('../assets/logos/toutix_logo_full.png')}
+              source={require('../../assets/logos/toutix_logo_full.png')}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -87,7 +79,7 @@ const RegisterScreen: React.FC = () => {
                 placeholder="First name"
                 placeholderTextColor="#A0A0A0"
                 value={user.value.firstName}
-                onChangeText={(value) => handleInputChange('firstName', value)}
+                onChangeText={(value) => handleInputChange(RegisterFormFields.FIRST_NAME, value)}
               />
             </View>
 
@@ -98,7 +90,7 @@ const RegisterScreen: React.FC = () => {
                 placeholder="Last name"
                 placeholderTextColor="#A0A0A0"
                 value={user.value.lastName}
-                onChangeText={(value) => handleInputChange('lastName', value)}
+                onChangeText={(value) => handleInputChange(RegisterFormFields.LAST_NAME, value)}
               />
             </View>
 
@@ -108,7 +100,7 @@ const RegisterScreen: React.FC = () => {
                 style={[styles.input, { flexDirection: 'row', alignItems: 'center' }]}
                 onPress={() => setShowDatePicker(true)}
               >
-                <Text style={{ flex: 1, color: formData.birthday ? '#000' : '#A0A0A0' }}>
+                <Text style={{ flex: 1, color: user.value.birthday ? '#000' : '#A0A0A0' }}>
                   {user.value.birthday
                     ? moment(user.value.birthday).format('DD/MM/YYYY')
                     : 'Select your date of birth'}
@@ -122,7 +114,7 @@ const RegisterScreen: React.FC = () => {
                 onCancel={() => setShowDatePicker(false)}
                 onConfirm={(date) => {
                   setShowDatePicker(false);
-                  if (date) handleInputChange('birthday', date);
+                  if (date) handleInputChange(RegisterFormFields.BIRTHDAY, date);
                 }}
                 mode="date"
                 maximumDate={new Date()}

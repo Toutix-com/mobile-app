@@ -29,9 +29,9 @@ export interface RootState {
 }
 
 export const dateOfBirth = signal<Date>(new Date(2000, 0, 1));
-export const userStore = signal<UserState>({
-  birthday: new Date(2000, 0, 1)
-});
+
+export const showSplash = signal<boolean>(true);
+export const setShowSplash = (val: boolean) => { showSplash.value = val; };
 
 export const rootStore = signal<RootState>({
   user: {
@@ -63,20 +63,6 @@ rootStore.subscribe((value) => {
   AsyncStorage.setItem(ROOT_STORE_KEY, JSON.stringify(value));
 });
 
-export const setUser = (user: UserState) => {
-  userStore.value = {
-    ...userStore.value,
-    ...user,
-  }
-};
-
 export const setEvents = (events: any[]) => {
   rootStore.value = { ...rootStore.value, events: { events } };
 };
-
-export const updateUser = (fields: Partial<UserState>) => {
-  userStore.value = {
-    ...userStore.value,
-    ...fields,
-  }
-}; 
