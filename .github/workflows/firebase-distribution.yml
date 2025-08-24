@@ -73,55 +73,55 @@ jobs:
           name: android-apk
           path: android/app/build/outputs/apk/release/app-release.apk
 
-  ios-build:
-    name: Build iOS IPA
-    runs-on: macos-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+  # ios-build:
+  #   name: Build iOS IPA
+  #   runs-on: macos-latest
+  #   if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '18'
+  #         cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+  #     - name: Install dependencies
+  #       run: npm ci
 
-      - name: Update version numbers
-        run: node scripts/version-manager.js
+  #     - name: Update version numbers
+  #       run: node scripts/version-manager.js
 
-      - name: Install iOS dependencies
-        run: |
-          cd ios
-          pod install
+  #     - name: Install iOS dependencies
+  #       run: |
+  #         cd ios
+  #         pod install
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.0'
-          bundler-cache: true
+  #     - name: Set up Ruby
+  #       uses: ruby/setup-ruby@v1
+  #       with:
+  #         ruby-version: '3.0'
+  #         bundler-cache: true
 
-      - name: Install Fastlane
-        run: |
-          gem install fastlane
+  #     - name: Install Fastlane
+  #       run: |
+  #         gem install fastlane
 
-      - name: Build iOS IPA
-        run: |
-          cd ios
-          fastlane build_ipa
-        env:
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
+  #     - name: Build iOS IPA
+  #       run: |
+  #         cd ios
+  #         fastlane build_ipa
+  #       env:
+  #         MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+  #         FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD: ${{ secrets.FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD }}
 
-      - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ios-ipa
-          path: ios/build/*.ipa
+  #     - name: Upload IPA artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ios-ipa
+  #         path: ios/build/*.ipa
 
   distribute-android:
     name: Distribute Android APK
@@ -147,26 +147,26 @@ jobs:
             Branch: ${{ github.ref_name }}
             Commit: ${{ github.event.head_commit.message }}
 
-  distribute-ios:
-    name: Distribute iOS IPA
-    runs-on: macos-latest
-    needs: ios-build
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+  # distribute-ios:
+  #   name: Distribute iOS IPA
+  #   runs-on: macos-latest
+  #   needs: ios-build
+  #   if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     
-    steps:
-      - name: Download IPA artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ios-ipa
+  #   steps:
+  #     - name: Download IPA artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: ios-ipa
 
-      - name: Firebase App Distribution
-        uses: wzieba/Firebase-Distribution-Github-Action@v1
-        with:
-          appId: ${{ secrets.FIREBASE_APP_ID_IOS }}
-          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_IOS }}
-          groups: testers
-          file: "*.ipa"
-          releaseNotes: |
-            Build: ${{ github.sha }}
-            Branch: ${{ github.ref_name }}
-            Commit: ${{ github.event.head_commit.message }} 
+  #     - name: Firebase App Distribution
+  #       uses: wzieba/Firebase-Distribution-Github-Action@v1
+  #       with:
+  #         appId: ${{ secrets.FIREBASE_APP_ID_IOS }}
+  #         serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_IOS }}
+  #         groups: testers
+  #         file: "*.ipa"
+  #         releaseNotes: |
+  #           Build: ${{ github.sha }}
+  #           Branch: ${{ github.ref_name }}
+  #           Commit: ${{ github.event.head_commit.message }} 
