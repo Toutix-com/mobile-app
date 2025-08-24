@@ -8,7 +8,7 @@ import { BlurView } from '@react-native-community/blur';
 import HomeStack from './HomeStack';
 import TicketsScreen from '../pages/TicketsScreen';
 import MarketplaceScreen from '../pages/MarketplaceScreen';
-import ProfileScreen from '../pages/ProfileScreen';
+import ProfileScreen from '../pages/profile/ProfileScreen';
 import { normalize } from '../utils/responsive';
 
 const Tab = createBottomTabNavigator();

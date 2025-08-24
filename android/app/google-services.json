@@ -1,49 +1,42 @@
 {
   "project_info": {
-    "project_number": "912281763788",
-    "project_id": "mobilepipe-ba83f",
-    "storage_bucket": "mobilepipe-ba83f.firebasestorage.app"
+    "project_number": "1020926589370",
+    "project_id": "toutix-mobile",
+    "storage_bucket": "toutix-mobile.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:912281763788:android:1385c2cf1b1053c50a6769",
+        "mobilesdk_app_id": "1:1020926589370:android:f6998d8320f0ea737d8583",
         "android_client_info": {
           "package_name": "com.toutixapp2"
         }
       },
       "oauth_client": [
         {
-          "client_id": "912281763788-tp2u0b2a1tuv3qbdhti7aeq4eq1js9me.apps.googleusercontent.com",
+          "client_id": "1020926589370-pf8sij65tkaua7tlifhijns52p0igi56.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.toutixapp2",
-            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+            "certificate_hash": "13324598572364e184933f365adc4a9144ee6d4a"
           }
         },
         {
-          "client_id": "912281763788-9vfavok5rl5pmhca64e9jcek89g44ik0.apps.googleusercontent.com",
+          "client_id": "1020926589370-ljjvvn2psb3j4sb197h3f9ceenmcler1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAjAxt4MgaO7AwPIIdILCM2fEG9SBlo8w4"
+          "current_key": "AIzaSyDVOd8V8OOXp93fwRHdM5FuHaB9WVviWus"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "912281763788-9vfavok5rl5pmhca64e9jcek89g44ik0.apps.googleusercontent.com",
+              "client_id": "1020926589370-ljjvvn2psb3j4sb197h3f9ceenmcler1.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "912281763788-ed64dklvegp79qippq4ls0tmfab52b5l.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.toutixapp2"
-              }
             }
           ]
         }

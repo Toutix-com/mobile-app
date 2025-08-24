@@ -1,0 +1,45 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build IPA for Firebase Distribution"
+  lane :build_ipa do
+    # Ensure we're on the right branch
+    ensure_git_status_clean
+    
+    # Update code signing if using match
+    # sync_code_signing(
+    #   type: "appstore",
+    #   readonly: true
+    # )
+    
+    # Build the app
+    build_ios_app(
+      scheme: "toutixApp",
+      export_method: "development",
+      export_options: {
+        method: "development",
+        provisioningProfiles: {
+          "com.toutixapp2" => "match Development com.toutixapp2"
+        }
+      },
+      output_directory: "build",
+      output_name: "toutixApp.ipa",
+      clean: true,
+      build_path: "build"
+    )
+    
+    # Upload to Firebase App Distribution
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID_IOS"],
+      firebase_cli_token: ENV["FIREBASE_CLI_TOKEN"],
+      ipa_path: "build/toutixApp.ipa",
+      groups: "testers",
+      release_notes: "Build from Fastlane"
+    )
+  end
+
+  desc "Build and distribute to Firebase"
+  lane :distribute do
+    build_ipa
+  end
+end 
