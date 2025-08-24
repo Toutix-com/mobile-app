@@ -10,7 +10,17 @@ import EventMap from './components/EventMap';
 import EventHostSection from './components/EventHostSection';
 import EventPriceFooter from './components/EventPriceFooter';
 import EventDetailsModal from './components/EventDetailsModal';
-import { selectedEvent, eventLoading, eventError, clearSelectedEvent } from './store/event.store';
+import { 
+  selectedEvent, 
+  eventLoading, 
+  eventError, 
+  clearSelectedEvent,
+  showDetailsModal,
+  setShowDetailsModal,
+  formatDate,
+  formatTimeRange,
+  formatPrice
+} from './store/event.store';
 import { useNavigation } from '@react-navigation/native';
 import Divider from '@components/divider';
 import { normalize } from '@utils/responsive';
@@ -18,16 +28,6 @@ import { normalize } from '@utils/responsive';
 const EventDetailsScreen = () => {
   useSignals();
   const navigation = useNavigation();
-  const [showDetailsModal, setShowDetailsModal] = useState(false);
-
-  // Clear event data when component unmounts
-//   useEffect(() => {
-//     return () => {
-//       clearSelectedEvent();
-//     };
-//   }, []);
-
-
 
   // Show loading state
   if (eventLoading.value) {
@@ -58,38 +58,9 @@ const EventDetailsScreen = () => {
     );
   }
 
-  // Format date and time
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
-
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  };
-
   const startDate = formatDate(event.startTimeStamp);
-  const startTime = formatTime(event.startTimeStamp);
-  const endTime = formatTime(event.endTimeStamp);
-  const timeRange = `${startTime} - ${endTime}`;
-
-  // Format price range
-  const formatPrice = () => {
-    if (event.minTicketPrice === event.maxTicketPrice) {
-      return `$${event.minTicketPrice}`;
-    }
-    return `$${event.minTicketPrice} - $${event.maxTicketPrice}`;
-  };
+  const timeRange = formatTimeRange(event.startTimeStamp, event.endTimeStamp);
+  const priceRange = formatPrice(event);
 
   const handleShowOnMap = () => {
     const lat = event.location.lat;
@@ -130,7 +101,7 @@ const EventDetailsScreen = () => {
             date={startDate}
             time={timeRange}
             onShowMore={() => setShowDetailsModal(true)}
-            isExpanded={showDetailsModal}
+            isExpanded={showDetailsModal.value}
             description={event.description}
           />
           {/* <EventDetailsSection description={event.description} /> */}
@@ -150,7 +121,7 @@ const EventDetailsScreen = () => {
             onViewProfile={() => {}} 
           />
           <Divider dividerStyle={{ marginVertical: normalize(10), marginHorizontal: normalize(16) }} />
-          <EventPriceFooter price={formatPrice()} />
+          <EventPriceFooter price={priceRange} />
           <TouchableOpacity
                   onPress={() => (navigation as any).navigate('EventTickets')}
                   style={{ flex: 1, marginHorizontal: 5, backgroundColor: '#0C0453', borderRadius: 8, paddingVertical: 14, alignItems: 'center' }}
@@ -158,7 +129,7 @@ const EventDetailsScreen = () => {
                   <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Get tickets</Text>
                 </TouchableOpacity>
             <EventDetailsModal
-          visible={showDetailsModal}
+          visible={showDetailsModal.value}
           onClose={() => setShowDetailsModal(false)}
           aboutText={event.htmlDescription.replace(/<[^>]*>/g, '')} // Remove HTML tags
           lineup={event.ticketCategories.map(ticket => ticket.title)}

@@ -27,7 +27,7 @@ interface VenueObj {
 interface FilterModalProps {
   visible: boolean;
   onClose: () => void;
-  setSelectedVenues: React.Dispatch<React.SetStateAction<VenueObj[]>>;
+  setSelectedVenues: (venues: any[]) => void;
   onShowAllCities: () => void;
   onShowAllVenues: () => void;
   onShowDatePicker: (dateType: string) => void;

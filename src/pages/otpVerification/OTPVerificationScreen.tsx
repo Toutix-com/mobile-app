@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,11 +13,14 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ChevronLeft } from 'lucide-react-native';
-import { AuthStackParamList } from '../navigation/AuthStack';
-import GradientLayout from '../components/layouts/GradientLayout';
-import { verifyOtp, loginWithOtp } from '../services/ApiService';
-import { setUser , userStore} from '../store/rootStore';
+import { AuthStackParamList } from '../../navigation/AuthStack';
+import GradientLayout from '../../components/layouts/GradientLayout';
+import { verifyOtp, loginWithOtp } from '../../services/ApiService';
+import { handleOtpChange, handleKeyPress, handleVerify, handleResend, formatTime, timeLeft, setTimeLeft } from './store/otpVerify.store';
+import { setUser, userStore } from '../login/store/login.store';
 import * as Keychain from 'react-native-keychain';
+import { LoginType } from '../login/enums/auth-enum';
+import { useSignals } from '@preact/signals-react/runtime';
 
 type OTPVerificationScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'OTPVerification'>;
 
@@ -26,20 +29,14 @@ interface OTPVerificationScreenProps {
     params: {
       email?: string;
       mobileNumber?: string;
-      type: 'email' | 'mobile';
+      type: LoginType;
     };
   };
 }
 
-interface VerifyOtpResponse {
-  isNewUser: boolean;
-  role: string;
-  token: string;
-}
-
 const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) => {
+  useSignals();
   const navigation = useNavigation<OTPVerificationScreenNavigationProp>();
-  const [timeLeft, setTimeLeft] = useState(45);
   const inputRefs = useRef<Array<TextInput | null>>([]);
 
   useEffect(() => {
@@ -50,100 +47,14 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
   }, []);
 
   useEffect(() => {
-    if (timeLeft > 0) {
-      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    if (timeLeft.value > 0) {
+      const timerId = setTimeout(() => setTimeLeft(timeLeft.value - 1), 1000);
       return () => clearTimeout(timerId);
     }
-  }, [timeLeft]);
+  }, [timeLeft.value]);
 
   const handleBack = () => {
     navigation.goBack();
-  };
-
-  const handleOtpChange = (value: string, index: number) => {
-    const newOtp = [...(userStore.value.otp || [])];
-    
-    if (value.length > 1) {
-      const digits = value.split('').slice(0, 6);
-      digits.forEach((digit, i) => {
-        if (index + i < 6) {
-          newOtp[index + i] = digit;
-        }
-      });
-      const nextIndex = Math.min(index + digits.length, 5);
-      inputRefs.current[nextIndex]?.focus();
-    } else {
-      newOtp[index] = value;
-      if (value === '' && index > 0) {
-        inputRefs.current[index - 1]?.focus();
-      } else if (value !== '' && index < 5) {
-        inputRefs.current[index + 1]?.focus();
-      }
-    }
-    
-    setUser({
-      ...userStore.value,
-      otp: newOtp,
-    });
-  };
-
-  const handleKeyPress = (event: any, index: number) => {
-    if (event.nativeEvent.key === 'Backspace' && userStore.value.otp?.[index] === '' && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleVerify = async () => {
-    const otpString = userStore.value.otp?.join('') || '';
-    try {
-      const [data, error] = await verifyOtp({ email: route.params.email || '', otp: otpString });
-      
-
-      if (error) {
-        Alert.alert('Error', (error as any).response?.data?.message || 'Invalid OTP');
-        return;
-      }
-      
-      if (data) {
-        setUser({
-          ...userStore.value,
-          isNewUser: data.isNewUser,
-          role: data.role,
-          isAuthenticated: true,
-        });
-        await Keychain.setGenericPassword('auth', data.token);
-        if (data.isNewUser) {
-          navigation.navigate('Register');
-        }
-      }
-    } catch (e) {
-      Alert.alert('Error', 'Failed to verify OTP');
-    }
-  };
-
-  const handleResend = async () => {
-    if (timeLeft === 0) {
-      try {
-        const payload = route.params.email ? { email: route.params.email } : { mobileNumber: route.params.mobileNumber };
-        const [, error] = await loginWithOtp(payload);
-
-        if (error) {
-          Alert.alert('Error', (error as any).response?.data?.message || 'Failed to resend OTP');
-          return;
-        }
-        
-        setTimeLeft(45);
-        Alert.alert('Success', 'OTP resent successfully');
-      } catch (e) {
-        Alert.alert('Error', 'Failed to resend OTP');
-      }
-    }
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -154,7 +65,7 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
 
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/logos/toutix_logo_full.png')}
+          source={require('../../assets/logos/toutix_logo_full.png')}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -168,7 +79,7 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           </Text>
 
           <View style={styles.otpContainer}>
-            {userStore.value.otp?.map((digit, index) => (
+            {userStore.value.otp?.map((digit: string, index: number) => (
               <React.Fragment key={index}>
                 <TextInput
                   ref={(ref) => {
@@ -181,8 +92,8 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
                     digit && styles.otpInputFilled
                   ]}
                   value={digit}
-                  onChangeText={(value) => handleOtpChange(value, index)}
-                  onKeyPress={(e) => handleKeyPress(e, index)}
+                  onChangeText={(value) => handleOtpChange(value, index, inputRefs.current)}
+                  onKeyPress={(e) => handleKeyPress(e, index, inputRefs.current)}
                   keyboardType="number-pad"
                   maxLength={1}
                   selectTextOnFocus
@@ -197,24 +108,21 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           <TouchableOpacity 
             style={[
               styles.verifyButton,
-              userStore.value.otp?.every(d => d) && styles.verifyButtonActive
+              userStore.value.otp?.every((d: string) => d) && styles.verifyButtonActive
             ]} 
-            onPress={handleVerify}
+            onPress={() => handleVerify(route, navigation)}
           >
             <Text style={styles.verifyButtonText}>Verify</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.resendButton} 
-            onPress={handleResend}
-          >
-            <Text style={[
-              styles.resendText,
-              timeLeft > 0 && styles.resendTextDisabled
-            ]}>
-              Resend code in {formatTime(timeLeft)}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.resendContainer}>
+            <Text style={styles.resendText}>Didn't get the code?</Text>
+            <TouchableOpacity onPress={() => handleResend(route, setTimeLeft, timeLeft.value)} disabled={timeLeft.value > 0}>
+              <Text style={[styles.resendButton, timeLeft.value > 0 && styles.resendButtonDisabled]}>
+                Resend {timeLeft.value > 0 ? `in ${formatTime(timeLeft.value)}` : ''}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
      
     </GradientLayout>
@@ -312,14 +220,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  resendButton: {
+  resendContainer: {
     alignItems: 'center',
   },
   resendText: {
+    color: '#666666',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  resendButton: {
     color: '#06053A',
     fontSize: 14,
   },
-  resendTextDisabled: {
+  resendButtonDisabled: {
     opacity: 0.5,
   },
   keyboardAvoidingView: {

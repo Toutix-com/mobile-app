@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
 import { X , Plus } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
-import { selectedEvent } from './store/event.store';
+import { 
+  selectedEvent,
+  ticketQuantities,
+  addTicket,
+  removeTicket,
+  getSubtotal,
+  getTransactionFee,
+  getTotal,
+  formatEventDate,
+  formatEventTimeRange
+} from './store/event.store';
 import { useSignals } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
-
-const TRANSACTION_FEE_PERCENT = 0.1;
 
 const EventTicketsScreen = () => {
   useSignals();
   const navigation = useNavigation();
   const event = selectedEvent.value;
-  const [quantities, setQuantities] = useState<{ [id: string]: number }>({});
 
   if (!event) {
     return null;
@@ -20,34 +27,9 @@ const EventTicketsScreen = () => {
 
   const ticketCategories = event.ticketCategories || [];
 
-  // Calculate subtotal
-  const subtotal = ticketCategories.reduce((sum, cat) => {
-    const qty = quantities[cat.id] || 0;
-    return sum + qty * cat.price;
-  }, 0);
-
-  const transactionFee = subtotal * TRANSACTION_FEE_PERCENT;
-  const total = subtotal + transactionFee;
-
-  const handleAdd = (id: string, max: number) => {
-    setQuantities(q => {
-      const current = q[id] || 0;
-      if (current < max) {
-        return { ...q, [id]: current + 1 };
-      }
-      return q;
-    });
-  };
-
-  const handleRemove = (id: string) => {
-    setQuantities(q => {
-      const current = q[id] || 0;
-      if (current > 0) {
-        return { ...q, [id]: current - 1 };
-      }
-      return q;
-    });
-  };
+  const subtotal = getSubtotal();
+  const transactionFee = getTransactionFee();
+  const total = getTotal();
 
   return (
       <View style={styles.container}>
@@ -64,13 +46,11 @@ const EventTicketsScreen = () => {
           <Image source={{ uri: event.image }} style={styles.eventImage} />
           <View style={{ flex: 1, marginLeft: 12 }}>
             <Text style={styles.eventTitle} numberOfLines={1}>{event.name}</Text>
-            <Text style={styles.eventDate}>{/* Format date/time */}
-              {new Date(event.startTimeStamp).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            <Text style={styles.eventDate}>
+              {formatEventDate(event.startTimeStamp)}
             </Text>
             <Text style={styles.eventTime}>
-              {new Date(event.startTimeStamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
-              {' - '}
-              {new Date(event.endTimeStamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+              {formatEventTimeRange(event.startTimeStamp, event.endTimeStamp)}
             </Text>
           </View>
         </View>
@@ -78,7 +58,7 @@ const EventTicketsScreen = () => {
         {/* Ticket categories */}
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
           {ticketCategories.map(cat => {
-            const qty = quantities[cat.id] || 0;
+            const qty = ticketQuantities.value[cat.id] || 0;
             return (
               <View key={cat.id} style={styles.ticketRow}>
                 <View style={{ flex: 1 }}>
@@ -89,16 +69,16 @@ const EventTicketsScreen = () => {
                 <View style={styles.qtyBox}>
                   {qty > 0 ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center' ,backgroundColor:'#EDEFF4' , borderRadius: 8  }}>
-                      <TouchableOpacity style={styles.qtyBtn} onPress={() => handleRemove(cat.id)}>
+                      <TouchableOpacity style={styles.qtyBtn} onPress={() => removeTicket(cat.id)}>
                         <Text style={styles.qtyBtnText}>-</Text>
                       </TouchableOpacity>
                       <Text style={styles.qtyCount}>{qty}</Text>
-                      <TouchableOpacity style={styles.qtyBtn} onPress={() => handleAdd(cat.id, cat.maxTicketCount)}>
+                      <TouchableOpacity style={styles.qtyBtn} onPress={() => addTicket(cat.id, cat.maxTicketCount)}>
                         <Text style={styles.qtyBtnText}>+</Text>
                       </TouchableOpacity>
                     </View>
                   ) : (
-                    <TouchableOpacity style={styles.addBtn} onPress={() => handleAdd(cat.id, cat.maxTicketCount)}>
+                    <TouchableOpacity style={styles.addBtn} onPress={() => addTicket(cat.id, cat.maxTicketCount)}>
                       <Plus color="#fff" size={24} />
                     </TouchableOpacity>
                   )}
