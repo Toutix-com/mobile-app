@@ -31,6 +31,11 @@ jobs:
       - name: Update version numbers
         run: node scripts/version-manager.js
 
+      - name: Create keystore file
+        run: |
+          echo "${{ secrets.KEYSTORE_FILE }}" | base64 -d > android/app/toutix-mobile.keystore
+        shell: bash
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
