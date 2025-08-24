@@ -1,19 +1,15 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { HomeScreen } from '../pages/HomeScreen';
+import TabNavigator from './TabNavigator';
 
-export type AppStackParamList = {
-  Home: undefined;
-  // Add more main app screens here
+const Stack = createStackNavigator();
+
+const AppStack = () => {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Main" component={TabNavigator} />
+    </Stack.Navigator>
+  );
 };
-
-const Stack = createStackNavigator<AppStackParamList>();
-
-const AppStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Home" component={HomeScreen} />
-    {/* Add more screens here */}
-  </Stack.Navigator>
-);
 
 export default AppStack; 

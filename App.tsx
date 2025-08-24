@@ -5,14 +5,13 @@
  * @format
  */
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { SplashScreen } from './src/pages/SplashScreen';
 import AuthStack from './src/navigation/AuthStack';
 import AppStack from './src/navigation/AppStack';
 import GoogleSignInService from './src/services/GoogleSignInService';
-import { showSplash, setShowSplash } from './src/store/rootStore';
-import { userStore } from './src/pages/login/store/login.store';
+import { userStore , showSplash, setShowSplash} from './src/pages/login/store/login.store';
 import { useSignals } from '@preact/signals-react/runtime';
 
 function App(): React.JSX.Element {
@@ -33,7 +32,7 @@ function App(): React.JSX.Element {
     <SplashScreen onComplete={handleSplashComplete} />
   ) : (
     <NavigationContainer>
-      {userStore.value.isAuthenticated ? <AppStack /> : <AuthStack />}
+      {!userStore.value.isAuthenticated ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   );
 }
