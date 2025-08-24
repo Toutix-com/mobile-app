@@ -85,7 +85,7 @@ android {
         versionCode 1
         versionName "1.0"
         manifestPlaceholders = [
-            GOOGLE_MAPS_API_KEY: project.env.get("GOOGLE_MAPS_API_KEY")
+            GOOGLE_MAPS_API_KEY: 'AIzaSyDVOd8V8OOXp93fwRHdM5FuHaB9WVviWus'
         ]
     }
     signingConfigs {
@@ -95,15 +95,19 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            storeFile file('toutix-mobile.keystore')
+            storePassword project.hasProperty('KEYSTORE_PASSWORD') ? project.getProperty('KEYSTORE_PASSWORD') : 'your_keystore_password'
+            keyAlias project.hasProperty('KEY_ALIAS') ? project.getProperty('KEY_ALIAS') : 'your_key_alias'
+            keyPassword project.hasProperty('KEY_PASSWORD') ? project.getProperty('KEY_PASSWORD') : 'your_key_password'
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
@@ -114,6 +118,7 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
     implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {

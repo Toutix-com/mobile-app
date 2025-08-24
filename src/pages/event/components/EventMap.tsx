@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform, Text } from 'react-native';
 import { normalize } from '@utils/responsive';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
@@ -11,18 +11,48 @@ interface EventMapProps {
 }
 
 const EventMap: React.FC<EventMapProps> = ({ lat, lon, name, address }) => {
+  console.log('EventMap rendering with:', { lat, lon, name, address, platform: Platform.OS });
+  
+  // Validate coordinates
+  if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
+    console.error('Invalid coordinates:', { lat, lon });
+    return (
+      <View style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Invalid coordinates</Text>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <MapView
         style={{ flex: 1 }}
+        provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
         initialRegion={{
           latitude: lat,
           longitude: lon,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
+        showsUserLocation={true}
+        showsMyLocationButton={false}
+        showsCompass={true}
+        showsScale={true}
+        showsBuildings={true}
+        showsIndoors={true}
+        mapType="standard"
+        loadingEnabled={true}
+        loadingIndicatorColor="#666666"
+        loadingBackgroundColor="#ffffff"
+        onMapReady={() => console.log('Map is ready')}
       >
-        <Marker coordinate={{ latitude: lat, longitude: lon }} />
+        <Marker 
+          coordinate={{ latitude: lat, longitude: lon }} 
+          title={"sasasj"}
+          description={address}
+        />
       </MapView>
     </View>
   );
@@ -39,6 +69,16 @@ const styles = StyleSheet.create({
   map: {
     width: '100%',
     height: '100%',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
+  },
+  errorText: {
+    color: '#666',
+    fontSize: 14,
   },
 });
 
