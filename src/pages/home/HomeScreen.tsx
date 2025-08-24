@@ -37,6 +37,13 @@ import AllCitiesBottomSheet from './components/AllCitiesBottomSheet';
 import AllVenuesBottomSheet from './components/AllVenuesBottomSheet';
 import FilterModal from './components/FilterModal';
 import DatePickerBottomSheet from './components/DatePickerBottomSheet';
+import EventCard from '../../components/EventCard';
+import { startDate, endDate,
+      selectedCategories, setEndDate, setSelectedCities, 
+      setSelectedCategories,
+      allCities, allVenues, setAllCities, setAllVenues,
+      filteredCities, selectVenue, deselectVenue, clearSelectedVenues, citySearch, setCitySearch, moreEvents, setMoreEvents, offset, hasMore, setOffset, setHasMore,
+      } from './store/home.store';
 import { 
   selectedCities,
   setStartDate, setDateType, allCitiesSheetOpen, selectedVenues, filteredVenues, allVenuesSheetOpen,
@@ -155,17 +162,18 @@ const HomeScreen = () => {
         ListHeaderComponent={
           <>
             <View style={styles.header}>
-              <View style={styles.searchContainer}>
+              <TouchableOpacity style={styles.searchContainer} onPress={() => navigation.navigate('Search')}>
                 <Search color="#666" size={normalize(20)} />
                 <TextInput
                   placeholder="Search events"
                   style={styles.searchInput}
                   placeholderTextColor="#666"
+                  editable={false}
                 />
                 <TouchableOpacity style={styles.filterButton} onPress={openFilter}>
                   <SlidersHorizontal color="#fff" size={normalize(20)} />
                 </TouchableOpacity>
-              </View>
+              </TouchableOpacity>
             </View>
 
             {!hasActiveFilters() && (
@@ -261,21 +269,27 @@ const HomeScreen = () => {
         }
         data={filteredEvents}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={async () => {
-            try {
-              await fetchEventById(item.id);
-              (navigation as any).navigate('EventDetails');
-            } catch (error) {
-            }
-          }}>
-            <MoreEventCard event={item} />
-          </TouchableOpacity>
+          <EventCard 
+            event={item} 
+            onPress={async () => {
+              try {
+                await fetchEventById(item.id);
+                navigation.navigate('EventDetails');
+              } catch (error) {
+              }
+            }}
+            showTag={true}
+            showPrice={true}
+          />
         )}
         keyExtractor={item => item.id}
         onEndReached={loadMoreEvents}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        showsVerticalScrollIndicator={false}
+        ListFooterComponent={
+          loading.value ? (
+            <ActivityIndicator size="large" color="#0C0453" style={styles.loadingIndicator} />
+          ) : null
+        }
       />
       <View style={styles.gap} />
 
@@ -572,7 +586,10 @@ const styles = StyleSheet.create({
   },
   gap: {
     height: normalize(120),
-  }
+  },
+  loadingIndicator: {
+    marginVertical: normalize(20),
+  },
 });
 
 export default HomeScreen; 

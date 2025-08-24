@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet, SafeAreaView, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, StyleSheet, SafeAreaView, ActivityIndicator, Text, TouchableOpacity, Linking, Platform, Alert } from 'react-native';
 import { useSignals } from '@preact/signals-react/runtime';
 // Placeholder imports for modular components
 import EventHeader from './components/EventHeader';
@@ -62,6 +62,29 @@ const EventDetailsScreen = () => {
   const timeRange = formatTimeRange(event.startTimeStamp, event.endTimeStamp);
   const priceRange = formatPrice(event);
 
+  const handleShowOnMap = () => {
+    const lat = event.location.lat;
+    const lon = event.location.lon;
+    const label = encodeURIComponent(event.location.name || 'Event Location');
+    let url = '';
+    console.log(lat, lon, label, "Pressed");
+    
+    if (Platform.OS === 'ios') {
+      url = `comgooglemaps://?q=${lat},${lon}`;
+      Linking.canOpenURL(url).then((supported) => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          url = `http://maps.apple.com/?ll=${lat},${lon}&q=${label}`;
+          Linking.openURL(url);
+        }
+      });
+    } else {
+      url = `geo:${lat},${lon}?q=${lat},${lon}(${label})`;
+      Linking.openURL(url);
+    }
+  };
+
   return (
       <View style={{ flex: 1, backgroundColor: '#fff' }}>
         <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
@@ -85,13 +108,15 @@ const EventDetailsScreen = () => {
           <EventLocationSection 
             venue={event.location.name} 
             address={event.location.address} 
-            imageUrl={event.image}
-            onShowMap={() => {}} 
+            onShowMap={handleShowOnMap} 
+            lat={event.location.lat || 0}
+            lon={event.location.lon || 0}
           />
+         
           <Divider dividerStyle={{ marginVertical: normalize(5), marginHorizontal: normalize(16) }} />
           <EventHostSection 
-            avatarUrl={event.organization.organizationLogo || ''} 
-            hostName={`${event.organization.organizationName}`} 
+            avatarUrl={event.organization.organizationLogo || ''}
+            hostName={event.organization.organizationName || ''}
             eventsHosted={event.hostedEventCount} 
             onViewProfile={() => {}} 
           />

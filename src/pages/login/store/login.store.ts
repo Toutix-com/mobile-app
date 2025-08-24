@@ -37,6 +37,9 @@ export const userStore = signal<UserState>({
     birthday: new Date(2000, 0, 1)
 });
 
+export const showSplash = signal<boolean>(true);
+
+
 export const rootStore = signal<RootState>({
     user: {
         birthday: new Date(2000, 0, 1)
@@ -138,4 +141,8 @@ export const handleContinue = async (navigation: any) => {
     } finally {
         setUser({ ...userStore.value, isLoading: false });
     }
-}; 
+};
+
+export const setShowSplash = (value: boolean) => {
+    showSplash.value = value;
+};
