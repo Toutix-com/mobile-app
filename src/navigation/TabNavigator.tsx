@@ -1,8 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Home, Ticket, Store, User } from 'lucide-react-native';
-import { BlurView } from '@react-native-community/blur';
 
 
 import HomeStack from './HomeStack';
@@ -34,10 +33,15 @@ const TabNavigator = () => {
           tabBarActiveTintColor: '#0C0453',
           tabBarInactiveTintColor: '#8E8E93',
           tabBarBackground: () => (
-            <BlurView
-              style={StyleSheet.absoluteFill}
-              blurType="light"
-              blurAmount={15}
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              }}
             />
           ),
         };

@@ -54,6 +54,8 @@ export const handleVerify = async (route: any, navigation: any) => {
         role: data.role,
         isAuthenticated: true,
       });
+      console.log("data", data);
+      
       await Keychain.setGenericPassword('auth', data.token);
       if (data.isNewUser) {
         navigation.navigate('Register');

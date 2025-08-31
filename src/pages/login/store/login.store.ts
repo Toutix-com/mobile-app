@@ -1,7 +1,7 @@
 import { signal } from '@preact/signals-react';
 import { Alert } from 'react-native';
 import GoogleSignInService from '../../../services/GoogleSignInService';
-import { loginWithOtp, loginWithGoogle } from '../../../services/ApiService';
+import { loginWithOtp, loginWithGoogle, getUserProfile } from '../../../services/ApiService';
 import { LoginType } from '../enums/auth-enum';
 import * as Keychain from 'react-native-keychain';
 
@@ -23,6 +23,18 @@ export interface UserState {
     timer?: any;
 }
 
+export interface UserProfile {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    contactNumber: string;
+    role: string;
+    address?: string;
+    dateOfBirth?: string;
+    image?: string;
+}
+
 export interface EventState {
     events: any[];
 }
@@ -34,7 +46,8 @@ export interface RootState {
 
 export const dateOfBirth = signal<Date>(new Date(2000, 0, 1));
 export const userStore = signal<UserState>({
-    birthday: new Date(2000, 0, 1)
+    birthday: new Date(2000, 0, 1),
+    isAuthenticated: true
 });
 
 export const showSplash = signal<boolean>(true);
@@ -62,6 +75,43 @@ export const updateUser = (fields: Partial<UserState>) => {
     }
 };
 
+export const fetchUserProfile = async () => {
+    try {
+        const [profileData, error] = await getUserProfile();
+        
+        if (error) {
+            console.error('Error fetching user profile:', error);
+            return false;
+        }
+        
+        if (profileData) {
+            // Type the profileData as UserProfile
+            const profile = profileData as UserProfile;
+            
+            // Update userStore with the fetched profile data
+            setUser({
+                ...userStore.value,
+                id: profile.id,
+                firstName: profile.firstName,
+                lastName: profile.lastName,
+                email: profile.email,
+                contactNumber: profile.contactNumber,
+                role: profile.role,
+                address: profile.address,
+                birthday: profile.dateOfBirth ? new Date(profile.dateOfBirth) : undefined,
+                image: profile.image,
+                isAuthenticated: true,
+            });
+            return true;
+        }
+        
+        return false;
+    } catch (error) {
+        console.error('Error in fetchUserProfile:', error);
+        return false;
+    }
+};
+
 export const validateInput = (value: string) => {
     const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
     const phoneRegex = /^\+?\d{10,15}$/;
@@ -74,6 +124,8 @@ export const handleGoogleSignIn = async (navigation: any) => {
     setUser({ ...userStore.value, isLoading: true });
     try {
         const result = await GoogleSignInService.signIn();
+        console.log("result", result);
+        
         if (result && result.idToken) {
             const response: any = await loginWithGoogle(result.idToken);
             const [firstName, lastName] = result?.name?.split(' ') || '';

@@ -78,6 +78,14 @@ const categories = [
 const SearchScreen: React.FC = () => {
   useSignals();
   const navigation = useNavigation();
+  
+  // Local state to force re-render when suggestion is selected
+  const [localSearchValue, setLocalSearchValue] = React.useState('');
+
+  // Sync local state with signal changes
+  React.useEffect(() => {
+    setLocalSearchValue(searchQuery.value);
+  }, [searchQuery.value]);
 
   // --- UI State Logic ---
   const isInputFocused = activeInputField.value === 'eventName';
@@ -88,22 +96,23 @@ const SearchScreen: React.FC = () => {
   // Filter trendingEvents and moreEvents by query (case-insensitive, no duplicates)
   type SimpleEvent = { id: string; name: string };
   const filteredResults = React.useMemo(() => {
-    if (!query) return [];
-    const lower = query.toLowerCase();
+    const searchValue = localSearchValue || query;
+    if (!searchValue) return [];
+    const lower = searchValue.toLowerCase();
     const trending = (trendingEvents.value as SimpleEvent[]).filter((e: SimpleEvent) => e.name.toLowerCase().includes(lower));
     const more = (moreEvents.value as SimpleEvent[]).filter((e: SimpleEvent) => e.name && e.name.toLowerCase().includes(lower));
     const seen = new Set(trending.map((e: SimpleEvent) => e.id));
     const merged = [...trending, ...more.filter((e: SimpleEvent) => !seen.has(e.id))];
     return merged;
-  }, [query, trendingEvents.value, moreEvents.value]);
+  }, [localSearchValue, query, trendingEvents.value, moreEvents.value]);
 
   // --- Render Logic ---
   // 1. Only categories if not focused
   const showOnlyCategories = !isInputFocused;
   // 2. Only trending if focused and empty
-  const showOnlyTrending = isInputFocused && !query;
+  const showOnlyTrending = isInputFocused && !(localSearchValue || query);
   // 3. Show search results if focused and has query
-  const showSearchResults = isInputFocused && !!query;
+  const showSearchResults = isInputFocused && !!(localSearchValue || query);
 
   const handleClose = () => {
     if (isShowingResults) {
@@ -111,6 +120,7 @@ const SearchScreen: React.FC = () => {
       clearSearchQuery();
       clearSelectedCategory();
       clearSearchResults();
+      setLocalSearchValue('');
     } else {
       navigation.goBack();
     }
@@ -123,7 +133,14 @@ const SearchScreen: React.FC = () => {
   const handleCancel = () => {
     clearSearchQuery();
     clearAllFilters();
+    setLocalSearchValue('');
     setActiveInputField('');
+  };
+
+  // Override clearAllFilters to also clear local state
+  const handleClearAllFilters = () => {
+    clearAllFilters();
+    setLocalSearchValue('');
   };
 
   const handleEventPress = (event: any) => {
@@ -136,12 +153,19 @@ const SearchScreen: React.FC = () => {
     console.log('Toggle favorite for event:', eventId);
   };
 
-  const handleSuggestionPress = (suggestion: string) => {
-    setSearchQuery(suggestion);
-  };
+      const handleSuggestionPress = (suggestion: string) => {
+      console.log('suggestion', suggestion);  
+      console.log('before setSearchQuery, searchQuery.value:', searchQuery.value);
+      
+      // Update both signal and local state
+      setSearchQuery(suggestion);
+      setLocalSearchValue(suggestion);
+      console.log('after setSearchQuery, searchQuery.value:', searchQuery.value);
+    };
 
   const handleTrendingPress = (trending: string) => {
     setSearchQuery(trending);
+    setLocalSearchValue(trending);
   };
 
   const handleCityPress = () => {
@@ -256,16 +280,22 @@ const SearchScreen: React.FC = () => {
               <View style={styles.inputContainer}>
                 <Search color="#666" size={20} style={styles.inputIcon} />
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, { height: normalize(40) }]}
                   placeholder="Search an event name..."
                   placeholderTextColor="#666"
-                  value={searchQuery.value}
-                  onChangeText={setSearchQuery}
+                  value={localSearchValue || searchQuery.value}
+                  onChangeText={(text) => {
+                    setSearchQuery(text);
+                    setLocalSearchValue(text);
+                  }}
                   onFocus={() => handleInputFocus('eventName')}
                   onBlur={() => setActiveInputField('')}
                 />
-                {searchQuery.value && (
-                  <TouchableOpacity onPress={clearSearchQuery} style={styles.clearButton}>
+                {(searchQuery.value || localSearchValue) && (
+                  <TouchableOpacity onPress={() => {
+                    clearSearchQuery();
+                    setLocalSearchValue('');
+                  }} style={styles.clearButton}>
                     <X color="#666" size={16} />
                   </TouchableOpacity>
                 )}
@@ -340,7 +370,11 @@ const SearchScreen: React.FC = () => {
                   <TouchableOpacity
                     key={event.id}
                     style={styles.trendingItem}
-                    onPress={() => setSearchQuery(event.name)}
+                    onPress={() => {
+                      console.log("asasas");
+                      
+                      handleSuggestionPress(event.name);
+                    }}
                   >
                     <Flame color="#FF6B6B" size={16} style={styles.trendingIcon} />
                     <Text style={styles.trendingText}>{event.name}</Text>
@@ -357,7 +391,10 @@ const SearchScreen: React.FC = () => {
                     <TouchableOpacity
                       key={event.id}
                       style={styles.suggestionItem}
-                      onPress={() => setSearchQuery(event.name)}
+                      onPress={() => {
+                        console.log('event', event);
+                        handleSuggestionPress(event.name);
+                      }}
                     >
                       <Search color="#666" size={16} style={styles.suggestionIcon} />
                       <Text style={styles.suggestionText}>{event.name}</Text>
@@ -436,7 +473,7 @@ const styles = StyleSheet.create({
   closeButton: {
     width: 40,
     height: 40,
-    marginTop: normalize(10),
+    marginTop: Platform.OS === 'ios' ? normalize(10) : normalize(20),
   },
   resultsContainer: {
     flex: 1,
@@ -476,7 +513,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     marginBottom: 15,
-    marginTop: normalize(10),
+    marginTop: Platform.OS === 'ios' ? normalize(10) : normalize(20),
   },
   resultsTitleContainer: {
     marginBottom: 10,
@@ -526,12 +563,12 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     borderWidth: 1,
     borderColor: '#B2BBC8',
+    minHeight: normalize(56), // Fixed height for all input fields
   },
   inputIcon: {
     marginRight: normalize(12),
   },
   input: {
-    flex: 1,
     fontSize: normalize(16),
     color: '#000',
   },

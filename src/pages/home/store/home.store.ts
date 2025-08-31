@@ -376,6 +376,7 @@ export const hasActiveFilters = () => {
   const hasVenueFilters = (selectedVenues.value || []).length > 0;
   const hasCategoryFilters = selectedCategories.value.length > 0;
   const hasDateFilters = startDate.value !== null || endDate.value !== null;
+  
   return hasCityFilters || hasVenueFilters || hasCategoryFilters || hasDateFilters;
 };
 
@@ -397,12 +398,14 @@ export const initializeData = async () => {
 };
 
 export const initializeSelectedItems = () => {
-  if ((selectedCities.value || []).length === 0) {
-    setSelectedCities((allCities.value || []).slice(0, 5));
-  }
-  if ((selectedVenues.value || []).length === 0) {
-    setSelectedVenues((allVenues.value || []).slice(0, 5));
-  }
+  // Don't pre-select cities and venues to avoid triggering hasActiveFilters
+  // Users should manually select filters if they want to use them
+  // if ((selectedCities.value || []).length === 0) {
+  //   setSelectedCities((allCities.value || []).slice(0, 5));
+  // }
+  // if ((selectedVenues.value || []).length === 0) {
+  //   setSelectedVenues((allVenues.value || []).slice(0, 5));
+  // }
 };
 
 // Sheet handlers

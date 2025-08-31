@@ -187,23 +187,137 @@ export const handleInputFocus = (field: string) => {
   }
 };
 
+// Helper function to parse human-readable dates
+const parseHumanDate = (dateString: string): Date | null => {
+  try {
+    // Handle "Month Day, Year" format (e.g., "August 1, 2025")
+    if (dateString.includes(',')) {
+      return new Date(dateString);
+    }
+    
+    // Handle "Month Year" format (e.g., "August 2025")
+    if (dateString.split(' ').length === 2) {
+      const [month, year] = dateString.split(' ');
+      const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
+      if (monthIndex >= 0) {
+        return new Date(parseInt(year), monthIndex, 1);
+      }
+    }
+    
+    // Handle just year (e.g., "2025")
+    if (dateString.length === 4 && /^\d{4}$/.test(dateString)) {
+      return new Date(parseInt(dateString), 0, 1);
+    }
+    
+    // Try default parsing
+    return new Date(dateString);
+  } catch (error) {
+    console.log('Error parsing human date:', error);
+    return null;
+  }
+};
+
+// Helper function to match dates in different formats
+const matchesDateFilter = (eventDate: string, searchDate: string): boolean => {
+  if (!searchDate) return true; // No date filter applied
+  
+  console.log('=== DATE MATCHING DEBUG ===');
+  console.log('Event date (ISO):', eventDate);
+  console.log('Search date (user input):', searchDate);
+  
+  try {
+    const eventDateObj = new Date(eventDate);
+    const searchDateObj = parseHumanDate(searchDate);
+    
+    if (!searchDateObj) {
+      console.log('Failed to parse search date, using fallback');
+      return eventDate.includes(searchDate);
+    }
+    
+    console.log('Parsed event date:', eventDateObj);
+    console.log('Parsed search date:', searchDateObj);
+    console.log('Event date valid:', !isNaN(eventDateObj.getTime()));
+    console.log('Search date valid:', !isNaN(searchDateObj.getTime()));
+    
+    // If searchDate is a full date (e.g., "August 1, 2025")
+    if (searchDate.includes(',')) {
+      const eventDateStr = eventDateObj.toDateString();
+      const searchDateStr = searchDateObj.toDateString();
+      console.log('Full date comparison:', eventDateStr, '===', searchDateStr, 'Result:', eventDateStr === searchDateStr);
+      return eventDateStr === searchDateStr;
+    }
+    
+    // If searchDate is just month and year (e.g., "August 2025")
+    if (searchDate.split(' ').length === 2) {
+      const eventMonth = eventDateObj.toLocaleString('en-US', { month: 'long' });
+      const eventYear = eventDateObj.getFullYear().toString();
+      const searchMonth = searchDateObj.toLocaleString('en-US', { month: 'long' });
+      const searchYear = searchDateObj.getFullYear().toString();
+      
+      console.log('Month/Year comparison:', eventMonth, eventYear, '===', searchMonth, searchYear, 'Result:', eventMonth === searchMonth && eventYear === searchYear);
+      return eventMonth === searchMonth && eventYear === searchYear;
+    }
+    
+    // If searchDate is just year (e.g., "2025")
+    if (searchDate.length === 4 && /^\d{4}$/.test(searchDate)) {
+      const eventYear = eventDateObj.getFullYear().toString();
+      console.log('Year comparison:', eventYear, '===', searchDate, 'Result:', eventYear === searchDate);
+      return eventYear === searchDate;
+    }
+    
+    // Fallback: try to match as substring
+    const fallbackResult = eventDate.includes(searchDate);
+    console.log('Fallback substring matching:', eventDate.includes(searchDate), 'Result:', fallbackResult);
+    return fallbackResult;
+  } catch (error) {
+    console.log('Date matching error:', error);
+    // Fallback: try to match as substring
+    const fallbackResult = eventDate.includes(searchDate);
+    console.log('Error fallback substring matching:', fallbackResult);
+    return fallbackResult;
+  }
+};
+
 // New functions for search results and category results
 export const performSearch = () => {
+  // Test date matching with sample data
+  
   // Search through moreEvents signal array instead of mock data
-  const query = searchQuery.value.toLowerCase();
-  const city = selectedCity.value.toLowerCase();
-  const venue = selectedVenue.value.toLowerCase();
+  const query = searchQuery.value;
+  const city = selectedCity.value;
+  const venue = selectedVenue.value;
   const date = selectedDate.value || selectedMonth.value;
 
-  // Filter moreEvents based on search criteria
-  let filtered = (moreEvents.value || []).filter((event: any) => {
-    const matchesQuery = !query || event.name?.toLowerCase().includes(query);
-    const matchesCity = !city || event.location?.name?.toLowerCase().includes(city);
-    const matchesVenue = !venue || event.location?.name?.toLowerCase().includes(venue);
-    const matchesDate = !date || event.startTimeStamp?.includes(date);
+  let filtered: any[] = [];
 
-    return matchesQuery && matchesCity && matchesVenue && matchesDate;
-  });
+  console.log('query', query);
+  console.log('city', city , selectedCity.value);
+  console.log('venue', venue);
+  console.log('date', date);
+
+  // If no search criteria, return all events
+  if (!query && !city && !venue && !date) {
+    filtered = moreEvents.value || [];
+  } else {
+    // Filter moreEvents based on search criteria
+    filtered = (moreEvents.value || []).filter((event: any) => {
+      console.log('event', event);
+      const matchesQuery = !query || event.name?.toLowerCase().includes(query.toLowerCase());
+      const matchesCity = !city || event.location?.city?.name?.toLowerCase().includes(city.toLowerCase());
+      const matchesVenue = !venue || event.location?.name?.toLowerCase().includes(venue.toLowerCase());
+      const matchesDate = !date || matchesDateFilter(event.startTimeStamp, date);
+
+      console.log('matchesQuery', matchesQuery);
+      console.log('matchesCity', matchesCity);
+      console.log('matchesVenue', matchesVenue);
+      console.log('matchesDate', matchesDate);
+
+              // If any condition is true, include the event (OR logic instead of AND)
+        return matchesQuery && matchesCity && matchesVenue && matchesDate;
+    });
+  }
+
+  console.log('filtered', filtered);
 
   // Convert to SearchResultEvent format with proper EventCard structure
   const searchResultsData: SearchResultEvent[] = filtered.map((event: any) => {

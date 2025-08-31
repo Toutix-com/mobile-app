@@ -24,6 +24,8 @@ class GoogleSignInService {
 
   static async signIn(): Promise<GoogleSignInResult | null> {
     try {
+      console.log("asasas");
+      
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       console.log("sasasasa", userInfo);

@@ -32,7 +32,7 @@ function App(): React.JSX.Element {
     <SplashScreen onComplete={handleSplashComplete} />
   ) : (
     <NavigationContainer>
-      {!userStore.value.isAuthenticated ? <AppStack /> : <AuthStack />}
+      {userStore.value.isAuthenticated ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   );
 }

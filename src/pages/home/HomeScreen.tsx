@@ -31,7 +31,6 @@ import {
 } from 'lucide-react-native';
 import { normalize } from '../../utils/responsive';
 import { BlurView } from '@react-native-community/blur';
-import { getCities, getEvents, getVenues } from '../../services/eventService';
 import { categories, featuredEvents } from '../../contants/HomeConstant';
 import AllCitiesBottomSheet from './components/AllCitiesBottomSheet';
 import AllVenuesBottomSheet from './components/AllVenuesBottomSheet';
@@ -60,41 +59,6 @@ import { useSignals } from '@preact/signals-react/runtime';
 import { fetchEventById } from '../event/store/event.store';
 const { width } = Dimensions.get('window');
 
-const MoreEventCard = ({ event }: { event: any }) => (
-  <View style={styles.moreEventCard}>
-    <ImageBackground
-      source={{ uri: event.image }}
-      style={styles.moreEventImage}
-      imageStyle={{ borderRadius: normalize(15) }}>
-      <View style={styles.imageOverlay}>
-        <View style={styles.dateBox}>
-          <Text style={styles.dateMonth}>{moment(event.startTimeStamp).format('MMM')}</Text>
-          <Text style={styles.dateDay}>{moment(event.startTimeStamp).format('DD')}</Text>
-        </View>
-        <TouchableOpacity style={styles.heartButton}>
-          <Heart
-            size={normalize(22)}
-            color={event.isLiked ? '#FF6B6B' : 'white'}
-            fill={event.isLiked ? '#FF6B6B' : 'transparent'}
-          />
-        </TouchableOpacity>
-      </View>
-    </ImageBackground>
-    <View style={styles.moreEventDetailsRow}>
-      <View style={styles.moreEventInfo}>
-        <Text style={styles.moreEventTitle}>{event.name}</Text>
-      </View>
-      {event.status && (
-        <View style={[styles.tagContainer, { backgroundColor: event.tag?.color }]}>
-          <Text style={styles.tagText}>{event.status}</Text>
-        </View>
-      )}
-    </View>
-    <Text style={styles.moreEventVenue}>{event.location?.name}</Text>
-    <Text style={styles.moreEventPrice}>{event.price}</Text>
-  </View>
-);
-
 const HomeScreen = () => {
   useSignals();
   const navigation = useNavigation();
@@ -105,12 +69,14 @@ const HomeScreen = () => {
 
 
   useEffect(() => {
+    clearAllFilters()
     initializeData();
+    initializeSelectedItems();
+    loadMoreEvents();
+    console.log("hasActiveFilters", hasActiveFilters());
+    
   }, []);
 
-  useEffect(() => {
-    initializeSelectedItems();
-  }, []);
 
 
 
@@ -129,9 +95,6 @@ const HomeScreen = () => {
     return () => clearInterval(interval);
   }, [activeIndex.value, featuredEvents.length]);
 
-  useEffect(() => {
-    loadMoreEvents();
-  }, []);
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 51 }).current;
 
