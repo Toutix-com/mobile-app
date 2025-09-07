@@ -1,19 +1,22 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { Home, Ticket, Store, User } from 'lucide-react-native';
-import { BlurView } from '@react-native-community/blur';
 
 
 import HomeStack from './HomeStack';
-import TicketsScreen from '../pages/TicketsScreen';
+import TicketsStack from '@navigation/TicketsStack';
 import MarketplaceScreen from '../pages/MarketplaceScreen';
-import ProfileScreen from '../pages/profile/ProfileScreen';
+import {userStore} from '@pages/login/store/login.store';
 import { normalize } from '../utils/responsive';
+import { useSignals } from '@preact/signals-react/runtime';
+import ProfileStack from './ProfileStack';
 
 const Tab = createBottomTabNavigator();
+const isLoggedIn = userStore.value.email || userStore.value.mobileNumber;
 
 const TabNavigator = () => {
+  useSignals();
   return (
     <Tab.Navigator
       screenOptions={({ route, navigation }) => {
@@ -34,16 +37,21 @@ const TabNavigator = () => {
           tabBarActiveTintColor: '#0C0453',
           tabBarInactiveTintColor: '#8E8E93',
           tabBarBackground: () => (
-            <BlurView
-              style={StyleSheet.absoluteFill}
-              blurType="light"
-              blurAmount={15}
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+              }}
             />
           ),
         };
       }}>
       <Tab.Screen
-        name="HomeStack"
+        name="Home"
         component={HomeStack}
         options={{
           tabBarIcon: ({ color, focused }) => (
@@ -57,7 +65,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="Tickets"
-        component={TicketsScreen}
+        component={TicketsStack}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Ticket
@@ -84,14 +92,18 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={ProfileScreen}
+        component={ProfileStack}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <User
-              color={color}
-              size={normalize(28)}
-              strokeWidth={focused ? 2.5 : 2}
-            />
+            isLoggedIn && userStore.value.image ? (
+              <Image source={{ uri: userStore.value.image || '' }} style={styles.avatar} />
+            ) : (
+              <User
+                color={color}
+                size={normalize(28)}
+                strokeWidth={focused ? 2.5 : 2}
+              />
+            )
           ),
         }}
       />
@@ -112,6 +124,11 @@ const styles = StyleSheet.create({
     fontSize: normalize(12),
     fontWeight: '700',
     marginBottom: normalize(10),
+  },
+  avatar: {
+    width: normalize(28),
+    height: normalize(28),
+    borderRadius: normalize(14),
   },
 });
 

@@ -19,3 +19,7 @@ export const getVenues = (offset: number, limit: number) => {
 export const getCategories = (offset: number, limit: number) => {
   return commonApiWrapper(api.get(`category/names?offset=${offset}&limit=${limit}`));
 };
+
+export const getOrganizationProfile = (organizationId: string) => {
+  return commonApiWrapper(api.get(`/event/organization/${organizationId}`));
+};

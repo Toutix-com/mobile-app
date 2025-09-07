@@ -6,6 +6,7 @@ export interface EventDetails {
   id: string;
   name: string;
   image: string;
+  images?: string[]; // Add optional images array for multiple images
   serviceFee: string;
   transactionFee: string;
   allowResale: boolean;
