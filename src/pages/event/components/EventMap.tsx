@@ -36,16 +36,17 @@ const EventMap: React.FC<EventMapProps> = ({ lat, lon, name, address }) => {
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
-        showsUserLocation={true}
+        showsUserLocation={false}
         showsMyLocationButton={false}
         showsCompass={true}
         showsScale={true}
         showsBuildings={true}
         showsIndoors={true}
         mapType="standard"
-        loadingEnabled={true}
+        loadingEnabled={false}
         loadingIndicatorColor="#666666"
         loadingBackgroundColor="#ffffff"
+        googleRenderer="LEGACY"  
         onMapReady={() => console.log('Map is ready')}
       >
         <Marker 

@@ -21,27 +21,7 @@ export interface UserState {
     isLoading?: boolean;
     otp?: string[];
     timer?: any;
-}
-
-export interface UserProfile {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    contactNumber: string;
-    role: string;
-    address?: string;
     dateOfBirth?: string;
-    image?: string;
-}
-
-export interface EventState {
-    events: any[];
-}
-
-export interface RootState {
-    user: UserState;
-    events: EventState;
 }
 
 export const dateOfBirth = signal<Date>(new Date(2000, 0, 1));
@@ -53,19 +33,21 @@ export const userStore = signal<UserState>({
 export const showSplash = signal<boolean>(true);
 
 
-export const rootStore = signal<RootState>({
-    user: {
-        birthday: new Date(2000, 0, 1)
-    },
-    events: { events: [] },
-});
-
-
 export const setUser = (user: UserState) => {
     userStore.value = {
         ...userStore.value,
         ...user,
     }
+};
+
+export const logout = () => {
+    userStore.value = {
+        birthday: new Date(2000, 0, 1),
+        isAuthenticated: false,
+        firstName: '',
+        lastName: '',
+    };
+    Keychain.resetGenericPassword();
 };
 
 export const updateUser = (fields: Partial<UserState>) => {
@@ -78,7 +60,7 @@ export const updateUser = (fields: Partial<UserState>) => {
 export const fetchUserProfile = async () => {
     try {
         const [profileData, error] = await getUserProfile();
-        
+        console.log("profileData", profileData);
         if (error) {
             console.error('Error fetching user profile:', error);
             return false;
@@ -86,7 +68,7 @@ export const fetchUserProfile = async () => {
         
         if (profileData) {
             // Type the profileData as UserProfile
-            const profile = profileData as UserProfile;
+            const profile = profileData as UserState;
             
             // Update userStore with the fetched profile data
             setUser({

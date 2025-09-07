@@ -17,6 +17,8 @@ import {
   fetchUserProfileData,
   handleLoginPress,
   handleLogout,
+  fetchTicketHistory,
+  handleViewAllTicketHistory
 } from './store/profile.store';
 import { Bell, LogOut, Plus, User } from 'lucide-react-native';
 import { userStore } from '../login/store/login.store';
@@ -32,34 +34,25 @@ type ProfileScreenNavigationProp = CompositeNavigationProp<
 
 const ProfileScreen: React.FC = () => {
   useSignals();
-  const isAuthenticated = userStore.value.isAuthenticated;
+  const isAuthenticated = userStore.value?.isAuthenticated;
   const isLoggedIn = userStore.value.email || userStore.value.mobileNumber;
   const navigation = useNavigation<ProfileScreenNavigationProp>();
 
-  useEffect(() => {
-    console.log("user", userStore.value);
-    
-    // If user is authenticated, fetch their profile data
-    if (isAuthenticated) {
-      fetchUserProfileData();
-    }
-  }, [isAuthenticated]);
+  console.log("isAuthenticated", userStore.value);
 
-  // Refresh profile data when screen comes into focus
-  useFocusEffect(
-    useCallback(() => {
-      if (isAuthenticated) {
-        fetchUserProfileData();
-      }
-    }, [isAuthenticated])
-  );
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchUserProfileData();
+      fetchTicketHistory();
+    }
+  }, []);
 
   // Not authenticated - show login prompt
   if (!isLoggedIn) {
     return (
       <View style={styles.container}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { marginTop: normalize(50), marginLeft: normalize(20) }]}>
           <Text style={styles.headerTitle}>Profile</Text>
         </View>
         
@@ -104,24 +97,16 @@ const ProfileScreen: React.FC = () => {
           </View>
         )}
 
-        {/* Error State */}
-        {profileError.value && (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>{profileError.value}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchUserProfileData}>
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
         {/* Profile Content - Only show when not loading and no errors */}
         {!isLoadingProfile.value && !profileError.value && (
           <>
             {/* Profile card */}
-            <ProfileHeaderCard />
+            <View style={styles.profileCard}>
+              <ProfileHeaderCard />
+            </View>
 
             {/* Logout */}
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <TouchableOpacity style={styles.logoutButton} onPress={() => handleLogout(navigation)}>
               <LogOut color="#D73A49" size={normalize(16)} />
               <Text style={styles.logoutText}>Log out</Text>
             </TouchableOpacity>
@@ -171,7 +156,7 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Ticket purchase history</Text>
-                <TouchableOpacity>
+                <TouchableOpacity style={{zIndex: 1000}} onPress={() => handleViewAllTicketHistory(navigation)}>
                   <Text style={styles.viewAllText}>View all</Text>
                 </TouchableOpacity>
               </View>
@@ -206,12 +191,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: normalize(16),
+    marginBottom: normalize(0),
   },
   headerTitle: {
     fontSize: normalize(20),
     fontWeight: '700',
-    color: '#0C0453',
+    color: '#0D1117',
   },
   headerButtons: {
     flexDirection: 'row',
@@ -306,9 +291,7 @@ const styles = StyleSheet.create({
   notLoggedInContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    padding: normalize(20),
-    paddingTop: normalize(100), // Account for header space
+    alignItems: 'center', // Account for header space
   },
   profileIconContainer: {
     width: normalize(120),
@@ -331,12 +314,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#0C0453',
     paddingVertical: normalize(12),
     paddingHorizontal: normalize(25),
-    borderRadius: normalize(10),
+    borderRadius: normalize(30),
+    width: '80%',
   },
   loginButtonText: {
     color: '#FFFFFF',
     fontSize: normalize(16),
     fontWeight: '700',
+    textAlign: 'center',
   },
   editProfileButton: {
     backgroundColor: '#0C0453',
@@ -383,6 +368,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: normalize(16),
     fontWeight: '700',
+  },
+  profileCard: {
+    marginTop: normalize(20),
   },
 });
 
