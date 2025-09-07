@@ -1,8 +1,9 @@
 import { signal } from '@preact/signals-react';
 import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native';
 import { launchCamera, launchImageLibrary, ImagePickerResponse, Asset } from 'react-native-image-picker';
-import { userStore, setUser, fetchUserProfile } from '../../login/store/login.store';
+import { userStore, setUser, fetchUserProfile, logout } from '../../login/store/login.store';
 import { updateUserProfile } from '../../../services/ApiService';
+import { getAllTickets, TicketApiModel } from '../../../services/ticketServices';
 
 // ProfileScreen signals and interfaces
 export interface UserProfile {
@@ -53,29 +54,37 @@ export const paymentMethods = signal<PaymentMethod[]>([
   { id: 'pm_2', brand: 'visa', last4: '7890', nickname: 'Card nickname' },
 ]);
 
-export const ticketHistory = signal<TicketHistoryItem[]>([
-  {
-    id: 't_1',
-    title: 'Night Pulse: An Immersive...',
-    subtitle: 'General entry ticket',
-    price: '$10.00',
-    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=200&auto=format&fit=crop',
-  },
-  {
-    id: 't_2',
-    title: 'Summer Beats: A Vibran...',
-    subtitle: 'Standard admission pass',
-    price: '$150.50',
-    image: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?q=80&w=200&auto=format&fit=crop',
-  },
-  {
-    id: 't_3',
-    title: 'Ocean Vibes',
-    subtitle: 'General admission ticket',
-    price: '$150.50',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=200&auto=format&fit=crop',
-  },
-]);
+export const ticketHistory = signal<TicketHistoryItem[]>([]);
+export const isLoadingTicketHistory = signal<boolean>(false);
+export const ticketHistoryError = signal<string | null>(null);
+
+export const fetchTicketHistory = async () => {
+  isLoadingTicketHistory.value = true;
+  ticketHistoryError.value = null;
+  try {
+    const [data, error] = await getAllTickets();
+    if (error || !data) {
+      throw error || new Error('Failed to fetch tickets');
+    }
+    const mapped: TicketHistoryItem[] = (data.list || []).map((t: TicketApiModel, idx) => ({
+      id: t.id,
+      title: t.event?.name || 'Ticket',
+      subtitle: t.ticketCategory?.title || 'General',
+      price: `$${Number(t.price).toFixed(2)}`,
+      image: (t as any)?.event?.image || ``,
+    }));
+    ticketHistory.value = mapped.slice(0, 3);
+  } catch (err: any) {
+    ticketHistoryError.value = err?.message || 'Failed to load tickets';
+  } finally {
+    isLoadingTicketHistory.value = false;
+  }
+};
+
+export const handleViewAllTicketHistory = async (navigation: any) => {
+  console.log("handleViewAllTicketHistory");
+  navigation.navigate('TicketsScreen');
+};
 
 // ProfileScreen setters / actions
 export const setEmailNotifications = (value: boolean) => {
@@ -96,11 +105,6 @@ export const removePaymentMethod = (id: string) => {
 
 export const updateProfile = (updates: Partial<UserProfile>) => {
   profile.value = { ...profile.value, ...updates };
-};
-
-export const logout = () => {
-  // TODO: wire with auth module
-  console.log('Logging out...');
 };
 
 // EditProfileScreen signals
@@ -469,19 +473,15 @@ export const handleSaveChanges = async (navigation: any) => {
       imageFile: selectedImage.value || undefined,
     };
 
+    console.log("updateData", updateData);
+
     const response= await updateUserProfile(updateData);
+
+    console.log("response", response);
 
 
     if (response) {
-      setUser({
-        ...userStore.value,
-        firstName: profileFormData.value.firstName,
-        lastName: profileFormData.value.lastName,
-        contactNumber: profileFormData.value.contactNumber,
-        address: profileFormData.value.address,
-        birthday: profileFormData.value.birthday,
-        image: showImageRemoved.value ? null : (selectedImage.value ? selectedImage.value.uri : userStore.value.image),
-      });
+      fetchUserProfileData();
       error.value = null;
       navigation.goBack();
     }
@@ -514,6 +514,7 @@ export const fetchUserProfileData = async () => {
   
   try {
     const success = await fetchUserProfile();
+    console.log("success", success);
     if (!success) {
       profileError.value = 'Failed to load profile data';
     }
@@ -526,22 +527,17 @@ export const fetchUserProfileData = async () => {
 };
 
 export const handleLoginPress = () => {
-  // Set user as not authenticated to trigger switch to AuthStack
   setUser({ 
     ...userStore.value,
     isAuthenticated: false
   });
 };
 
-export const handleLogout = async () => {
+export const handleLogout = async (navigation: any) => {
   try {
     // Clear user authentication state
-    setUser({
-      birthday: new Date(2000, 0, 1),
-      isAuthenticated: false
-    });
-    
-    // This will automatically switch to AuthStack (not authenticated state)
+    logout();
+    navigation.navigate('Main');
   } catch (error) {
     console.error('Logout error:', error);
   }

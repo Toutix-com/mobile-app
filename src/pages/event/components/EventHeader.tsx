@@ -1,10 +1,10 @@
-import React from 'react';
-import { View, ImageBackground, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, ImageBackground, TouchableOpacity, StyleSheet, Text, FlatList, Dimensions, ScrollView } from 'react-native';
 import { X, Share2, Heart, ChevronLeft, Share } from 'lucide-react-native';
 import { normalize } from '../../../utils/responsive';
 
 interface EventHeaderProps {
-    imageUrl: string;
+    imageUrls: string[]; // Changed from single imageUrl to array of imageUrls
     onBack: () => void;
     onShare: () => void;
     onFavorite: () => void;
@@ -13,52 +13,85 @@ interface EventHeaderProps {
 }
 
 const EventHeader: React.FC<EventHeaderProps> = ({
-    imageUrl,
+    imageUrls,
     onBack,
     onShare,
     onFavorite,
     isFavorite,
     status,
 }) => {
-    return (
-        <View style={{ position: 'relative', height: normalize(320) }}>
-            <ImageBackground
-                source={{ uri: imageUrl }}
-                style={styles.image}
-                resizeMode="stretch"
-                imageStyle={{ borderTopLeftRadius: 18, borderTopRightRadius: 18 }}
-            >
-                <View style={styles.topRow}>
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const flatListRef = useRef<FlatList>(null);
+    const screenWidth = Dimensions.get('window').width;
 
-                    <TouchableOpacity style={styles.iconBtn} onPress={onBack}>
+    const handleImageScroll = (event: any) => {
+        const contentOffset = event.nativeEvent.contentOffset.x;
+        const index = Math.round(contentOffset / screenWidth);
+        setCurrentImageIndex(index);
+    };
+
+    const goToImage = (index: number) => {
+        flatListRef.current?.scrollToIndex({ index, animated: true });
+        setCurrentImageIndex(index);
+    };
+
+    const renderImageItem = ({ item }: { item: string }) => (
+        <ImageBackground
+            source={{ uri: item }}
+            style={styles.image}
+            resizeMode="stretch"
+            imageStyle={{ borderTopLeftRadius: 18, borderTopRightRadius: 18 }}
+        >
+            <View style={styles.topRow}>
+                <TouchableOpacity style={styles.iconBtn} onPress={onBack}>
+                    <View style={styles.iconBackground}>
+                        <ChevronLeft color="#fff" size={24} />
+                    </View>
+                </TouchableOpacity>
+                <View style={{ flexDirection: 'row' }}>
+                    <TouchableOpacity style={styles.iconBtn} onPress={onShare}>
                         <View style={styles.iconBackground}>
-                            <ChevronLeft color="#fff" size={24} />
+                            <Share color="#fff" size={22} />
                         </View>
                     </TouchableOpacity>
-                    <View style={{ flexDirection: 'row' }}>
-                        <TouchableOpacity style={styles.iconBtn} onPress={onShare}>
-                            <View style={styles.iconBackground}>
-                                <Share color="#fff" size={22} />
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.iconBtn} onPress={onFavorite}>
-                            <View style={styles.iconBackground}>
-                                <Heart color={isFavorite ? '#FF6B6B' : '#fff'} fill={isFavorite ? '#FF6B6B' : 'transparent'} size={22} />
-                            </View>
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity style={styles.iconBtn} onPress={onFavorite}>
+                        <View style={styles.iconBackground}>
+                            <Heart color={isFavorite ? '#FF6B6B' : '#fff'} fill={isFavorite ? '#FF6B6B' : 'transparent'} size={22} />
+                        </View>
+                    </TouchableOpacity>
                 </View>
-                    <View style={styles.limitedBadge}>
-                        <Text style={styles.limitedBadgeText}>{status}</Text>
-                    </View>
-            </ImageBackground>
+            </View>
+            <View style={styles.limitedBadge}>
+                <Text style={styles.limitedBadgeText}>{status}</Text>
+            </View>
+        </ImageBackground>
+    );
+
+    return (
+        <View style={{ position: 'relative', height: normalize(320) }}>
+            {/* Image Slider */}
+            <FlatList
+                ref={flatListRef}
+                data={imageUrls}
+                renderItem={renderImageItem}
+                keyExtractor={(item, index) => index.toString()}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onMomentumScrollEnd={handleImageScroll}
+                getItemLayout={(data, index) => ({
+                    length: screenWidth,
+                    offset: screenWidth * index,
+                    index,
+                })}
+            />
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     image: {
-        width: '100%',
+        width: Dimensions.get('window').width,
         height: normalize(340),
         justifyContent: 'space-between',
     },
@@ -96,6 +129,40 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: 'bold',
         fontSize: 13,
+    },
+    paginationContainer: {
+        position: 'absolute',
+        bottom: normalize(80),
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: normalize(8),
+    },
+    paginationDot: {
+        width: normalize(8),
+        height: normalize(8),
+        borderRadius: normalize(4),
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    },
+    paginationDotActive: {
+        backgroundColor: '#FFFFFF',
+        width: normalize(24),
+    },
+    imageCounter: {
+        position: 'absolute',
+        top: normalize(60),
+        right: normalize(16),
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderRadius: normalize(12),
+        paddingHorizontal: normalize(8),
+        paddingVertical: normalize(4),
+    },
+    imageCounterText: {
+        color: '#FFFFFF',
+        fontSize: normalize(12),
+        fontWeight: '600',
     },
 });
 

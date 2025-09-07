@@ -85,11 +85,13 @@ const EventDetailsScreen = () => {
     }
   };
 
+  console.log("Event", event);
+
   return (
       <View style={{ flex: 1, backgroundColor: '#fff' }}>
         <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
           <EventHeader 
-            imageUrl={event.image} 
+            imageUrls={event.images && event.images.length > 0 ? event.images : [event.image, event.image]} 
             onBack={() => navigation.goBack()} 
             onShare={() => {}} 
             onFavorite={() => {}} 
@@ -118,7 +120,7 @@ const EventDetailsScreen = () => {
             avatarUrl={event.organization.organizationLogo || ''}
             hostName={event.organization.organizationName || ''}
             eventsHosted={event.hostedEventCount} 
-            onViewProfile={() => {}} 
+            onViewProfile={() => navigation.navigate('OrganizerProfile', { id: event.organization.id })} 
           />
           <Divider dividerStyle={{ marginVertical: normalize(10), marginHorizontal: normalize(16) }} />
           <EventPriceFooter price={priceRange} />

@@ -85,7 +85,7 @@ android {
         versionCode 1
         versionName "1.0"
         manifestPlaceholders = [
-            GOOGLE_MAPS_API_KEY: 'AIzaSyDVOd8V8OOXp93fwRHdM5FuHaB9WVviWus'
+            GOOGLE_MAPS_API_KEY: 'AIzaSyDX7ogWF-CaxQowloGnDy6zkcCaFvLuCNI'
         ]
     }
     signingConfigs {
@@ -97,9 +97,9 @@ android {
         }
         release {
             storeFile file('toutix-mobile.keystore')
-            storePassword project.hasProperty('KEYSTORE_PASSWORD') ? project.getProperty('KEYSTORE_PASSWORD') : 'your_keystore_password'
-            keyAlias project.hasProperty('KEY_ALIAS') ? project.getProperty('KEY_ALIAS') : 'your_key_alias'
-            keyPassword project.hasProperty('KEY_PASSWORD') ? project.getProperty('KEY_PASSWORD') : 'your_key_password'
+            storePassword project.hasProperty('KEYSTORE_PASSWORD') ? project.getProperty('KEYSTORE_PASSWORD') : 'toutix'
+            keyAlias project.hasProperty('KEY_ALIAS') ? project.getProperty('KEY_ALIAS') : 'my-key-alias'
+            keyPassword project.hasProperty('KEY_PASSWORD') ? project.getProperty('KEY_PASSWORD') : 'toutix'
         }
     }
     buildTypes {
