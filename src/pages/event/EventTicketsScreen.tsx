@@ -102,14 +102,25 @@ const EventTicketsScreen = () => {
             <Text style={styles.summaryLabelBold}>Total</Text>
             <Text style={styles.summaryValueBold}>${total.toFixed(2)}</Text>
           </View>
-          <TouchableOpacity
+          <View style={{ flexDirection: 'row', gap: normalize(10) , marginBottom: normalize(80), flex: 1, marginTop: normalize(20) }}>
+            <TouchableOpacity style={styles.couponBtn} onPress={() => {}}>
+              <Text style={styles.couponBtnText}>I have a coupon</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
             style={[styles.checkoutBtn, { backgroundColor: subtotal > 0 ? '#18104B' : '#C7C7D9' }]}
             disabled={subtotal === 0}
+            onPress={() => {
+              if (subtotal > 0) {
+                navigation.navigate('TicketCheckout' as never);
+              }
+            }}
           >
             <Text style={styles.checkoutBtnText}>
-              {subtotal > 0 ? `Checkout - $${total.toFixed(2)}` : 'Checkout'}
+              {'Checkout'}
             </Text>
           </TouchableOpacity>
+          </View>
+          
         </View>
       </View>
     
@@ -266,14 +277,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   checkoutBtn: {
-    marginTop: 16,
-    borderRadius: 8,
-    paddingVertical: 16,
+    borderRadius: 20,
     alignItems: 'center',
-    marginBottom: normalize(40),
+    paddingVertical: 8,
+    flex: 1,
+    height: normalize(40),
   },
   checkoutBtnText: {
     color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 17,
+  },
+  couponBtn: {
+    borderRadius: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#0C0453',
+    flex: 1,
+    paddingVertical: 8,
+    height: normalize(40),
+  },
+  couponBtnText: {
+    color: '#0C0453',
     fontWeight: 'bold',
     fontSize: 17,
   },

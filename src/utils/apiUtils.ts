@@ -30,6 +30,8 @@ export const commonApiWrapper = async <T>(
   apiPromise: Promise<AxiosResponse<ServerResponse<T>>>,
 ): Promise<InlineArrayResult<T, AxiosError<ErrorResponse>>> => {
   const [response, error] = await inlinePromise<AxiosResponse<ServerResponse<T>>, AxiosError<ErrorResponse>>(apiPromise);
+  console.log("response", response);
+  console.log("error", error);
   if (error || !response) {
     return [null, error];
   }

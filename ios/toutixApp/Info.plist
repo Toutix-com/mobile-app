@@ -29,8 +29,8 @@
 			<string>google</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.912281763788-ed64dklvegp79qippq4ls0tmfab52b5l</string>
-				<string>com.toutixapp2</string>
+				<string>com.googleusercontent.apps.1020926589370-9u0at2bffebn7kfn3p09khq9oh6jfdhg</string>
+				<string>com.toutixapp.mobile</string>
 			</array>
 		</dict>
 	</array>
@@ -47,6 +47,20 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs access to your camera to scan QR codes for event tickets and take photos for your profile.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to select and upload profile pictures and event images.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app may need access to your microphone for video recording features during events.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>This app may need access to your contacts to help you invite friends to events.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>This app uses Face ID for secure authentication and ticket verification.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This app uses tracking to provide personalized event recommendations and improve your experience.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

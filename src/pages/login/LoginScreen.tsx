@@ -16,7 +16,8 @@ import GradientLayout from '../../components/layouts/GradientLayout';
 import GoogleIcon from '@assets/icons/google.svg';
 import AppleIcon from '@assets/icons/apple.svg';
 import GoogleSignInService from '../../services/GoogleSignInService';
-import { setUser, userStore, handleGoogleSignIn, handleContinue } from './store/login.store';
+import AppleSignInService from '../../services/AppleSignInService';
+import { setUser, userStore, handleGoogleSignIn, handleAppleSignIn, handleContinue } from './store/login.store';
 import { useSignal } from '@preact/signals-react';
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -33,7 +34,7 @@ const LoginScreen: React.FC = () => {
 
   return (
     <GradientLayout>
-      <TouchableOpacity style={styles.closeButton}>
+      <TouchableOpacity style={styles.closeButton} onPress={() => setUser({...userStore.value, isAuthenticated: true})}>
         <Text style={styles.closeButtonText}>✕</Text>
       </TouchableOpacity>
 
@@ -96,14 +97,17 @@ const LoginScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
         <View style={styles.socialButtonsContainer}>
-        <TouchableOpacity 
+          <TouchableOpacity 
             style={[styles.socialButton, userStore.value.isLoading && { opacity: 0.7 }]}
+            onPress={() => handleAppleSignIn(navigation)}
             disabled={userStore.value.isLoading}
           >
             <AppleIcon width={20} height={20} />
-            <Text style={styles.socialButtonText}>Continue with Apple</Text>
+            <Text style={styles.socialButtonText}>
+              {userStore.value.isLoading ? 'Connecting...' : 'Continue with Apple'}
+            </Text>
           </TouchableOpacity>
-      </View>
+        </View>
       </View>
     </GradientLayout>
   );

@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useSignal } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
 import TicketListItem from './components/TicketListItem';
-import { tickets, isLoadingTickets } from './store/tickets.store';
+import { tickets, isLoadingTickets, isRefreshing, refreshTickets } from './store/tickets.store';
 import { loadTickets } from './store/tickets.store';
 import { useNavigation } from '@react-navigation/native';
 import { useSignals } from '@preact/signals-react/runtime';
@@ -13,7 +13,9 @@ import { handleLoginPress } from '@pages/profile/store/profile.store';
 
 const TicketsScreen: React.FC = () => {
   useSignals();
-  const isLoggedIn = userStore.value.email || userStore.value.mobileNumber;
+  const isLoggedIn = userStore.value.email || userStore.value.phoneNumber;
+  console.log(isLoggedIn,userStore.value, "Is Logged In");
+  
 
   React.useEffect(() => {
     if (tickets.value.length === 0) {
@@ -68,6 +70,14 @@ const TicketsScreen: React.FC = () => {
         )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing.value}
+            onRefresh={refreshTickets}
+            tintColor="#0C0453"
+            colors={['#0C0453']}
+          />
+        }
       />
       <View style={styles.footer}/>
     </View>
