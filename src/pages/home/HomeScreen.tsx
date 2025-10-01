@@ -57,6 +57,7 @@ import {
 } from './store/home.store';
 import { useSignals } from '@preact/signals-react/runtime';
 import { fetchEventById } from '../event/store/event.store';
+import { userStore } from '@pages/login/store/login.store';
 const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
@@ -64,6 +65,9 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const flatListRef = useRef<FlatList>(null);
   const LIMIT = 9;
+
+  const isLoggedIn = userStore.value.email || userStore.value.mobileNumber;
+  console.log(isLoggedIn,userStore.value, "Is Logged In");
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 

@@ -228,10 +228,7 @@ const SearchScreen: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <ScrollView style={styles.container}>
       {isShowingResults ? (
         // Results View with Gradient Header
         <View style={styles.resultsContainer}>
@@ -414,9 +411,7 @@ const SearchScreen: React.FC = () => {
               </View>
             )}
 
-          </ScrollView>
-
-          {/* Footer Buttons */}
+            {/* Footer Buttons */}
           <View style={styles.footer}>
             <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -427,6 +422,12 @@ const SearchScreen: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          <View style={{ height: normalize(100) }} />
+
+          </ScrollView>
+
+          
         </>
       )}
 
@@ -454,7 +455,7 @@ const SearchScreen: React.FC = () => {
         onClose={() => setDateSheetOpen(false)}
         onUseSelected={handleUseSelectedDate}
       />
-    </KeyboardAvoidingView>
+    </ScrollView>
   );
 };
 

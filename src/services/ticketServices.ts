@@ -28,6 +28,21 @@ export interface GetAllTicketsResponse {
   count: number;
 }
 
+interface TicketCategory {
+    id: string;
+    quantity: number;
+}
+
+export interface ICheckoutPayload {
+    clientSecret: string;
+    amount: number;
+    currency: string;
+    ephemeralKey: string;
+    customerId: string;
+    isFreeCheckout: boolean;
+    paymentRecordId: string;
+}
+
 export const getAllTickets = async () => {
   const token = await getAuthToken();
   if (!token) {
@@ -57,3 +72,23 @@ export const generateTicketQr = async (ticketId: string) => {
 };
 
 
+
+// export const getCheckoutObject = (ticketCategories: TicketCategory[], coupon?: string,) => commonApiWrapper<ICheckoutPayload>(api.post(`payments/checkout-data`, {
+//     ticketCategories,
+//     coupon,
+// }))
+
+export const getCheckoutObject = async (ticketCategories: TicketCategory[], coupon?: string,) => {
+  const token = await getAuthToken();
+  if (!token) {
+    throw new Error('No authentication token found');
+  }
+  return commonApiWrapper<ICheckoutPayload>(
+    api.post('/payments/checkout-data', {
+      ticketCategories,
+      coupon,
+    }, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  );
+}

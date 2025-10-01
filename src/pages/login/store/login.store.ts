@@ -1,14 +1,15 @@
 import { signal } from '@preact/signals-react';
 import { Alert } from 'react-native';
 import GoogleSignInService from '../../../services/GoogleSignInService';
-import { loginWithOtp, loginWithGoogle, getUserProfile } from '../../../services/ApiService';
+import AppleSignInService from '../../../services/AppleSignInService';
+import { loginWithOtp, loginWithGoogle, loginWithApple, getUserProfile } from '../../../services/ApiService';
 import { LoginType } from '../enums/auth-enum';
 import * as Keychain from 'react-native-keychain';
 
 export interface UserState {
     id?: string;
     email?: string;
-    mobileNumber?: string;
+    phoneNumber?: string;
     firstName?: string;
     lastName?: string;
     isNewUser?: boolean;
@@ -136,6 +137,38 @@ export const handleGoogleSignIn = async (navigation: any) => {
     }
 };
 
+export const handleAppleSignIn = async (navigation: any) => {
+    setUser({ ...userStore.value, isLoading: true });
+    try {
+        const result = await AppleSignInService.onAppleButtonPress();
+        console.log("Apple sign in result", result);
+        
+        if (result.success && result.data) {
+            const [data, error] = result.data;
+            if (!error) {
+                setUser({
+                    ...userStore.value,
+                    email: result.email || data.email,
+                    firstName: result.fullName?.givenName || data.firstName,
+                    lastName: result.fullName?.familyName || data.lastName,
+                    isAuthenticated: true,
+                    isNewUser: data.isNewUser,
+                    role: data.role,
+                });
+                await Keychain.setGenericPassword('auth', data.token);
+            } else {
+                Alert.alert('Error', (result.data as any)?.message ? (result.data as any).message : 'Failed to login with Apple');
+            }
+        } else {
+            Alert.alert('Error', result.error || 'Failed to sign in with Apple');
+        }
+    } catch (error) {
+        Alert.alert('Error', 'Failed to sign in with Apple');
+    } finally {
+        setUser({ ...userStore.value, isLoading: false });
+    }
+};
+
 export const handleContinue = async (navigation: any) => {
     const input = userStore.value.email;
     if (!input) {
@@ -147,24 +180,26 @@ export const handleContinue = async (navigation: any) => {
         Alert.alert('Error', 'Please enter a valid email or mobile number');
         return;
     }
-    setUser({ ...userStore.value, isLoading: true });
+    setUser({ ...userStore.value, isLoading: true, email: input });
     try {
         const response = valid.type === LoginType.EMAIL
             ? (
-                setUser({ ...userStore.value, email: valid.value, mobileNumber: undefined }),
+                setUser({ ...userStore.value, email: valid.value, phoneNumber: undefined }),
                 await loginWithOtp({ email: valid.value })
             )
             : (
-                setUser({ ...userStore.value, mobileNumber: valid.value, email: undefined }),
-                await loginWithOtp({ mobileNumber: valid.value })
+                setUser({ ...userStore.value, phoneNumber: valid.value, email: undefined }),
+                await loginWithOtp({ phoneNumber: valid.value })
             );
 
 
         const [data, error] = response;
+        console.log("data", data);
+        console.log("error", error);
         if (!error) {
             navigation.navigate('OTPVerification', {
-                email: valid.type === LoginType.EMAIL ? valid.value : 'test@gmail.com',
-                mobileNumber: valid.type === LoginType.MOBILE ? valid.value : undefined,
+                email: valid.type === LoginType.EMAIL ? valid.value : null,
+                phoneNumber: valid.type === LoginType.MOBILE ? valid.value : null,
                 type: valid.type === LoginType.EMAIL ? LoginType.EMAIL : LoginType.MOBILE,
             });
         } else {

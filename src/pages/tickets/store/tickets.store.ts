@@ -23,6 +23,7 @@ export interface TicketItem {
 export const tickets = signal<TicketItem[]>([]);
 
 export const isLoadingTickets = signal<boolean>(false);
+export const isRefreshing = signal<boolean>(false);
 export const ticketsError = signal<string | null>(null);
 export const qrExpanded = signal<boolean>(false);
 export const activeTicketId = signal<string | null>(null);
@@ -69,6 +70,38 @@ export const loadTickets = async () => {
     ticketsError.value = err?.message || 'Failed to load tickets';
   } finally {
     setIsLoadingTickets(false);
+  }
+};
+
+export const refreshTickets = async () => {
+  try {
+    isRefreshing.value = true;
+    ticketsError.value = null;
+    const [data, error] = await getAllTickets();
+    console.log(data, "refresh data");
+    if (error || !data) {
+      throw error || new Error('Failed to fetch tickets');
+    }
+    const mapped: TicketItem[] = (data.list || []).map((t: TicketApiModel, idx) => {
+      const start = new Date(t.event.startTimeStamp);
+      const dateLabel = start.toLocaleDateString('en-US', {
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+      });
+      const timeLabel = `${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+      console.log(t, "t");
+      return {
+        ...t,
+        title: `${t.event.name}`,
+        dateLabel,
+        timeLabel,
+        price: `$${Number(t.price).toFixed(2)}`,
+      };
+    });
+    setTickets(mapped);
+  } catch (err: any) {
+    ticketsError.value = err?.message || 'Failed to refresh tickets';
+  } finally {
+    isRefreshing.value = false;
   }
 };
 

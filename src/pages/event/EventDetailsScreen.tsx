@@ -91,7 +91,13 @@ const EventDetailsScreen = () => {
       <View style={{ flex: 1, backgroundColor: '#fff' }}>
         <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
           <EventHeader 
-            imageUrls={event.images && event.images.length > 0 ? event.images : [event.image, event.image]} 
+            imageUrls={(() => {
+              const base = [event.image];
+              const fromImages = Array.isArray((event as any).images) ? (event as any).images : [];
+              const fromEventImages = Array.isArray((event as any).eventImages) ? (event as any).eventImages : [];
+              const merged = [...base, ...fromImages, ...fromEventImages];
+              return merged.filter((u) => typeof u === 'string' && u.trim().length > 0);
+            })()} 
             onBack={() => navigation.goBack()} 
             onShare={() => {}} 
             onFavorite={() => {}} 
@@ -120,7 +126,7 @@ const EventDetailsScreen = () => {
             avatarUrl={event.organization.organizationLogo || ''}
             hostName={event.organization.organizationName || ''}
             eventsHosted={event.hostedEventCount} 
-            onViewProfile={() => navigation.navigate('OrganizerProfile', { id: event.organization.id })} 
+            onViewProfile={() => (navigation as any).navigate('OrganizerProfile', { id: event.organization.id })} 
           />
           <Divider dividerStyle={{ marginVertical: normalize(10), marginHorizontal: normalize(16) }} />
           <EventPriceFooter price={priceRange} />
