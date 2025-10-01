@@ -35,7 +35,7 @@ type ProfileScreenNavigationProp = CompositeNavigationProp<
 const ProfileScreen: React.FC = () => {
   useSignals();
   const isAuthenticated = userStore.value?.isAuthenticated;
-  const isLoggedIn = userStore.value.email || userStore.value.mobileNumber;
+  const isLoggedIn = userStore.value.email || userStore.value.phoneNumber;
   const navigation = useNavigation<ProfileScreenNavigationProp>();
 
   console.log("isAuthenticated", userStore.value);

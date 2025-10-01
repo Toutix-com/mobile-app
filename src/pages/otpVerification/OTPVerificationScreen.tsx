@@ -73,9 +73,9 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
       </View>
 
         <View style={styles.card}>
-          <Text style={styles.title}>Verify your email</Text>
+          <Text style={styles.title}>Verify your {route.params.type === LoginType.EMAIL ? 'email' : 'mobile number'}</Text>
           <Text style={styles.subtitle}>
-            We've sent a code to {route.params.email}
+            We've sent a code to {route.params.type === LoginType.EMAIL ? route.params.email : route.params.phoneNumber}
           </Text>
 
           <View style={styles.otpContainer}>

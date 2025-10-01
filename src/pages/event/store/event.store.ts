@@ -6,7 +6,8 @@ export interface EventDetails {
   id: string;
   name: string;
   image: string;
-  images?: string[]; // Add optional images array for multiple images
+  images?: string[]; // Optional images array for multiple images
+  eventImages?: (string | null)[]; // Optional alternative array name from API
   serviceFee: string;
   transactionFee: string;
   allowResale: boolean;
@@ -203,7 +204,14 @@ export const getSubtotal = () => {
 };
 
 export const getTransactionFee = () => {
-  return getSubtotal() * TRANSACTION_FEE_PERCENT;
+  const subtotal = getSubtotal();
+  if (!selectedEvent.value) return 0;
+  const feeString = selectedEvent.value.transactionFee;
+  const parsed = parseFloat(feeString);
+  if (!isFinite(parsed) || parsed <= 0) return 0;
+  const rate = parsed > 1 ? parsed / 100 : parsed; // support '10' or '0.10'
+  const fee = subtotal * rate;
+  return Number(fee.toFixed(2));
 };
 
 export const getTotal = () => {

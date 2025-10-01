@@ -42,7 +42,7 @@ export const handleKeyPress = (event: NativeSyntheticEvent<TextInputKeyPressEven
 export const handleVerify = async (route: any, navigation: any) => {
   const otpString = userStore.value.otp?.join('') || '';
   try {
-    const [data, error] = await verifyOtp({ email: route.params.email || '', otp: otpString });
+    const [data, error] = await verifyOtp({ email: route.params.email || null, otp: otpString, phoneNumber: route.params.phoneNumber || null });
     if (error) {
       Alert.alert('Error', (error).response?.data?.message || 'Invalid OTP');
       return;
@@ -69,7 +69,7 @@ export const handleVerify = async (route: any, navigation: any) => {
 export const handleResend = async (route: any, setTimeLeft: (n: number) => void, timeLeft: number) => {
   if (!!timeLeft.value) {
     try {
-      const payload = route.params.email ? { email: route.params.email } : { mobileNumber: route.params.mobileNumber };
+      const payload = route.params.email ? { email: route.params.email } : { phoneNumber: route.params.phoneNumber };
       const [, error] = await loginWithOtp(payload);
       if (error) {
         Alert.alert('Error', (error as any).response?.data?.message || 'Failed to resend OTP');

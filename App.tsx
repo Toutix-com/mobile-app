@@ -11,6 +11,7 @@ import { SplashScreen } from './src/pages/SplashScreen';
 import AuthStack from './src/navigation/AuthStack';
 import AppStack from './src/navigation/AppStack';
 import GoogleSignInService from './src/services/GoogleSignInService';
+import StripeProvider from './src/components/StripeProvider';
 import { userStore , showSplash, setShowSplash} from './src/pages/login/store/login.store';
 import { useSignals } from '@preact/signals-react/runtime';
 
@@ -31,9 +32,11 @@ function App(): React.JSX.Element {
   return showSplash.value ? (
     <SplashScreen onComplete={handleSplashComplete} />
   ) : (
-    <NavigationContainer>
-      {userStore.value.isAuthenticated ? <AppStack /> : <AuthStack />}
-    </NavigationContainer>
+    <StripeProvider>
+      <NavigationContainer>
+        {userStore.value.isAuthenticated ? <AppStack /> : <AuthStack />}
+      </NavigationContainer>
+    </StripeProvider>
   );
 }
 

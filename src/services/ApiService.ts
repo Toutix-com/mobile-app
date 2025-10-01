@@ -1,11 +1,12 @@
+import { AxiosError } from 'axios';
 import { api, commonApiWrapper } from '../utils/apiUtils';
 import { getAuthToken } from '../utils/authToken';
 
-export const loginWithOtp = (payload: { email?: string; mobileNumber?: string }) => {
+export const loginWithOtp = (payload: { email?: string; phoneNumber?: string }) => {
   return commonApiWrapper(api.post('/user/login/with-otp', payload));
 };
 
-export const verifyOtp = (payload: { email: string; otp: string | number }) => {
+export const verifyOtp = (payload: { email?: string; phoneNumber?: string; otp: string | number }) => {
   console.log("payload", payload);
   return commonApiWrapper(api.post('/user/login/with-otp', payload));
 };
@@ -64,6 +65,12 @@ export const loginWithGoogle = (idToken: string) => {
   }));
 };
 
+export const loginWithApple = (idToken: string) => {
+  return commonApiWrapper(api.post('/user/login/apple-login', {}, {
+    headers: { 'idToken': idToken },
+  }));
+};
+
 export const getUserProfile = async () => {
   const token = await getAuthToken();
   if (!token) {
@@ -76,3 +83,8 @@ export const getUserProfile = async () => {
     },
   }));
 }; 
+
+export const getErrorDataFromResponse = <T = any>(error: any) => {
+  const axiosError = error as AxiosError;
+  return (axiosError?.response?.data ?? {}) as T;
+}
