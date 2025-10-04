@@ -1,6 +1,6 @@
 import { Alert } from 'react-native';
 import { NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
-import { setUser, userStore } from '../../login/store/login.store';
+import { setUser, userStore, setShowAuthStack } from '../../login/store/login.store';
 import { verifyOtp, loginWithOtp } from '../../../services/ApiService';
 import * as Keychain from 'react-native-keychain';
 import { signal } from '@preact/signals-react';
@@ -50,14 +50,15 @@ export const handleVerify = async (route: any, navigation: any) => {
     if (data) {
       setUser({
         ...userStore.value,
-        isNewUser: data.isNewUser,
-        role: data.role,
+        isNewUser: (data as any).isNewUser,
+        role: (data as any).role,
         isAuthenticated: true,
       });
       console.log("data", data);
       
-      await Keychain.setGenericPassword('auth', data.token);
-      if (data.isNewUser) {
+      await Keychain.setGenericPassword('auth', (data as any).token);
+      setShowAuthStack(false); // Hide auth stack and return to app stack
+      if ((data as any).isNewUser) {
         navigation.navigate('Register');
       }
     }
@@ -67,7 +68,7 @@ export const handleVerify = async (route: any, navigation: any) => {
 };
 
 export const handleResend = async (route: any, setTimeLeft: (n: number) => void, timeLeft: number) => {
-  if (!!timeLeft.value) {
+  if (timeLeft === 0) {
     try {
       const payload = route.params.email ? { email: route.params.email } : { phoneNumber: route.params.phoneNumber };
       const [, error] = await loginWithOtp(payload);

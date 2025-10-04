@@ -4,6 +4,7 @@ import HomeScreen from '../pages/home/HomeScreen';
 import EventDetailsScreen from '../pages/event/EventDetailsScreen';
 import EventTicketsScreen from '@pages/event/EventTicketsScreen';
 import TicketCheckoutScreen from '@pages/checkout/TicketCheckoutScreen';
+import SuccessReceiptScreen from '@pages/checkout/SuccessReceiptScreen';
 import SearchScreen from '../pages/search/SearchScreen';
 import OrganizerProfileScreen from '@pages/organizerProfile/OrganizerProfileScreen';
 
@@ -16,6 +17,7 @@ const HomeStack = () => {
       <Stack.Screen name="EventDetails" component={EventDetailsScreen} />
       <Stack.Screen name="EventTickets" component={EventTicketsScreen} />
       <Stack.Screen name="TicketCheckout" component={TicketCheckoutScreen} />
+      <Stack.Screen name="SuccessReceipt" component={SuccessReceiptScreen} />
       <Stack.Screen name="OrganizerProfile" component={OrganizerProfileScreen} />
       <Stack.Screen name="Search" component={SearchScreen} />
     </Stack.Navigator>

@@ -11,11 +11,9 @@ interface EventMapProps {
 }
 
 const EventMap: React.FC<EventMapProps> = ({ lat, lon, name, address }) => {
-  console.log('EventMap rendering with:', { lat, lon, name, address, platform: Platform.OS });
   
   // Validate coordinates
   if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
-    console.error('Invalid coordinates:', { lat, lon });
     return (
       <View style={styles.container}>
         <View style={styles.errorContainer}>

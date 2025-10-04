@@ -10,6 +10,7 @@ import {
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import Divider from '../../components/divider';
 import { useNavigation } from '@react-navigation/native';
@@ -66,10 +67,10 @@ const HomeScreen = () => {
   const flatListRef = useRef<FlatList>(null);
   const LIMIT = 9;
 
-  const isLoggedIn = userStore.value.email || userStore.value.mobileNumber;
-  console.log(isLoggedIn,userStore.value, "Is Logged In");
+  const isLoggedIn = userStore.value.email || (userStore.value as any).mobileNumber;
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
 
   useEffect(() => {
@@ -123,19 +124,34 @@ const HomeScreen = () => {
 
   const filteredEvents = getFilteredEvents(selectedCategory);
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      setOffset(0);
+      setHasMore(true);
+      setMoreEvents([]);
+      await initializeData();
+      await loadMoreEvents();
+    } catch (error) {
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   return (
     <View style={styles.container}>
       <FlatList
         ListHeaderComponent={
           <>
             <View style={styles.header}>
-              <TouchableOpacity style={styles.searchContainer} onPress={() => navigation.navigate('Search')}>
+              <TouchableOpacity style={styles.searchContainer} onPress={() => (navigation as any).navigate('Search')}>
                 <Search color="#666" size={normalize(20)} />
                 <TextInput
                   placeholder="Search events"
                   style={styles.searchInput}
                   placeholderTextColor="#666"
                   editable={false}
+                  pointerEvents="none"
                 />
                 <TouchableOpacity style={styles.filterButton} onPress={openFilter}>
                   <SlidersHorizontal color="#fff" size={normalize(20)} />
@@ -241,7 +257,7 @@ const HomeScreen = () => {
             onPress={async () => {
               try {
                 await fetchEventById(item.id);
-                navigation.navigate('EventDetails');
+                (navigation as any).navigate('EventDetails');
               } catch (error) {
               }
             }}
@@ -252,6 +268,14 @@ const HomeScreen = () => {
         keyExtractor={item => item.id}
         onEndReached={loadMoreEvents}
         onEndReachedThreshold={0.5}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#0C0453']}
+            tintColor="#0C0453"
+          />
+        }
         ListFooterComponent={
           loading.value ? (
             <ActivityIndicator size="large" color="#0C0453" style={styles.loadingIndicator} />

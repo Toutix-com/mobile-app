@@ -1,5 +1,6 @@
 import { signal } from '@preact/signals-react';
 import { moreEvents } from '../../home/store/home.store';
+import moment from 'moment';
 
 // Types
 export interface TrendingEvent {
@@ -218,64 +219,25 @@ const parseHumanDate = (dateString: string): Date | null => {
 };
 
 // Helper function to match dates in different formats
-const matchesDateFilter = (eventDate: string, searchDate: string): boolean => {
-  if (!searchDate) return true; // No date filter applied
-  
-  console.log('=== DATE MATCHING DEBUG ===');
-  console.log('Event date (ISO):', eventDate);
-  console.log('Search date (user input):', searchDate);
-  
-  try {
-    const eventDateObj = new Date(eventDate);
-    const searchDateObj = parseHumanDate(searchDate);
-    
-    if (!searchDateObj) {
-      console.log('Failed to parse search date, using fallback');
-      return eventDate.includes(searchDate);
-    }
-    
-    console.log('Parsed event date:', eventDateObj);
-    console.log('Parsed search date:', searchDateObj);
-    console.log('Event date valid:', !isNaN(eventDateObj.getTime()));
-    console.log('Search date valid:', !isNaN(searchDateObj.getTime()));
-    
-    // If searchDate is a full date (e.g., "August 1, 2025")
-    if (searchDate.includes(',')) {
-      const eventDateStr = eventDateObj.toDateString();
-      const searchDateStr = searchDateObj.toDateString();
-      console.log('Full date comparison:', eventDateStr, '===', searchDateStr, 'Result:', eventDateStr === searchDateStr);
-      return eventDateStr === searchDateStr;
-    }
-    
-    // If searchDate is just month and year (e.g., "August 2025")
-    if (searchDate.split(' ').length === 2) {
-      const eventMonth = eventDateObj.toLocaleString('en-US', { month: 'long' });
-      const eventYear = eventDateObj.getFullYear().toString();
-      const searchMonth = searchDateObj.toLocaleString('en-US', { month: 'long' });
-      const searchYear = searchDateObj.getFullYear().toString();
-      
-      console.log('Month/Year comparison:', eventMonth, eventYear, '===', searchMonth, searchYear, 'Result:', eventMonth === searchMonth && eventYear === searchYear);
-      return eventMonth === searchMonth && eventYear === searchYear;
-    }
-    
-    // If searchDate is just year (e.g., "2025")
-    if (searchDate.length === 4 && /^\d{4}$/.test(searchDate)) {
-      const eventYear = eventDateObj.getFullYear().toString();
-      console.log('Year comparison:', eventYear, '===', searchDate, 'Result:', eventYear === searchDate);
-      return eventYear === searchDate;
-    }
-    
-    // Fallback: try to match as substring
-    const fallbackResult = eventDate.includes(searchDate);
-    console.log('Fallback substring matching:', eventDate.includes(searchDate), 'Result:', fallbackResult);
-    return fallbackResult;
-  } catch (error) {
-    console.log('Date matching error:', error);
-    // Fallback: try to match as substring
-    const fallbackResult = eventDate.includes(searchDate);
-    console.log('Error fallback substring matching:', fallbackResult);
-    return fallbackResult;
+const matchesDateFilter = (eventDateISO: string, userInput: string): boolean => {
+  const eventDate = moment(eventDateISO); // ISO date from event
+  let inputDate;
+
+  // Try parsing full date first: "July 2, 2025"
+  inputDate = moment(userInput, "MMMM D, YYYY", true);
+
+  if (inputDate.isValid()) {
+    // Exact date match
+    return eventDate.isSame(inputDate, "day");
   }
+
+  // If not valid, try parsing month/year: "October 2025"
+  inputDate = moment(userInput, "MMMM YYYY", true);
+  if (inputDate.isValid()) {
+    return eventDate.isSame(inputDate, "month");
+  }
+
+  return false;
 };
 
 // New functions for search results and category results
