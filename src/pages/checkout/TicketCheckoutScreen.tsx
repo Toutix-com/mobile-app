@@ -11,7 +11,7 @@ import {
   Platform,
   StatusBar,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useSignals } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
 import {
@@ -19,13 +19,16 @@ import {
   MapPin,
   Calendar,
   Clock,
+  CheckCircle,
+  Trash2
 } from 'lucide-react-native';
 import {
   useStripe,
   CardField,
   CardForm,
   useConfirmPayment,
-  usePaymentSheet
+  usePaymentSheet,
+  PaymentSheet
 } from '@stripe/stripe-react-native';
 import {
   isProcessingPayment,
@@ -45,7 +48,8 @@ import {
   reservationSecondsRemaining,
   isReservationExpired,
   startReservationTimer,
-  stopReservationTimer
+  stopReservationTimer,
+  resetReservationTimer
 } from './store/checkout.store';
 import { createMockPaymentIntent } from '../../services/stripeService';
 
@@ -57,31 +61,27 @@ const TicketCheckoutScreen: React.FC = () => {
   const { presentPaymentSheet , initPaymentSheet, loading } = usePaymentSheet();
 
   const orderSummary = getOrderSummary();
+  
 
   useEffect(() => {
-    loadCheckoutObject();
-    initializePaymentSheet();
-    // Ensure timer starts even if backend call delays
-    startReservationTimer(300);
     return () => {
       stopReservationTimer();
+      resetReservationTimer();
+      removeCoupon();
     };
   }, []);
 
   const initializePaymentSheet = async () => {
     console.log(checkoutPayload.value, "Checkout Payload");
     
-    const { error } = await initPaymentSheet({
-      customerId: checkoutPayload.value?.customerId,
-      paymentIntentClientSecret: checkoutPayload.value?.clientSecret,
-      intentConfiguration: {
-        paymentMethodTypes: 'Card',
-      },
-      merchantDisplayName: 'Toutix',
-    });
+    if (checkoutPayload.value?.clientSecret) {
+      const { error } = await initPaymentSheet({
+        paymentIntentClientSecret: checkoutPayload.value.clientSecret,
+        merchantDisplayName: 'Toutix',
+      });
 
-    console.log(error, "Error");
-    
+      console.log(error, "Error");
+    }
   }
 
   if (!orderSummary) {
@@ -93,82 +93,32 @@ const TicketCheckoutScreen: React.FC = () => {
   }
 
   const hanldeBuy = async () => {
-    initializePaymentSheet(); 
-    const { error } = await presentPaymentSheet();
-    if (error) {
-      console.log(error, "Error");
-    }else{
-      console.log("Payment Sheet Presented");
-    }
+    startReservationTimer(300);
+    loadCheckoutObject(navigation).then(async () => {
+      console.log("Checkout Object Loaded");
+      if (checkoutPayload.value?.isFreeCheckout) {
+        navigation.navigate('SuccessReceipt');
+        return;
+      }
+      initializePaymentSheet();
+      const { error } = await presentPaymentSheet();
+      if (error) {
+        console.log(error, "Error Payment Sheet");
+        Alert.alert('Payment Failed', error.message || 'Please try again');
+      } else {
+        console.log("Payment Sheet Presented Successfully");
+        // Navigate to success receipt page
+        navigation.navigate('SuccessReceipt' as never);
+      }
+    });
   }
 
   const { event, tickets, subtotal, transactionFee, discount, total } = orderSummary;
-
-  const handlePayment = async () => {
-    try {
-      isProcessingPayment.value = true;
-      paymentError.value = null;
-
-      // Use client secret from checkout payload returned by backend
-      const clientSecret = checkoutPayload.value?.clientSecret;
-
-      console.log("Client secret", clientSecret);
-      
-      if (!clientSecret) {
-        throw new Error('Missing client secret. Please try again.');
-      }
-
-      // Confirm payment with Stripe
-      const { error, paymentIntent: confirmedPaymentIntent } = await confirmPaymentHook(
-        clientSecret,
-        {
-          paymentMethodType: 'Card',
-        }
-      );
-
-      console.log(confirmedPaymentIntent, "Confirmed Payment Intent");
-
-      if (error) {
-        console.log("Errore", error);
-        
-        paymentError.value = error.message;
-        Alert.alert('Payment Failed', error.message);
-      } else if (confirmedPaymentIntent?.status === 'Succeeded') {
-        Alert.alert(
-          'Payment Successful!',
-          'Your tickets have been purchased successfully.',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                clearCheckout();
-                navigation.navigate('Tickets' as never);
-              },
-            },
-          ]
-        );
-      }
-    } catch (error: any) {
-      paymentError.value = error.message || 'Payment failed';
-      Alert.alert('Payment Failed', error.message || 'Please try again');
-    } finally {
-      isProcessingPayment.value = false;
-    }
-  };
 
   return (
     <ScrollView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
-      {/* Status Bar */}
-      <View style={styles.statusBar}>
-        <Text style={styles.statusTime}>9:41</Text>
-        <View style={styles.statusIcons}>
-          <View style={styles.signalIcon} />
-          <View style={styles.wifiIcon} />
-          <View style={styles.batteryIcon} />
-        </View>
-      </View>
 
       {/* Header */}
       <View style={styles.header}>
@@ -192,87 +142,79 @@ const TicketCheckoutScreen: React.FC = () => {
 
         {/* Ticket Items */}
         <View style={styles.ticketItems}>
-          <View style={styles.ticketItem}>
-            <Text style={styles.ticketItemText}>1 X Early bird general admission</Text>
-            <Text style={styles.ticketItemPrice}>$18.00</Text>
-          </View>
-          <View style={styles.ticketItem}>
-            <Text style={styles.ticketItemText}>2 X Bundled Pass (4 general admission tickets)</Text>
-            <Text style={styles.ticketItemPrice}>$150.00</Text>
-          </View>
+          {tickets.map((ticket, index) => (
+            <View style={styles.ticketItem} key={index}>
+              <Text style={styles.ticketItemText}>{ticket.quantity} X {ticket.category.title}</Text>
+              <Text style={styles.ticketItemPrice}>${ticket.total.toFixed(2)}</Text>
+            </View>
+          ))}
         </View>
 
         {/* Cost Breakdown */}
         <View style={styles.costBreakdown}>
           <View style={styles.costRow}>
             <Text style={styles.costLabel}>Sub total</Text>
-            <Text style={styles.costValue}>$168.00</Text>
+            <Text style={styles.costValue}>${subtotal.toFixed(2)}</Text>
           </View>
           <View style={styles.costRow}>
-            <Text style={styles.costLabel}>Transaction fee (10%)</Text>
-            <Text style={styles.costValue}>$16.80</Text>
+            <Text style={styles.costLabel}>Transaction fee</Text>
+            <Text style={styles.costValue}>${transactionFee.toFixed(2)}</Text>
           </View>
+          {discount > 0 && (
+            <View style={styles.costRow}>
+              <Text style={styles.costLabel}>Discount</Text>
+              <Text style={[styles.costValue, styles.discountValue]}>-${discount.toFixed(2)}</Text>
+            </View>
+          )}
           <View style={[styles.costRow, styles.totalRow]}>
             <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>$183.80</Text>
+            <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
           </View>
         </View>
 
         {/* Payment Section */}
         <View style={styles.paymentSection}>
-          <Text style={styles.paymentTitle}>Pay using</Text>
+          <Text style={styles.paymentTitle}>Have a coupon?</Text>
           
           <View style={styles.paymentForm}>
-            {/* Card Number */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Card number</Text>
-              <View style={styles.cardInputContainer}>
-                <CardField
-                  placeholders={{
-                    number: '1234 5678 9012 3456',
-                  }}
-                  cardStyle={{
-                    backgroundColor: '#FFFFFF',
-                    textColor: '#000000',
-                    borderWidth: 1,
-                    borderColor: '#e9ecef',
-                    borderRadius: 8,
-                    fontSize: 16,
-                    placeholderColor: '#999999',
-                  }}
-                  style={styles.cardField}
-                  postalCodeEnabled={false}
-                />
-                {/* <CardForm
-  style={{ height: 250 }}
-  cardStyle={{
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    textColor: '#000',
-  }}
-  onFormComplete={(cardDetails) => {
-    console.log('card details', cardDetails);
-  }}
-/> */}
-              </View>
-            </View>
-
-            {/* Name on Card */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Name on card</Text>
+            <View style={[styles.inputGroup, styles.couponInputRow]}>
               <TextInput
-                style={styles.nameInput}
-                placeholder="e.g. Sam Fisher"
+                style={[styles.nameInput, appliedCoupon.value && styles.nameInputDisabled]}
+                placeholder="Enter coupon code"
                 placeholderTextColor="#999"
-                value={billingAddress.value.firstName + ' ' + billingAddress.value.lastName}
+                value={couponCode.value}
                 onChangeText={(text) => {
-                  const names = text.split(' ');
-                  updateBillingAddress('firstName', names[0] || '');
-                  updateBillingAddress('lastName', names.slice(1).join(' ') || '');
+                  // Update coupon code in store
+                  couponCode.value = text;
                 }}
+                editable={!appliedCoupon.value}
               />
+              <TouchableOpacity 
+                style={[
+                  styles.applyCouponButton, 
+                  (couponCode.value.trim().length > 0 || appliedCoupon.value) && styles.applyCouponButtonActive
+                ]}
+                onPress={() => {
+                  if (appliedCoupon.value) {
+                    removeCoupon();
+                  } else {
+                    applyCoupon(couponCode.value);
+                  }
+                }}
+                disabled={!appliedCoupon.value && couponCode.value.trim().length === 0}
+              >
+                {appliedCoupon.value ? (
+                  <Trash2 
+                    color="#fff" 
+                    size={20} 
+                  />
+                ) : (
+                  <CheckCircle 
+                    color={couponCode.value.trim().length > 0 ? "#fff" : "#000"} 
+                    size={24} 
+                  />
+                )}
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -349,6 +291,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 20,
+    marginTop: normalize(60),
   },
   closeButton: {
     padding: 8,
@@ -452,6 +395,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
   },
+  discountValue: {
+    color: '#28a745',
+    fontWeight: '600',
+  },
   paymentSection: {
     marginBottom: 24,
   },
@@ -466,6 +413,10 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 16,
+  },
+  couponInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   inputLabel: {
     fontSize: normalize(16),
@@ -497,6 +448,55 @@ const styles = StyleSheet.create({
     borderColor: '#e9ecef',
     fontSize: normalize(16),
     color: '#000',
+    flex: 1,
+    marginRight: 12,
+  },
+  nameInputDisabled: {
+    backgroundColor: '#f8f9fa',
+    color: '#6c757d',
+    borderColor: '#dee2e6',
+  },
+  applyCouponButton: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  applyCouponButtonActive: {
+    backgroundColor: '#0C0453',
+    borderColor: '#0C0453',
+  },
+  couponApplied: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#e8f5e8',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+  },
+  couponAppliedText: {
+    fontSize: normalize(14),
+    color: '#2d5a2d',
+    flex: 1,
+  },
+  couponDiscount: {
+    fontWeight: 'bold',
+    color: '#1a4a1a',
+  },
+  removeCouponText: {
+    fontSize: normalize(14),
+    color: '#0C0453',
+    fontWeight: '600',
+  },
+  couponError: {
+    fontSize: normalize(14),
+    color: '#dc3545',
+    marginTop: 8,
   },
   reservationContainer: {
     alignItems: 'center',

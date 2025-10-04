@@ -1,7 +1,7 @@
 import { signal } from '@preact/signals-react';
 import { Platform, PermissionsAndroid, Alert, Linking } from 'react-native';
 import { launchCamera, launchImageLibrary, ImagePickerResponse, Asset } from 'react-native-image-picker';
-import { userStore, setUser, fetchUserProfile, logout } from '../../login/store/login.store';
+import { userStore, setUser, fetchUserProfile, logout, setShowAuthStack } from '../../login/store/login.store';
 import { updateUserProfile } from '../../../services/ApiService';
 import { getAllTickets, TicketApiModel } from '../../../services/ticketServices';
 
@@ -527,10 +527,7 @@ export const fetchUserProfileData = async () => {
 };
 
 export const handleLoginPress = () => {
-  setUser({ 
-    ...userStore.value,
-    isAuthenticated: false
-  });
+  setShowAuthStack(true);
 };
 
 export const handleLogout = async (navigation: any) => {

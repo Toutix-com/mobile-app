@@ -17,7 +17,7 @@ import GoogleIcon from '@assets/icons/google.svg';
 import AppleIcon from '@assets/icons/apple.svg';
 import GoogleSignInService from '../../services/GoogleSignInService';
 import AppleSignInService from '../../services/AppleSignInService';
-import { setUser, userStore, handleGoogleSignIn, handleAppleSignIn, handleContinue } from './store/login.store';
+import { setUser, userStore, handleGoogleSignIn, handleAppleSignIn, handleContinue, setShowAuthStack } from './store/login.store';
 import { useSignal } from '@preact/signals-react';
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -34,7 +34,7 @@ const LoginScreen: React.FC = () => {
 
   return (
     <GradientLayout>
-      <TouchableOpacity style={styles.closeButton} onPress={() => setUser({...userStore.value, isAuthenticated: true})}>
+      <TouchableOpacity style={styles.closeButton} onPress={() => setShowAuthStack(false)}>
         <Text style={styles.closeButtonText}>✕</Text>
       </TouchableOpacity>
 

@@ -29,6 +29,8 @@ const EventDetailsScreen = () => {
   useSignals();
   const navigation = useNavigation();
 
+  
+
   // Show loading state
   if (eventLoading.value) {
     return (
@@ -50,6 +52,7 @@ const EventDetailsScreen = () => {
 
   // Show event details
   const event = selectedEvent.value;
+  console.log("eventLoading", event);
   if (!event) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
@@ -66,26 +69,31 @@ const EventDetailsScreen = () => {
     const lat = event.location.lat;
     const lon = event.location.lon;
     const label = encodeURIComponent(event.location.name || 'Event Location');
-    let url = '';
     console.log(lat, lon, label, "Pressed");
     
     if (Platform.OS === 'ios') {
-      url = `comgooglemaps://?q=${lat},${lon}`;
-      Linking.canOpenURL(url).then((supported) => {
+      const googleMapsUrl = `comgooglemaps://?q=${lat},${lon}`;
+      Linking.canOpenURL(googleMapsUrl).then((supported) => {
         if (supported) {
-          Linking.openURL(url);
+          Linking.openURL(googleMapsUrl);
         } else {
-          url = `http://maps.apple.com/?ll=${lat},${lon}&q=${label}`;
-          Linking.openURL(url);
+          const appleMapsUrl = `maps://?q=${lat},${lon}`;
+          Linking.canOpenURL(appleMapsUrl).then((appleSupported) => {
+            if (appleSupported) {
+              Linking.openURL(appleMapsUrl);
+            } else {
+              const webMapsUrl = `https://maps.apple.com/?ll=${lat},${lon}&q=${label}`;
+              Linking.openURL(webMapsUrl);
+            }
+          });
         }
       });
     } else {
-      url = `geo:${lat},${lon}?q=${lat},${lon}(${label})`;
+      // Android implementation
+      const url = `geo:${lat},${lon}?q=${lat},${lon}(${label})`;
       Linking.openURL(url);
     }
   };
-
-  console.log("Event", event);
 
   return (
       <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -131,10 +139,28 @@ const EventDetailsScreen = () => {
           <Divider dividerStyle={{ marginVertical: normalize(10), marginHorizontal: normalize(16) }} />
           <EventPriceFooter price={priceRange} />
           <TouchableOpacity
-                  onPress={() => (navigation as any).navigate('EventTickets')}
-                  style={{ flex: 1, marginHorizontal: 5, backgroundColor: '#0C0453', borderRadius: 8, paddingVertical: 14, alignItems: 'center' }}
+                  onPress={() => {
+                    if (event.status !== 'SOLD_OUT') {
+                      (navigation as any).navigate('EventTickets');
+                    }
+                  }}
+                  disabled={event.status === 'SOLD_OUT'}
+                  style={{ 
+                    flex: 1, 
+                    marginHorizontal: 5, 
+                    backgroundColor: event.status === 'SOLD_OUT' ? '#ccc' : '#0C0453', 
+                    borderRadius: 8, 
+                    paddingVertical: 14, 
+                    alignItems: 'center' 
+                  }}
                 >
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Get tickets</Text>
+                  <Text style={{ 
+                    color: event.status === 'SOLD_OUT' ? '#666' : '#fff', 
+                    fontWeight: 'bold', 
+                    fontSize: 16 
+                  }}>
+                    {event.status === 'SOLD_OUT' ? 'Sold Out' : 'Get tickets'}
+                  </Text>
                 </TouchableOpacity>
             <EventDetailsModal
           visible={showDetailsModal.value}

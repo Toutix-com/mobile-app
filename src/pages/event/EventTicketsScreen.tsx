@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
 import { X , Plus } from 'lucide-react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { 
   selectedEvent,
   ticketQuantities,
@@ -11,7 +11,9 @@ import {
   getTransactionFee,
   getTotal,
   formatEventDate,
-  formatEventTimeRange
+  formatEventTimeRange,
+  clearSelectedEvent,
+  clearTicketQuantities
 } from './store/event.store';
 import { useSignals } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
@@ -24,6 +26,12 @@ const EventTicketsScreen = () => {
   if (!event) {
     return null;
   }
+
+  useEffect(() => {
+    return () => {
+      clearTicketQuantities();
+    };
+  }, []);
 
   const ticketCategories = event.ticketCategories || [];
 
@@ -95,7 +103,7 @@ const EventTicketsScreen = () => {
             <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Transaction fee (10%)</Text>
+            <Text style={styles.summaryLabel}>Transaction fee</Text>
             <Text style={styles.summaryValue}>${transactionFee.toFixed(2)}</Text>
           </View>
           <View style={styles.summaryRow}>
@@ -103,9 +111,6 @@ const EventTicketsScreen = () => {
             <Text style={styles.summaryValueBold}>${total.toFixed(2)}</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: normalize(10) , marginBottom: normalize(80), flex: 1, marginTop: normalize(20) }}>
-            <TouchableOpacity style={styles.couponBtn} onPress={() => {}}>
-              <Text style={styles.couponBtnText}>I have a coupon</Text>
-            </TouchableOpacity>
             <TouchableOpacity
             style={[styles.checkoutBtn, { backgroundColor: subtotal > 0 ? '#18104B' : '#C7C7D9' }]}
             disabled={subtotal === 0}
@@ -116,7 +121,7 @@ const EventTicketsScreen = () => {
             }}
           >
             <Text style={styles.checkoutBtnText}>
-              {'Checkout'}
+              {'Continue to pay'}
             </Text>
           </TouchableOpacity>
           </View>

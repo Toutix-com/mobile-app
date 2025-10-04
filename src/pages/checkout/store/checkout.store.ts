@@ -63,6 +63,22 @@ export interface CheckoutPayload {
   isFreeCheckout?: boolean;
 }
 
+export interface CouponData {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  name: string;
+  amountOff: number | null;
+  percentOff: number;
+  maxUseCount: number;
+  useCount: number;
+  expire: string;
+  events: {
+    id: string;
+  }[];
+}
+
 export const checkoutPayload = signal<CheckoutPayload | null>(null);
 
 // Reservation timer (5 minutes default)
@@ -97,6 +113,12 @@ export const stopReservationTimer = () => {
     clearInterval(reservationTimerHandle);
     reservationTimerHandle = null;
   }
+};
+
+export const resetReservationTimer = () => {
+  reservationSecondsRemaining.value = 300;
+  isReservationExpired.value = false;
+  stopReservationTimer();
 };
 
 // Payment methods
@@ -141,18 +163,54 @@ export const applyCoupon = async (code: string) => {
       return;
     }
 
-    const result = await validateCouponAPI(code, selectedEvent.value.id);
-    
-    if (result.valid && result.discount && result.type) {
-      appliedCoupon.value = {
-        code: code.toUpperCase(),
-        discount: result.discount,
-        type: result.type,
-      };
-      isCouponValid.value = true;
-    } else {
-      couponError.value = result.error || 'Invalid coupon code';
+    const [data, error] = await validateCouponAPI(code, selectedEvent.value.id);
+    console.log(data, error, "Data and Error");
+    if (error) {
+      couponError.value = 'Invalid coupon code';
+      return;
     }
+
+    const couponData = data as CouponData;
+
+    console.log(couponData, "Coupon Data");
+    
+    // Check if coupon is expired
+    if (couponData.expire && new Date(couponData.expire) < new Date()) {
+      couponError.value = 'Coupon has expired';
+      return;
+    }
+
+    // Check if coupon has reached max use count
+    if (couponData.maxUseCount && couponData.useCount >= couponData.maxUseCount) {
+      couponError.value = 'Coupon usage limit reached';
+      return;
+    }
+
+    // Check if coupon is valid for this event
+    const isValidForEvent = couponData.events?.some((event: any) => event.id === selectedEvent.value?.id);
+    if (!isValidForEvent) {
+      couponError.value = 'Coupon is not valid for this event';
+      return;
+    }
+
+    // Determine discount amount and type
+    let discount = 0;
+    let type: 'percentage' | 'fixed' = 'fixed';
+    
+    if (couponData.percentOff) {
+      discount = couponData.percentOff;
+      type = 'percentage';
+    } else if (couponData.amountOff) {
+      discount = couponData.amountOff;
+      type = 'fixed';
+    }
+
+    appliedCoupon.value = {
+      code: code.toUpperCase(),
+      discount,
+      type,
+    };
+    isCouponValid.value = true;
   } catch (error) {
     couponError.value = 'Failed to validate coupon';
   }
@@ -212,7 +270,7 @@ export const getOrderSummary = () => {
   };
 };
 
-export const loadCheckoutObject = async (navigation) => {
+export const loadCheckoutObject = async (navigation: any) => {
     console.log(getOrderSummary(), "Order Summary");
     const orderSummary = getOrderSummary();
     
@@ -227,13 +285,6 @@ export const loadCheckoutObject = async (navigation) => {
     console.log(response, error, "Response and Error");
     if (!response || error) {
         const errorObject = getErrorDataFromResponse(error);
-        if (errorObject.purchasedTicketCount) {
-            // totalPurchasedTicketsForCurrentEvent.value = errorObject.purchasedTicketCount
-        }
-        if (errorObject.isUIError) {
-            // navigateToStep(BuyTicketsSteps.SelectTicket)
-            // return showError(errorObject.message, "Something wrong while ticket purchasing");
-        }
         return;
     }
     // Expecting response in shape: { currency, amount, clientSecret, customerId, isFreeCheckout }
@@ -296,4 +347,9 @@ export const clearCheckout = () => {
   isCouponValid.value = false;
   couponError.value = null;
   stopReservationTimer();
+  
+  // Import and clear event-related data
+  const { clearSelectedEvent, clearTicketQuantities } = require('../../event/store/event.store');
+  clearSelectedEvent();
+  clearTicketQuantities();
 };
