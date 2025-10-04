@@ -63,6 +63,7 @@ import VenueSelectionBottomSheet from './components/VenueSelectionBottomSheet';
 import DatePickerBottomSheet from './components/DatePickerBottomSheet';
 import EventCard from '../../components/EventCard';
 import { Music, Drama, Dribbble, Baby, FileText, Heart } from 'lucide-react-native';
+import { fetchEventById } from '@pages/event/store/event.store';
 
 const { width, height } = Dimensions.get('window');
 
@@ -143,9 +144,9 @@ const SearchScreen: React.FC = () => {
     setLocalSearchValue('');
   };
 
-  const handleEventPress = (event: any) => {
-    // Navigate to event details
-    // navigation.navigate('EventDetails', { eventId: event.id });
+  const handleEventPress = async (event: any) => {
+    await fetchEventById(event.id);
+    navigation.navigate('EventDetails');
   };
 
   const handleFavoritePress = (eventId: string) => {
@@ -399,10 +400,6 @@ const SearchScreen: React.FC = () => {
                   ))
                 ) : (
                   <View style={styles.noResultsContainer}>
-                    <View style={styles.noResultsIcon}>
-                      <Text style={styles.ticketIcon}>🎫</Text>
-                      <Text style={styles.xIcon}>✕</Text>
-                    </View>
                     <Text style={styles.noResultsText}>
                       Sorry! couldn't find any event with this name
                     </Text>

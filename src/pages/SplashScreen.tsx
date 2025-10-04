@@ -9,6 +9,7 @@ import {
   Easing,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { restoreAuthState } from './login/store/login.store';
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,12 +59,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
     ]);
 
    
+    // Start auth restoration in parallel with animations
+    const authRestoration = restoreAuthState();
+    
     Animated.sequence([
       fadeInAnimations,
       Animated.delay(1500), 
       forwardAndFadeAnimation,
-    ]).start(() => {
-     
+    ]).start(async () => {
+      // Wait for both animation and auth restoration to complete
+      await authRestoration;
       setTimeout(onComplete, 100);
     });
 

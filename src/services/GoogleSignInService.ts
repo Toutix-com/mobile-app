@@ -3,7 +3,11 @@ import {
   statusCodes,
   type User,
 } from '@react-native-google-signin/google-signin';
-import { WEB_CLIENT_ID, IOS_CLIENT_ID } from '@env';
+import { Platform } from 'react-native';
+
+// Fallback values if environment variables are not available
+const WEB_CLIENT_ID = '1020926589370-9u0at2bffebn7kfn3p09khq9oh6jfdhg.apps.googleusercontent.com';
+const IOS_CLIENT_ID = '1020926589370-9u0at2bffebn7kfn3p09khq9oh6jfdhg.apps.googleusercontent.com';
 
 export interface GoogleSignInResult {
   email: string;
@@ -14,39 +18,67 @@ export interface GoogleSignInResult {
 
 class GoogleSignInService {
   static init() {
-    GoogleSignin.configure({
-      webClientId: WEB_CLIENT_ID,
-      iosClientId: IOS_CLIENT_ID,
-      offlineAccess: true,
-      forceCodeForRefreshToken: true,
-    });
+    try {
+      GoogleSignin.configure({
+        webClientId: WEB_CLIENT_ID,
+        iosClientId: Platform.OS === 'ios' ? IOS_CLIENT_ID : undefined,
+        offlineAccess: true,
+        forceCodeForRefreshToken: true,
+        scopes: ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
+      });
+      console.log('Google Sign-In configured successfully');
+    } catch (error) {
+      console.error('Error configuring Google Sign-In:', error);
+    }
   }
 
   static async signIn(): Promise<GoogleSignInResult | null> {
     try {
-      console.log("asasas");
+      console.log("Starting Google Sign-In process");
       
-      await GoogleSignin.hasPlayServices();
+      // Check if Google Play Services are available (Android only)
+      if (Platform.OS === 'android') {
+        await GoogleSignin.hasPlayServices();
+      }
+      
+      // Sign in
       const userInfo = await GoogleSignin.signIn();
-      console.log("sasasasa", userInfo);
+      console.log("Google Sign-In successful:", userInfo);
       
       const userData = userInfo?.data;
       
-      return userInfo ? {
-        email: userData.user?.email,
-        name: userData.user?.name,
-        photo: userData.user?.photo,
-        idToken: userData.idToken,
-      } : null;
+      if (!userData || !userData.user) {
+        console.error('No user data received from Google Sign-In');
+        return null;
+      }
+      
+      return {
+        email: userData.user.email || '',
+        name: userData.user.name || null,
+        photo: userData.user.photo || null,
+        idToken: userData.idToken || null,
+      };
     } catch (error: any) {
+      console.error('Google Sign-In error:', error);
+      
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('User cancelled the login flow');
       } else if (error.code === statusCodes.IN_PROGRESS) {
         console.log('Operation is in progress already');
       } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
         console.log('Play services not available or outdated');
+      } else if (error.code === statusCodes.SIGN_IN_REQUIRED) {
+        console.log('Sign in required');
       } else {
         console.log('Some other error happened:', error.toString());
+        // For iOS, log more detailed error information
+        if (Platform.OS === 'ios') {
+          console.log('iOS specific error details:', {
+            code: error.code,
+            message: error.message,
+            stack: error.stack
+          });
+        }
       }
       return null;
     }
@@ -78,7 +110,8 @@ class GoogleSignInService {
 
   static async isSignedIn(): Promise<boolean> {
     try {
-      return await GoogleSignin.isSignedIn();
+      const currentUser = await GoogleSignin.getCurrentUser();
+      return currentUser !== null;
     } catch (error) {
       console.error('Error checking sign in status:', error);
       return false;

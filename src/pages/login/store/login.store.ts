@@ -5,6 +5,7 @@ import AppleSignInService from '../../../services/AppleSignInService';
 import { loginWithOtp, loginWithGoogle, loginWithApple, getUserProfile } from '../../../services/ApiService';
 import { LoginType } from '../enums/auth-enum';
 import * as Keychain from 'react-native-keychain';
+import { getAuthToken } from '../../../utils/authToken';
 
 export interface UserState {
     id?: string;
@@ -32,6 +33,7 @@ export const userStore = signal<UserState>({
 });
 
 export const showSplash = signal<boolean>(true);
+export const showAuthStack = signal<boolean>(false);
 
 
 export const setUser = (user: UserState) => {
@@ -41,14 +43,20 @@ export const setUser = (user: UserState) => {
     }
 };
 
-export const logout = () => {
+export const logout = async () => {
+    try {
+        // Clear the keychain
+        await Keychain.resetGenericPassword();
+    } catch (error) {
+        console.error('Error clearing keychain:', error);
+    }
+    
     userStore.value = {
         birthday: new Date(2000, 0, 1),
         isAuthenticated: false,
         firstName: '',
         lastName: '',
     };
-    Keychain.resetGenericPassword();
 };
 
 export const updateUser = (fields: Partial<UserState>) => {
@@ -97,11 +105,18 @@ export const fetchUserProfile = async () => {
 
 export const validateInput = (value: string) => {
     const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-    const phoneRegex = /^\+?\d{10,15}$/;
-    if (emailRegex.test(value)) return { type: LoginType.EMAIL, value };
-    if (phoneRegex.test(value)) return { type: LoginType.MOBILE, value };
+    const phoneRegex = /^\+\d{10,15}$/;
+  
+    if (emailRegex.test(value)) {
+      return { type: LoginType.EMAIL, value };
+    }
+  
+    if (phoneRegex.test(value)) {
+      return { type: LoginType.MOBILE, value };
+    }
+  
     return null;
-};
+  };
 
 export const handleGoogleSignIn = async (navigation: any) => {
     setUser({ ...userStore.value, isLoading: true });
@@ -124,6 +139,7 @@ export const handleGoogleSignIn = async (navigation: any) => {
                     role: data.role,
                 });
                 await Keychain.setGenericPassword('auth', data.token);
+                setShowAuthStack(false); // Hide auth stack and return to app stack
             } else {
                 Alert.alert('Error', (response as any)?.message ? (response as any).message : 'Failed to login with Google');
             }
@@ -156,6 +172,7 @@ export const handleAppleSignIn = async (navigation: any) => {
                     role: data.role,
                 });
                 await Keychain.setGenericPassword('auth', data.token);
+                setShowAuthStack(false); // Hide auth stack and return to app stack
             } else {
                 Alert.alert('Error', (result.data as any)?.message ? (result.data as any).message : 'Failed to login with Apple');
             }
@@ -214,4 +231,51 @@ export const handleContinue = async (navigation: any) => {
 
 export const setShowSplash = (value: boolean) => {
     showSplash.value = value;
+};
+
+export const setShowAuthStack = (value: boolean) => {
+    showAuthStack.value = value;
+};
+
+// Function to restore authentication state on app startup
+export const restoreAuthState = async (): Promise<boolean> => {
+    try {
+        const token = await getAuthToken();
+        if (token) {
+            // Token exists, try to get user profile to verify it's still valid
+            const [userData, error] = await getUserProfile();
+            if (!error && userData) {
+                // Token is valid, restore user state
+                setUser({
+                    ...userStore.value,
+                    ...userData,
+                    isAuthenticated: true,
+                });
+                return true;
+            } else {
+                // Token is invalid, clear it
+                await Keychain.resetGenericPassword();
+                setUser({
+                    ...userStore.value,
+                    isAuthenticated: false,
+                });
+                return false;
+            }
+        } else {
+            // No token found
+            setUser({
+                ...userStore.value,
+                isAuthenticated: false,
+            });
+            return false;
+        }
+    } catch (error) {
+        console.error('Error restoring auth state:', error);
+        // On error, assume not authenticated
+        setUser({
+            ...userStore.value,
+            isAuthenticated: false,
+        });
+        return false;
+    }
 };
