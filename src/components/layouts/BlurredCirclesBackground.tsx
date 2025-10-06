@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, StatusBar, ViewStyle, View } from 'react-native';
+import { StyleSheet, StatusBar, ViewStyle, View, Platform } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import { tokens, normalize } from '../../design-system';
 
@@ -30,7 +30,7 @@ const BlurredCirclesBackground: React.FC<BlurredCirclesBackgroundProps> = ({ chi
       <BlurView
         style={styles.blurOverlay}
         blurType="dark"
-        blurAmount={100}
+        blurAmount={Platform.OS === 'android' ? 25 : 80}
         reducedTransparencyFallbackColor="transparent"
       />
       
@@ -58,30 +58,48 @@ const styles = StyleSheet.create({
   purpleCircleContainer: {
     position: 'absolute',
     top: normalize(150),
-    right: normalize(-50),
-    width: normalize(300),
-    height: normalize(300),
+    right: Platform.select({
+      android: normalize(-100),
+      ios: normalize(-50),
+    }),
+    width: Platform.select({
+      android: normalize(400),
+      ios: normalize(200),
+    }),
+    height: Platform.select({
+      android: normalize(400),
+      ios: normalize(200),
+    }),
   },
   purpleCircle: {
     width: '100%',
     height: '100%',
-    borderRadius: normalize(200),
+    borderRadius: normalize(999),
     backgroundColor: tokens.colors.flashPurple[9],
-    opacity: 1,
+    opacity: 0.8,
   },
   greenCircleContainer: {
     position: 'absolute',
     top: normalize(200),
-    left: normalize(-50),
-    width: normalize(300),
-    height: normalize(300),
+    left: Platform.select({
+      android: normalize(-100),
+      ios: normalize(-50),
+    }),
+    width: Platform.select({
+      android: normalize(400),
+      ios: normalize(200),
+    }),
+    height: Platform.select({
+      android: normalize(400),
+      ios: normalize(200),
+    }),
   },
   greenCircle: {
     width: '100%',
     height: '100%',
-    borderRadius: normalize(250),
+    borderRadius: normalize(999),
     backgroundColor: tokens.colors.flashGreen[9],
-    opacity: 1,
+    opacity: 0.8,
   },
   blurOverlay: {
     position: 'absolute',

@@ -131,8 +131,8 @@ const styles = StyleSheet.create({
   },
   closeButtonText: {
     color: tokens.colors.textInverse, // Using semantic color - white text on dark background
-    fontSize: normalize(18),
-    fontWeight: '300',
+    fontSize: normalize(tokens.typography.fontSize.lg),
+    fontWeight: tokens.typography.fontWeight.normal,
   },
   logoContainer: {
     alignItems: 'center',
@@ -146,8 +146,8 @@ const styles = StyleSheet.create({
   },
   tagline: {
     color: tokens.colors.textInverse, // Using semantic color - white text on dark background
-    fontSize: normalize(28),
-    fontWeight: '600',
+    fontSize: normalize(tokens.typography.fontSize['3xl']),
+    fontWeight: tokens.typography.fontWeight.bold,
     marginTop: normalize(14),
     textAlign: 'center',
   },
@@ -161,14 +161,14 @@ const styles = StyleSheet.create({
     paddingBottom: Platform.OS === 'ios' ? normalize(34) : normalize(24),
   },
   title: {
-    fontSize: normalize(24),
-    fontWeight: '600',
+    fontSize: normalize(tokens.typography.fontSize['2xl']),
+    fontWeight: tokens.typography.fontWeight.bold,
     color: tokens.colors.text, // Using semantic color
     marginBottom: normalize(24),
   },
   description: {
-    fontSize: normalize(14),
-    fontWeight: '400',
+    fontSize: normalize(tokens.typography.fontSize.sm),
+    fontWeight: tokens.typography.fontWeight.normal,
     color: tokens.colors.textSecondary, // Using semantic color
     marginBottom: normalize(24),
   },
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     marginBottom: normalize(16),
   },
   label: {
-    fontSize: normalize(16),
+    fontSize: normalize(tokens.typography.fontSize.base),
     color: tokens.colors.text, // Using semantic color
     marginBottom: normalize(8),
   },
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     borderColor: tokens.colors.border, // Using semantic color
     borderRadius: tokens.borderRadius.default,
     padding: normalize(16),
-    fontSize: normalize(16),
+    fontSize: normalize(tokens.typography.fontSize.base),
     color: tokens.colors.text, // Using semantic color
   },
   loginButton: {
@@ -193,13 +193,13 @@ const styles = StyleSheet.create({
     borderRadius: tokens.borderRadius.full,
     padding: normalize(16),
     alignItems: 'center',
-    marginBottom: normalize(16),
+    marginBottom: normalize(24),
     marginTop: '20%',
   },
   loginButtonText: {
     color: tokens.colors.textInverse, // Using semantic color
-    fontSize: normalize(16),
-    fontWeight: '600',
+    fontSize: normalize(tokens.typography.fontSize.base),
+    fontWeight: tokens.typography.fontWeight.bold,
   },
   dividerContainer: {
     flexDirection: 'row',
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   dividerText: {
     color: tokens.colors.textSecondary, // Using semantic color
     paddingHorizontal: normalize(12),
-    fontSize: normalize(14),
+    fontSize: normalize(tokens.typography.fontSize.sm),
   },
   socialButtonsContainer: {
     flexDirection: 'row',
@@ -233,9 +233,9 @@ const styles = StyleSheet.create({
     marginHorizontal: normalize(3),
   },
   socialButtonText: {
-    fontSize: normalize(16),
+    fontSize: normalize(tokens.typography.fontSize.base),
     color: tokens.colors.primary, // Using semantic color
-    fontWeight: '500',
+    fontWeight: tokens.typography.fontWeight.medium,
     marginLeft: normalize(12),
   },
 });
