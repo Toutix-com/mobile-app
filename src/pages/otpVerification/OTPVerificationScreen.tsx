@@ -14,7 +14,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ChevronLeft } from 'lucide-react-native';
 import { AuthStackParamList } from '../../navigation/AuthStack';
-import GradientLayout from '../../components/layouts/GradientLayout';
+import BlurredCirclesBackground from '../../components/layouts/BlurredCirclesBackground';
 import { verifyOtp, loginWithOtp } from '../../services/ApiService';
 import { handleOtpChange, handleKeyPress, handleVerify, handleResend, formatTime, timeLeft, setTimeLeft } from './store/otpVerify.store';
 import { setUser, userStore } from '../login/store/login.store';
@@ -58,7 +58,7 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
   };
 
   return (
-    <GradientLayout>
+    <BlurredCirclesBackground>
       <TouchableOpacity style={styles.backButton} onPress={handleBack}>
         <ChevronLeft color="#FFFFFF" size={24} />
       </TouchableOpacity>
@@ -125,7 +125,7 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           </View>
         </View>
      
-    </GradientLayout>
+    </BlurredCirclesBackground>
   );
 };
 

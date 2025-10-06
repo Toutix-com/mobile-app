@@ -12,7 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AuthStack';
-import GradientLayout from '../../components/layouts/GradientLayout';
+import BlurredCirclesBackground from '../../components/layouts/BlurredCirclesBackground';
 import GoogleIcon from '@assets/icons/google.svg';
 import AppleIcon from '@assets/icons/apple.svg';
 import GoogleSignInService from '../../services/GoogleSignInService';
@@ -34,7 +34,7 @@ const LoginScreen: React.FC = () => {
   }, []);
 
   return (
-    <GradientLayout>
+    <BlurredCirclesBackground>
       <TouchableOpacity style={styles.closeButton} onPress={() => setShowAuthStack(false)}>
         <Text style={styles.closeButtonText}>✕</Text>
       </TouchableOpacity>
@@ -110,7 +110,7 @@ const LoginScreen: React.FC = () => {
           </TouchableOpacity>
         </View>
       </View>
-    </GradientLayout>
+    </BlurredCirclesBackground>
   );
 };
 
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeButtonText: {
-    color: tokens.colors.textInverse, // Using semantic color
+    color: tokens.colors.textInverse, // Using semantic color - white text on dark background
     fontSize: normalize(18),
     fontWeight: '300',
   },
@@ -142,10 +142,10 @@ const styles = StyleSheet.create({
   logo: {
     width: width * 0.45,
     height: normalize(35),
-    tintColor: tokens.colors.textInverse, // Using semantic color
+    tintColor: tokens.colors.textInverse, // Using semantic color - white logo on dark background
   },
   tagline: {
-    color: tokens.colors.textInverse, // Using semantic color
+    color: tokens.colors.textInverse, // Using semantic color - white text on dark background
     fontSize: normalize(28),
     fontWeight: '600',
     marginTop: normalize(14),

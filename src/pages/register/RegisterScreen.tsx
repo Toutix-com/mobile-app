@@ -14,7 +14,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AuthStack';
-import GradientLayout from '../../components/layouts/GradientLayout';
+import BlurredCirclesBackground from '../../components/layouts/BlurredCirclesBackground';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import DatePicker from 'react-native-date-picker';
 import { Calendar, ChevronLeft } from 'lucide-react-native';
@@ -44,7 +44,7 @@ const RegisterScreen: React.FC = () => {
   };
 
   return (
-    <GradientLayout>
+    <BlurredCirclesBackground>
       <TouchableOpacity style={styles.backButton} onPress={handleLoginPress}>
         <ChevronLeft color="#FFFFFF" size={24} />
       </TouchableOpacity>
@@ -127,7 +127,7 @@ const RegisterScreen: React.FC = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </GradientLayout>
+    </BlurredCirclesBackground>
   );
 };
 
