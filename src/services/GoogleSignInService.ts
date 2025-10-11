@@ -5,8 +5,8 @@ import {
 } from '@react-native-google-signin/google-signin';
 import { Platform } from 'react-native';
 
-// Fallback values if environment variables are not available
-const WEB_CLIENT_ID = '1020926589370-9u0at2bffebn7kfn3p09khq9oh6jfdhg.apps.googleusercontent.com';
+// Client IDs from google-services.json
+const WEB_CLIENT_ID = '1020926589370-ljjvvn2psb3j4sb197h3f9ceenmcler1.apps.googleusercontent.com';
 const IOS_CLIENT_ID = '1020926589370-9u0at2bffebn7kfn3p09khq9oh6jfdhg.apps.googleusercontent.com';
 
 export interface GoogleSignInResult {
@@ -19,14 +19,16 @@ export interface GoogleSignInResult {
 class GoogleSignInService {
   static init() {
     try {
-      GoogleSignin.configure({
+      const config: any = {
         webClientId: WEB_CLIENT_ID,
         iosClientId: Platform.OS === 'ios' ? IOS_CLIENT_ID : undefined,
         offlineAccess: true,
         forceCodeForRefreshToken: true,
         scopes: ['https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile'],
-      });
-      console.log('Google Sign-In configured successfully');
+      };
+
+      GoogleSignin.configure(config);
+      console.log('Google Sign-In configured successfully for', Platform.OS);
     } catch (error) {
       console.error('Error configuring Google Sign-In:', error);
     }
@@ -43,7 +45,6 @@ class GoogleSignInService {
       
       // Sign in
       const userInfo = await GoogleSignin.signIn();
-      console.log("Google Sign-In successful:", userInfo);
       
       const userData = userInfo?.data;
       
@@ -71,14 +72,7 @@ class GoogleSignInService {
         console.log('Sign in required');
       } else {
         console.log('Some other error happened:', error.toString());
-        // For iOS, log more detailed error information
-        if (Platform.OS === 'ios') {
-          console.log('iOS specific error details:', {
-            code: error.code,
-            message: error.message,
-            stack: error.stack
-          });
-        }
+        
       }
       return null;
     }

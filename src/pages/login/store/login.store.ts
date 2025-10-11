@@ -6,6 +6,7 @@ import { loginWithOtp, loginWithGoogle, loginWithApple, getUserProfile } from '.
 import { LoginType } from '../enums/auth-enum';
 import * as Keychain from 'react-native-keychain';
 import { getAuthToken } from '../../../utils/authToken';
+import { showSuccessToast, showErrorToast } from '../../../components/toast';
 
 export interface UserState {
     id?: string;
@@ -140,14 +141,16 @@ export const handleGoogleSignIn = async (navigation: any) => {
                 });
                 await Keychain.setGenericPassword('auth', data.token);
                 setShowAuthStack(false); // Hide auth stack and return to app stack
+                showSuccessToast('Successfully signed in with Google!');
             } else {
-                Alert.alert('Error', (response as any)?.message ? (response as any).message : 'Failed to login with Google');
+                const errorMessage = (response as any)?.message || 'Failed to login with Google';
+                showErrorToast(errorMessage);
             }
         } else {
-            Alert.alert('Error', 'Failed to sign in with Google');
+            showErrorToast('Failed to sign in with Google');
         }
     } catch (error) {
-        Alert.alert('Error', 'Failed to sign in with Google');
+        showErrorToast('Failed to sign in with Google');
     } finally {
         setUser({ ...userStore.value, isLoading: false });
     }
@@ -173,14 +176,16 @@ export const handleAppleSignIn = async (navigation: any) => {
                 });
                 await Keychain.setGenericPassword('auth', data.token);
                 setShowAuthStack(false); // Hide auth stack and return to app stack
+                showSuccessToast('Successfully signed in with Apple!');
             } else {
-                Alert.alert('Error', (result.data as any)?.message ? (result.data as any).message : 'Failed to login with Apple');
+                const errorMessage = (result.data as any)?.message || 'Failed to login with Apple';
+                showErrorToast(errorMessage);
             }
         } else {
-            Alert.alert('Error', result.error || 'Failed to sign in with Apple');
+            showErrorToast(result.error || 'Failed to sign in with Apple');
         }
     } catch (error) {
-        Alert.alert('Error', 'Failed to sign in with Apple');
+        showErrorToast('Failed to sign in with Apple');
     } finally {
         setUser({ ...userStore.value, isLoading: false });
     }

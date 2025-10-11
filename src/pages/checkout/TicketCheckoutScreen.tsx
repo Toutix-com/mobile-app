@@ -52,6 +52,7 @@ import {
   resetReservationTimer
 } from './store/checkout.store';
 import { createMockPaymentIntent } from '../../services/stripeService';
+import { showErrorToast } from '@components/toast';
 
 const TicketCheckoutScreen: React.FC = () => {
   useSignals();
@@ -95,19 +96,18 @@ const TicketCheckoutScreen: React.FC = () => {
   const hanldeBuy = async () => {
     startReservationTimer(300);
     loadCheckoutObject(navigation).then(async () => {
-      console.log("Checkout Object Loaded");
+      await initializePaymentSheet();
       if (checkoutPayload.value?.isFreeCheckout) {
         navigation.navigate('SuccessReceipt');
         return;
       }
-      initializePaymentSheet();
+      
       const { error } = await presentPaymentSheet();
       if (error) {
         console.log(error, "Error Payment Sheet");
-        Alert.alert('Payment Failed', error.message || 'Please try again');
+        showErrorToast('Payment Failed', error.message || 'Please try again');
       } else {
         console.log("Payment Sheet Presented Successfully");
-        // Navigate to success receipt page
         navigation.navigate('SuccessReceipt' as never);
       }
     });
