@@ -79,3 +79,5 @@ yarn-error.log
 .env.local
 .env.development
 .env.production
+Gemfile.lock
+.gitignore
