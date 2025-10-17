@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, SafeAreaView, ActivityIndicator, TouchableOpacity, Linking, Platform, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, ScrollView, StyleSheet, SafeAreaView, ActivityIndicator, TouchableOpacity, Linking, Platform, Alert, Animated, Dimensions } from 'react-native';
 import { useSignals } from '@preact/signals-react/runtime';
 // Placeholder imports for modular components
 import EventHeader from './components/EventHeader';
@@ -25,10 +25,35 @@ import { useNavigation } from '@react-navigation/native';
 import Divider from '@components/divider';
 import { normalize } from '@utils/responsive';
 import { Button, AppText, Icon } from '../../components';
+import { ChevronLeft, Share, Heart } from 'lucide-react-native';
 
 const EventDetailsScreen = () => {
   useSignals();
   const navigation = useNavigation();
+  
+  // Animation values for sticky header effect
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const HEADER_HEIGHT = normalize(120); // Height of the header image
+  const STICKY_HEADER_HEIGHT = 50; // Height of the sticky header
+  
+  // Animated values for the sticky header
+  const stickyHeaderOpacity = scrollY.interpolate({
+    inputRange: [0, HEADER_HEIGHT - STICKY_HEADER_HEIGHT],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+  
+  const headerTranslateY = scrollY.interpolate({
+    inputRange: [0, HEADER_HEIGHT],
+    outputRange: [0, -HEADER_HEIGHT],
+    extrapolate: 'clamp',
+  });
+  
+  const contentTranslateY = scrollY.interpolate({
+    inputRange: [0, HEADER_HEIGHT],
+    outputRange: [0, -HEADER_HEIGHT],
+    extrapolate: 'clamp',
+  });
 
   
 
@@ -98,63 +123,121 @@ const EventDetailsScreen = () => {
 
   return (
       <View style={{ flex: 1, backgroundColor: '#fff' }}>
-        <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
-          <EventHeader 
-            imageUrls={(() => {
-              const base = [event.image];
-              const fromImages = Array.isArray((event as any).images) ? (event as any).images : [];
-              const fromEventImages = Array.isArray((event as any).eventImages) ? (event as any).eventImages : [];
-              const merged = [...base, ...fromImages, ...fromEventImages];
-              return merged.filter((u) => typeof u === 'string' && u.trim().length > 0);
-            })()} 
-            onBack={() => navigation.goBack()} 
-            onShare={() => {}} 
-            onFavorite={() => {}} 
-            isFavorite={false} 
-            status={event.status} 
-          />
-          <EventTitleCard
-            title={event.name}
-            date={startDate}
-            time={timeRange}
-            onShowMore={() => setShowDetailsModal(true)}
-            isExpanded={showDetailsModal.value}
-            description={event.description}
-          />
-          {/* <EventDetailsSection description={event.description} /> */}
-          <EventLocationSection 
-            venue={event.location.name} 
-            address={event.location.address} 
-            onShowMap={handleShowOnMap} 
-            lat={event.location.lat || 0}
-            lon={event.location.lon || 0}
-          />
-         
-          <Divider dividerStyle={{ marginVertical: normalize(5), marginHorizontal: normalize(16) }} />
-          <EventHostSection 
-            avatarUrl={event.organization.organizationLogo || ''}
-            hostName={event.organization.organizationName || ''}
-            eventsHosted={event.hostedEventCount} 
-            onViewProfile={() => (navigation as any).navigate('OrganizerProfile', { id: event.organization.id })} 
-          />
-          <Divider dividerStyle={{ marginVertical: normalize(10), marginHorizontal: normalize(16) }} />
-          <EventPriceFooter price={priceRange} />
-          <Button
-            title={event.status === 'SOLD_OUT' ? 'Sold Out' : 'Get tickets'}
-            variant={event.status === 'SOLD_OUT' ? 'secondary' : 'primary'}
-            disabled={event.status === 'SOLD_OUT'}
-            onPress={() => {
-              if (event.status !== 'SOLD_OUT') {
-                (navigation as any).navigate('EventTickets');
-              }
-            }}
-            style={{ 
-              flex: 1, 
-              marginHorizontal: 5
-            }}
-            
-          />
-            <EventDetailsModal
+        {/* Sticky Header with 3 icons */}
+        <Animated.View 
+          style={[
+            styles.stickyHeader,
+            {
+              opacity: stickyHeaderOpacity,
+            }
+          ]}
+        >
+          <View style={styles.stickyHeaderContent}>
+            <Icon 
+              icon={<ChevronLeft />}
+              size={24}
+              color="#000"
+              backgroundColor="rgba(255,255,255,0.9)"
+              rounded
+              padding={8}
+              onPress={() => navigation.goBack()}
+            />
+            <View style={{ flexDirection: 'row' }}>
+              <Icon 
+                icon={<Share />}
+                size={22}
+                color="#000"
+                backgroundColor="rgba(255,255,255,0.9)"
+                rounded
+                padding={8}
+                onPress={() => {}}
+              />
+              <Icon 
+                icon={<Heart color="#000" fill="transparent" />}
+                size={22}
+                backgroundColor="rgba(255,255,255,0.9)"
+                rounded
+                padding={8}
+                onPress={() => {}}
+              />
+            </View>
+          </View>
+        </Animated.View>
+
+        <Animated.ScrollView 
+          contentContainerStyle={{ paddingBottom: 0 }} 
+          showsVerticalScrollIndicator={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+        >
+          {/* Header with animated transform */}
+          <Animated.View style={{ transform: [{ translateY: headerTranslateY }] }}>
+            <EventHeader 
+              imageUrls={(() => {
+                const base = [event.image];
+                const fromImages = Array.isArray((event as any).images) ? (event as any).images : [];
+                const fromEventImages = Array.isArray((event as any).eventImages) ? (event as any).eventImages : [];
+                const merged = [...base, ...fromImages, ...fromEventImages];
+                return merged.filter((u) => typeof u === 'string' && u.trim().length > 0);
+              })()} 
+              onBack={() => navigation.goBack()} 
+              onShare={() => {}} 
+              onFavorite={() => {}} 
+              isFavorite={false} 
+              status={event.status} 
+            />
+          </Animated.View>
+          
+          {/* Content with animated transform */}
+          <Animated.View style={{ transform: [{ translateY: contentTranslateY }] }}>
+            <EventTitleCard
+              title={event.name}
+              date={startDate}
+              time={timeRange}
+              onShowMore={() => setShowDetailsModal(true)}
+              isExpanded={showDetailsModal.value}
+              description={event.description}
+            />
+            {/* <EventDetailsSection description={event.description} /> */}
+            <EventLocationSection 
+              venue={event.location.name} 
+              address={event.location.address} 
+              onShowMap={handleShowOnMap} 
+              lat={event.location.lat || 0}
+              lon={event.location.lon || 0}
+            />
+           
+            <Divider dividerStyle={{ marginVertical: normalize(5), marginHorizontal: normalize(16) }} />
+            <EventHostSection 
+              avatarUrl={event.organization.organizationLogo || ''}
+              hostName={event.organization.organizationName || ''}
+              eventsHosted={event.hostedEventCount} 
+              onViewProfile={() => (navigation as any).navigate('OrganizerProfile', { id: event.organization.id })} 
+            />
+            <Divider dividerStyle={{ marginVertical: normalize(10), marginHorizontal: normalize(16) }} />
+            <EventPriceFooter price={priceRange} />
+            <Button
+              title={event.status === 'SOLD_OUT' ? 'Sold Out' : 'Get tickets'}
+              variant={event.status === 'SOLD_OUT' ? 'secondary' : 'primary'}
+              disabled={event.status === 'SOLD_OUT'}
+              onPress={() => {
+                if (event.status !== 'SOLD_OUT') {
+                  (navigation as any).navigate('EventTickets');
+                }
+              }}
+              style={{ 
+                flex: 1, 
+                marginHorizontal: 5
+              }}
+              
+            />
+          </Animated.View>
+        </Animated.ScrollView>
+        
+        <EventDetailsModal
           visible={showDetailsModal.value}
           onClose={() => setShowDetailsModal(false)}
           aboutText={event.htmlDescription.replace(/<[^>]*>/g, '')} // Remove HTML tags
@@ -162,11 +245,36 @@ const EventDetailsScreen = () => {
           ageLimit={'18+ only. ID required at entry.'}
           note={'Outside food and beverages, illegal substances, and professional cameras are not allowed.'}
         />
-        </ScrollView>
-        
       </View>
     
   );
 };
+
+const styles = StyleSheet.create({
+  stickyHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  stickyHeaderContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+});
 
 export default EventDetailsScreen; 

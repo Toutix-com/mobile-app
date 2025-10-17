@@ -64,8 +64,9 @@ const EventHeader: React.FC<EventHeaderProps> = ({
                         onPress={onShare}
                     />
                     <Icon 
-                        icon={<Heart color={isFavorite ? '#FF6B6B' : '#fff'} fill={isFavorite ? '#FF6B6B' : 'transparent'} />}
+                        icon={<Heart />}
                         size={22}
+                        color="#fff"
                         backgroundColor="rgba(0,0,0,0.4)"
                         rounded
                         padding={8}
