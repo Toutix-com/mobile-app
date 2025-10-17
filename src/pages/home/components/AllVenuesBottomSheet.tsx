@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, TextInput, Dimensions } from 'react-native';
 import BottomSheet from '../../../components/bottomsheet';
 import { X, Search as SearchIcon, Building2 } from 'lucide-react-native';
 import { normalize } from '../../../utils/responsive';
@@ -7,6 +7,7 @@ import CheckBox from '../../../components/checkbox';
 import Divider from '../../../components/divider';
 import { useSignals } from '@preact/signals-react/runtime';
 import { selectedVenues, allVenues, selectVenue, deselectVenue,clearSelectedVenues, allCities, selectedCities, selectCity, deselectCity, filteredVenues } from '../store/home.store';
+import { Button, AppText, Icon } from '../../../components';
 
 const { width } = Dimensions.get('window');
 
@@ -57,13 +58,16 @@ const AllVenuesBottomSheet: React.FC<AllVenuesBottomSheetProps> = ({
     <BottomSheet visible={visible} onClose={onClose} heightPercent={0.9}>
     <View style={{ flex: 1 }}>
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <Text style={{ fontWeight: 'bold', fontSize: 22 }}>Select a venue</Text>
-        <TouchableOpacity onPress={onClose}>
-          <Text style={{ fontSize: 28, color: '#222' }}>×</Text>
-        </TouchableOpacity>
+        <AppText style={{ fontWeight: 'bold', fontSize: 22 }}>Select a venue</AppText>
+        <Icon 
+          icon={<X />}
+          size={28}
+          color="#222"
+          onPress={onClose}
+        />
       </View>
       <View style={{ backgroundColor: '#F5F6FA', borderRadius: 8, flexDirection: 'row', alignItems: 'center', marginBottom: 16, paddingHorizontal: 12 }}>
-      <SearchIcon color="#666" size={20} />
+        <Icon icon={<SearchIcon />} size="md" color="#666" />
         <TextInput
           style={{ flex: 1, height: 44, fontSize: 16 }}
           placeholder="Search venue"
@@ -85,8 +89,8 @@ const AllVenuesBottomSheet: React.FC<AllVenuesBottomSheetProps> = ({
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 7}}>
-              <Building2 color="#0C0453" size={20} />
-              <Text style={{ fontSize: 16, marginLeft: 15, fontWeight: '400'}}>{venue.label}</Text>
+              <Icon icon={<Building2 />} size="md" color="#0C0453" />
+              <AppText style={{ fontSize: 16, marginLeft: 15, fontWeight: '400'}}>{venue.label}</AppText>
             </View>
             <View style={{ alignItems:'flex-end',  flex: 1}}>
               <CheckBox
@@ -96,14 +100,20 @@ const AllVenuesBottomSheet: React.FC<AllVenuesBottomSheetProps> = ({
             </View>
           </View>
         ))}
-        <Divider />
+        <Divider dividerStyle={{ marginVertical: 20 }} />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 24 }}>
-          <TouchableOpacity onPress={clearSelectedVenues} style={{ flex: 1, marginRight: 10, alignItems: 'center', paddingVertical: 14, borderRadius: 8, backgroundColor: '#F5F6FA' }}>
-            <Text style={{ color: '#0C0453', fontWeight: 'bold', fontSize: 16 }}>Clear selection</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onUseSelected} style={{ flex: 1, marginLeft: 10, alignItems: 'center', paddingVertical: 14, borderRadius: 8, backgroundColor: '#0C0453' }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Use selected</Text>
-          </TouchableOpacity>
+          <Button 
+            title="Clear selection"
+            variant="secondary"
+            onPress={clearSelectedVenues}
+            style={{ flex: 1, marginRight: 10 }}
+          />
+          <Button 
+            title="Use selected"
+            variant="primary"
+            onPress={onUseSelected}
+            style={{ flex: 1, marginLeft: 10 }}
+          />
         </View>
         <View style={{ height: 120 }} />
       </ScrollView>

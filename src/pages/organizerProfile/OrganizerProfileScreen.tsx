@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, SafeAreaView } from 'react-native';
+import { View, StyleSheet, Image, ScrollView, SafeAreaView } from 'react-native';
 import { useSignals } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
 import { organizerProfile, organizerUpcoming, organizerPast, isOrganizerVerified, fetchOrganizerProfile } from './store/organizerProfile.store';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { ChevronLeft, Globe, Mail, MapPin, Phone, TreePalm } from 'lucide-react-native';
+import { AppText, Icon } from '../../components';
 
 const OrganizerProfileScreen: React.FC = () => {
   useSignals();
@@ -25,74 +26,104 @@ const OrganizerProfileScreen: React.FC = () => {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
     <ScrollView style={styles.container}>
       <View style={styles.backBtn}>
-        <ChevronLeft color="#0C0433" size={24} onPress={() => navigation.goBack()} />
+        <Icon 
+          icon={<ChevronLeft />}
+          size={24}
+          color="#0C0433"
+          onPress={() => navigation.goBack()}
+        />
       </View>
       <View style={styles.card}>
         <Image source={{ uri: organizerProfile.value.organizationDetails.organizationLogo }} style={styles.avatar} />
-        <Text style={styles.name}>{organizerProfile.value.organizationDetails.organizationName}</Text>
+        <AppText style={styles.name}>{organizerProfile.value.organizationDetails.organizationName}</AppText>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: normalize(8), alignContent: 'center', justifyContent: 'center' }}>
-        <Text style={styles.memberSince}>{organizerProfile.value.durationMessage}</Text>
-        <Text style={styles.memberSinceTxt}>{'with Toutix'}</Text>
+        <AppText style={styles.memberSince}>{organizerProfile.value.durationMessage}</AppText>
+        <AppText style={styles.memberSinceTxt}>{'with Toutix'}</AppText>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contact</Text>
+          <AppText style={styles.sectionTitle}>Contact</AppText>
           <View style={styles.contactItemRow}>
-            <View style={styles.iconBg}>
-            <Phone color="#0C0433" size={18} />
-            </View>
-            <Text style={styles.contactItem}>{organizerProfile.value.organizationDetails.organizationPhone || '-'}</Text>
+            <Icon 
+              icon={<Phone />}
+              size={18}
+              color="#0C0433"
+              backgroundColor="#F5F6FA"
+              rounded
+              padding={8}
+            />
+            <AppText style={styles.contactItem}>{organizerProfile.value.organizationDetails.organizationPhone || '-'}</AppText>
           </View>
 
           <View style={styles.contactItemRow}>
-            <View style={styles.iconBg}>
-            <Mail color="#0C0433" size={18} />
-            </View>
-            <Text style={styles.contactItem}>{organizerProfile.value.organizationDetails.organizationEmail || '-'}</Text>
+            <Icon 
+              icon={<Mail />}
+              size={18}
+              color="#0C0433"
+              backgroundColor="#F5F6FA"
+              rounded
+              padding={8}
+            />
+            <AppText style={styles.contactItem}>{organizerProfile.value.organizationDetails.organizationEmail || '-'}</AppText>
           </View>
           <View style={styles.contactItemRow}>
-            <View style={styles.iconBg}>
-            <Globe color="#0C0433" size={18} />
-            </View>
-            <Text style={styles.contactItem}>{organizerProfile.value.organizationDetails.organizationWebsite || '-'}</Text>
+            <Icon 
+              icon={<Globe />}
+              size={18}
+              color="#0C0433"
+              backgroundColor="#F5F6FA"
+              rounded
+              padding={8}
+            />
+            <AppText style={styles.contactItem}>{organizerProfile.value.organizationDetails.organizationWebsite || '-'}</AppText>
           </View>
           <View style={styles.contactItemRow}>
-            <View style={styles.iconBg}>
-            <MapPin color="#0C0433" size={18} />
-            </View>
-            <Text style={styles.contactItem}>{organizerProfile.value.organizationDetails.country || '-'}</Text>
+            <Icon 
+              icon={<MapPin />}
+              size={18}
+              color="#0C0433"
+              backgroundColor="#F5F6FA"
+              rounded
+              padding={8}
+            />
+            <AppText style={styles.contactItem}>{organizerProfile.value.organizationDetails.country || '-'}</AppText>
           </View>
         </View>
       </View>
 
       <View style={styles.sectionBlock}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={styles.sectionHeader}>About {organizerProfile.value.organizationDetails.organizationName}</Text>
+          <AppText style={styles.sectionHeader}>About {organizerProfile.value.organizationDetails.organizationName}</AppText>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={styles.aboutMetaCount}>{`${organizerProfile.value.count || 0}`}</Text>
-          <Text style={styles.aboutMeta}>{` Events published`}</Text>
+          <AppText style={styles.aboutMetaCount}>{`${organizerProfile.value.count || 0}`}</AppText>
+          <AppText style={styles.aboutMeta}>{` Events published`}</AppText>
         </View>
-        <Text style={styles.about}>{organizerProfile.value.organizationDetails.organizationDescription || '[No description provided]'}</Text>
+        <AppText style={styles.about}>{organizerProfile.value.organizationDetails.organizationDescription || '[No description provided]'}</AppText>
       </View>
 
       <View style={styles.sectionBlock}>
-        <Text style={styles.listHeader}>Up coming events</Text>
+        <AppText style={styles.listHeader}>Up coming events</AppText>
         {organizerUpcoming.value.length === 0 ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <View style={styles.iconBgEmpty}>
-            <TreePalm color="#0C0433" size={24} />
-            </View>
-            <Text style={styles.empty}>No upcoming events</Text>
+            <Icon 
+              icon={<TreePalm />}
+              size={24}
+              color="#0C0433"
+              backgroundColor="#F5F6FA"
+              rounded
+              padding={12}
+            />
+            <AppText style={styles.empty}>No upcoming events</AppText>
           </View>
         ) : (
           organizerUpcoming.value.map(ev => (
             <View key={ev.id} style={styles.eventRow}>
               <Image source={{ uri: ev.image }} style={styles.thumb} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.eventTitle} numberOfLines={1}>{ev.title}</Text>
-                <Text style={styles.eventSubtitle}>{ev.date}</Text>
-                <Text style={styles.eventSubtitle}>{ev.venue}</Text>
+                <AppText style={styles.eventTitle} numberOfLines={1}>{ev.title}</AppText>
+                <AppText style={styles.eventSubtitle}>{ev.date}</AppText>
+                <AppText style={styles.eventSubtitle}>{ev.venue}</AppText>
               </View>
             </View>
           ))
@@ -100,22 +131,27 @@ const OrganizerProfileScreen: React.FC = () => {
       </View>
 
       <View style={styles.sectionBlock}>
-        <Text style={styles.listHeader}>Past events</Text>
+        <AppText style={styles.listHeader}>Past events</AppText>
         {organizerPast.value.length === 0 ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <View style={styles.iconBgEmpty}>
-            <TreePalm color="#0C0433" size={24} />
-            </View>
-            <Text style={styles.empty}>No past events</Text>
+            <Icon 
+              icon={<TreePalm />}
+              size={24}
+              color="#0C0433"
+              backgroundColor="#F5F6FA"
+              rounded
+              padding={12}
+            />
+            <AppText style={styles.empty}>No past events</AppText>
           </View>
         ) : (
           organizerPast.value.map(ev => (
             <View key={ev.id} style={styles.eventRow}>
               <Image source={{ uri: ev.image }} style={styles.thumb} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.eventTitle} numberOfLines={1}>{ev.title}</Text>
-                <Text style={styles.eventSubtitle}>{ev.date}</Text>
-                <Text style={styles.eventSubtitle}>{ev.venue}</Text>
+                <AppText style={styles.eventTitle} numberOfLines={1}>{ev.title}</AppText>
+                <AppText style={styles.eventSubtitle}>{ev.date}</AppText>
+                <AppText style={styles.eventSubtitle}>{ev.venue}</AppText>
               </View>
             </View>
           ))
@@ -128,10 +164,11 @@ const OrganizerProfileScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: normalize(16), marginTop: normalize(50) },
+  container: { flex: 1, backgroundColor: '#fff', padding: normalize(16) },
   backBtn: {
     marginTop: normalize(16),
     marginBottom: normalize(20),
+    alignSelf: 'flex-start',
   },
   card: {
     backgroundColor: '#fff',
@@ -170,7 +207,7 @@ const styles = StyleSheet.create({
     padding: normalize(4),
     borderRadius: normalize(8),
   },
-  contactItemRow: { flexDirection: 'row', alignItems: 'center' , gap: normalize(8) ,marginTop: normalize(8) },
+  contactItemRow: { flexDirection: 'row', alignItems: 'center' , gap: normalize(8) ,marginTop: normalize(8), width: '90%'},
   iconBgEmpty: {
     backgroundColor: "#EBF1FF",
     padding: normalize(15),

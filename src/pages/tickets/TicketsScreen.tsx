@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useSignal } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
 import TicketListItem from './components/TicketListItem';
@@ -10,6 +10,7 @@ import { useSignals } from '@preact/signals-react/runtime';
 import { userStore } from '@pages/login/store/login.store';
 import { User } from 'lucide-react-native';
 import { handleLoginPress } from '@pages/profile/store/profile.store';
+import { Button, AppText, Icon } from '../../components';
 
 const TicketsScreen: React.FC = () => {
   useSignals();
@@ -29,7 +30,7 @@ const TicketsScreen: React.FC = () => {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.headerWhenNotLoggin}>
-          <Text style={styles.headerTitle}>Tickets</Text>
+          <AppText style={styles.headerTitle}>Tickets</AppText>
         </View>
         
         <View style={styles.notLoggedInContainer}>
@@ -39,14 +40,18 @@ const TicketsScreen: React.FC = () => {
           </View>
           
           {/* Message */}
-          <Text style={styles.notLoggedInMessage}>
+          <AppText style={styles.notLoggedInMessage}>
             Hey, looks like you are not logged in
-          </Text>
+          </AppText>
           
           {/* Login Button */}
-          <TouchableOpacity style={styles.loginButton} onPress={handleLoginPress}>
-            <Text style={styles.loginButtonText}>Log in now</Text>
-          </TouchableOpacity>
+          <Button
+            title="Log in now"
+            variant="primary"
+            onPress={handleLoginPress}
+            style={styles.loginButton}
+            fullWidth
+          />
         </View>
       </View>
     );
@@ -54,7 +59,7 @@ const TicketsScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Tickets</Text>
+      <AppText style={styles.header}>Tickets</AppText>
       <FlatList
         data={tickets.value}
         keyExtractor={(item) => item.id}

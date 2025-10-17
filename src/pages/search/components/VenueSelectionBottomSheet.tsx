@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Dimensions } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ScrollView, TextInput, Dimensions } from 'react-native';
 import BottomSheet from '../../../components/bottomsheet';
 import { X, Building2, Check, Search } from 'lucide-react-native';
 import { normalize } from '../../../utils/responsive';
@@ -8,6 +8,7 @@ import Divider from '../../../components/divider';
 import { useSignals } from '@preact/signals-react/runtime';
 import { allVenues, selectedVenues, selectVenue, deselectVenue, clearSelectedVenues } from '../../home/store/home.store';
 import { selectedVenue, setSelectedVenue } from '../store/search.store';
+import { Button, AppText, Icon } from '../../../components';
 
 const { width } = Dimensions.get('window');
 
@@ -61,10 +62,14 @@ const VenueSelectionBottomSheet: React.FC<VenueSelectionBottomSheetProps> = ({
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Select a venue</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <X color="#000" size={24} />
-          </TouchableOpacity>
+          <AppText style={styles.title}>Select a venue</AppText>
+          <Icon 
+            icon={<X />}
+            size={24}
+            color="#000"
+            onPress={onClose}
+            style={styles.closeButton}
+          />
         </View>
 
         <View style={styles.searchContainer}>
@@ -87,7 +92,7 @@ const VenueSelectionBottomSheet: React.FC<VenueSelectionBottomSheetProps> = ({
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Building2 color="#000" size={20} />
-                <Text style={{ fontSize: 16, marginLeft: 15, fontWeight: '400' }}>{venue.label}</Text>
+                <AppText style={{ fontSize: 16, marginLeft: 15, fontWeight: '400' }}>{venue.label}</AppText>
               </View>
             </TouchableOpacity>
           ))}

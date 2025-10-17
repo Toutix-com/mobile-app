@@ -1,11 +1,12 @@
 import React, { useMemo, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import BottomSheet from '../../../components/bottomsheet';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { normalize } from '../../../utils/responsive';
 import moment from 'moment';
 import { setStartDate, startDate, setEndDate, dateType } from '../store/home.store';
 import { useSignal, useComputed } from '@preact/signals-react';
+import { Button, AppText, Icon } from '../../../components';
 
 const { width } = Dimensions.get('window');
 
@@ -87,41 +88,56 @@ const DatePickerBottomSheet: React.FC<DatePickerBottomSheetProps> = ({
   <View style={{ flex: 1, justifyContent: 'space-between' }}>
     <View>
       <View style={styles.headerRow}>
-        <Text style={styles.header}>Pick a date</Text>
-        <TouchableOpacity onPress={onClose}>
-          <X color="#222" size={24} />
-        </TouchableOpacity>
+        <AppText style={styles.header}>Pick a date</AppText>
+        <Icon 
+          icon={<X />}
+          size={24}
+          color="#222"
+          onPress={onClose}
+        />
       </View>
-      <Text style={styles.subtitle}>Show events up to selected date</Text>
+      <AppText style={styles.subtitle}>Show events up to selected date</AppText>
 
       <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <View style={styles.calendarHeaderRow}>
-          <Text style={styles.monthText}>
+          <AppText style={styles.monthText}>
             {new Date(year, month).toLocaleString('default', {
               month: 'long',
               year: 'numeric',
             })}
-          </Text>
-          <TouchableOpacity onPress={handleNextMonth} style={styles.arrowBtn}>
-            <ChevronRight color="#0C0453" size={18} />
-          </TouchableOpacity>
+          </AppText>
+          <Icon 
+            icon={<ChevronRight />}
+            size={18}
+            color="#0C0453"
+            onPress={handleNextMonth}
+            style={styles.arrowBtn}
+          />
         </View>
 
         <View style={styles.calendarHeaderRow}>
-          <TouchableOpacity onPress={handlePrevMonth} style={styles.arrowBtn}>
-            <ChevronLeft color="#0C0453" size={24} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleNextMonth} style={styles.arrowBtn}>
-            <ChevronRight color="#0C0453" size={24} />
-          </TouchableOpacity>
+          <Icon 
+            icon={<ChevronLeft />}
+            size={24}
+            color="#0C0453"
+            onPress={handlePrevMonth}
+            style={styles.arrowBtn}
+          />
+          <Icon 
+            icon={<ChevronRight />}
+            size={24}
+            color="#0C0453"
+            onPress={handleNextMonth}
+            style={styles.arrowBtn}
+          />
         </View>
       </View>
 
       <View style={styles.daysOfWeekRow}>
         {daysOfWeek.map(d => (
-          <Text key={d} style={styles.dayOfWeek}>
+          <AppText key={d} style={styles.dayOfWeek}>
             {d}
-          </Text>
+          </AppText>
         ))}
       </View>
 
@@ -142,9 +158,9 @@ const DatePickerBottomSheet: React.FC<DatePickerBottomSheetProps> = ({
                     onSelectStartDate()
                   }}
                 >
-                  <Text style={[styles.dayText, isSelected(d) && styles.selectedDayText]}>
+                  <AppText style={[styles.dayText, isSelected(d) ? styles.selectedDayText : {}]}>
                     {d}
-                  </Text>
+                  </AppText>
                 </TouchableOpacity>
               ) : (
                 <View key={di} style={styles.dayCell} />
@@ -154,9 +170,12 @@ const DatePickerBottomSheet: React.FC<DatePickerBottomSheetProps> = ({
         ))}
       </View>
     </View>
-    <TouchableOpacity style={styles.clearBtn} onPress={onClear}>
-      <Text style={styles.clearBtnText}>Clear selection</Text>
-    </TouchableOpacity>
+    <Button 
+      title="Clear selection"
+      variant="ghost"
+      onPress={onClear}
+      style={styles.clearBtn}
+    />
   </View>
 </BottomSheet>
 

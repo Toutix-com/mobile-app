@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { AppText } from '../../../components';
 
 interface ShowMoreTextProps {
   text: string;
@@ -11,10 +12,10 @@ const ShowMoreText: React.FC<ShowMoreTextProps> = ({ text, numberOfLines = 3 }) 
 
   return (
     <View>
-      <Text style={styles.text} numberOfLines={expanded ? undefined : numberOfLines}>{text}</Text>
+      <AppText style={styles.text} numberOfLines={expanded ? undefined : numberOfLines}>{text}</AppText>
       {text.length > 120 && (
         <TouchableOpacity onPress={() => setExpanded(e => !e)}>
-          <Text style={styles.showMore}>{expanded ? 'Show less' : 'Show more'}</Text>
+          <AppText style={styles.showMore}>{expanded ? 'Show less' : 'Show more'}</AppText>
         </TouchableOpacity>
       )}
     </View>

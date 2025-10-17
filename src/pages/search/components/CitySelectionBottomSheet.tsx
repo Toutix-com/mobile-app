@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Dimensions } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ScrollView, TextInput, Dimensions } from 'react-native';
 import BottomSheet from '../../../components/bottomsheet';
 import { X, MapPin, Check, Search } from 'lucide-react-native';
 import { normalize } from '../../../utils/responsive';
@@ -8,6 +8,7 @@ import Divider from '../../../components/divider';
 import { useSignals } from '@preact/signals-react/runtime';
 import { allCities, selectedCities, selectCity, deselectCity, clearSelectedCities } from '../../home/store/home.store';
 import { selectedCity, setSelectedCity } from '../store/search.store';
+import { Button, AppText, Icon } from '../../../components';
 
 const { width } = Dimensions.get('window');
 
@@ -61,10 +62,14 @@ const CitySelectionBottomSheet: React.FC<CitySelectionBottomSheetProps> = ({
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Select a city</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <X color="#000" size={24} />
-          </TouchableOpacity>
+          <AppText style={styles.title}>Select a city</AppText>
+          <Icon 
+            icon={<X />}
+            size={24}
+            color="#000"
+            onPress={onClose}
+            style={styles.closeButton}
+          />
         </View>
 
         <View style={styles.searchContainer}>
@@ -87,7 +92,7 @@ const CitySelectionBottomSheet: React.FC<CitySelectionBottomSheetProps> = ({
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <MapPin color="#000" size={20} />
-                <Text style={{ fontSize: 16, marginLeft: 15, fontWeight: '400' }}>{city.label}</Text>
+                <AppText style={{ fontSize: 16, marginLeft: 15, fontWeight: '400' }}>{city.label}</AppText>
               </View>
             </TouchableOpacity>
           ))}

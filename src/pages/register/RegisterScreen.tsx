@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
@@ -18,12 +17,12 @@ import BlurredCirclesBackground from '../../components/layouts/BlurredCirclesBac
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import DatePicker from 'react-native-date-picker';
 import { Calendar, ChevronLeft } from 'lucide-react-native';
-import { rootStore } from '../../store/rootStore';
-import { useComputed } from '@preact/signals-react';
+import { userStore } from '../login/store/login.store';
 import moment from 'moment';
 import { handleInputChange, handleSubmit, showDatePicker, setShowDatePicker } from './store/register.store';
 import { RegisterFormFields } from '../login/enums/auth-enum';
 import { useSignals } from '@preact/signals-react/runtime';
+import { Button, AppText, Icon } from '../../components';
 import { tokens, normalize } from '../../design-system';
 
 type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
@@ -31,7 +30,7 @@ type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Reg
 const RegisterScreen: React.FC = () => {
   useSignals()
   const navigation = useNavigation<RegisterScreenNavigationProp>();
-  const user = useComputed(() => rootStore.value.user);
+  const user = userStore;
 
 
   useEffect(() => {
@@ -45,10 +44,18 @@ const RegisterScreen: React.FC = () => {
   };
 
   return (
+      
     <BlurredCirclesBackground>
-      <TouchableOpacity style={styles.backButton} onPress={handleLoginPress}>
-        <ChevronLeft color={tokens.colors.textInverse} size={24} />
-      </TouchableOpacity>
+      <Icon 
+        icon={<ChevronLeft />}
+        size={24}
+        color="#FFFFFF"
+        backgroundColor="rgba(0, 0, 0, 0.3)"
+        rounded
+        padding={8}
+        onPress={handleLoginPress}
+        style={styles.backButton}
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -65,16 +72,16 @@ const RegisterScreen: React.FC = () => {
               style={styles.logo}
               resizeMode="contain"
             />
-            <Text style={styles.tagline}>Find It, Book It, Live It</Text>
+            <AppText style={styles.tagline}>Find It, Book It, Live It</AppText>
           </View>
 
 
 
           <View style={styles.formContainer}>
-            <Text style={styles.title}>Register with Toutix</Text>
+            <AppText style={styles.title}>Register with Toutix</AppText>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>First name</Text>
+              <AppText style={styles.label}>First name</AppText>
               <TextInput
                 style={styles.input}
                 placeholder="First name"
@@ -85,7 +92,7 @@ const RegisterScreen: React.FC = () => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Last name</Text>
+              <AppText style={styles.label}>Last name</AppText>
               <TextInput
                 style={styles.input}
                 placeholder="Last name"
@@ -96,16 +103,17 @@ const RegisterScreen: React.FC = () => {
             </View>
 
             <View style={styles.inputContainer}>
-              <Text style={styles.label}>Birthday (Optional)</Text>
+              <AppText style={styles.label}>Birthday (Optional)</AppText>
               <Pressable
                 style={[styles.input, { flexDirection: 'row', alignItems: 'center' }]}
                 onPress={() => setShowDatePicker(true)}
               >
-                <Text style={{ flex: 1, color: user.value.birthday ? tokens.colors.text : tokens.colors.textSecondary }}>
+                <AppText style={{ flex: 1, color: user.value.birthday ? tokens.colors.text : tokens.colors.textSecondary }}>
                   {user.value.birthday
                     ? moment(user.value.birthday).format('DD/MM/YYYY')
                     : 'Select your date of birth'}
-                </Text>
+                </AppText>
+                <Calendar color="#A0A0A0" size={20} />
                 <Calendar color={tokens.colors.textSecondary} size={20} />
               </Pressable>
               <DatePicker
@@ -122,9 +130,13 @@ const RegisterScreen: React.FC = () => {
               />
             </View>
 
-            <TouchableOpacity style={styles.registerButton} onPress={() => handleSubmit(navigation)}>
-              <Text style={styles.registerButtonText}>Continue</Text>
-            </TouchableOpacity>
+            <Button
+              title="Continue"
+              variant="primary"
+              onPress={() => handleSubmit(navigation)}
+              style={styles.registerButton}
+              fullWidth
+            />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

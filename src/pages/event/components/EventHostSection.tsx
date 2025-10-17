@@ -1,7 +1,8 @@
 import { normalize } from '@utils/responsive';
 import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
+import { AppText } from '../../../components';
 
 interface EventHostSectionProps {
   avatarUrl: string;
@@ -13,15 +14,15 @@ interface EventHostSectionProps {
 const EventHostSection: React.FC<EventHostSectionProps> = ({ avatarUrl, hostName, eventsHosted, onViewProfile }) => {
   return (
     <>
-    <Text style={styles.label}>Organized by</Text>
+    <AppText style={styles.label}>Organized by</AppText>
     <View style={styles.container}>
       <Image source={{ uri: avatarUrl }} style={styles.avatar} />
       <View style={{ flex: 1, marginLeft: 12 }}>
-        <Text style={styles.hostName}>{hostName}</Text>
-        <Text style={styles.eventsHosted}>{eventsHosted} events hosted</Text>
+        <AppText style={styles.hostName}>{hostName}</AppText>
+        <AppText style={styles.eventsHosted}>{eventsHosted} events hosted</AppText>
       </View>
       <TouchableOpacity onPress={onViewProfile} style={styles.profileBtn}>
-        <Text style={styles.profileBtnText}>View profile</Text>
+        <AppText style={styles.profileBtnText}>View profile</AppText>
         <ChevronRight color="#0C0433" size={16} />
       </TouchableOpacity>
     </View>

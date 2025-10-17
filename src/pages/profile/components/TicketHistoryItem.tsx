@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import { normalize } from '../../../utils/responsive';
+import { AppText } from '../../../components';
 
 interface Props {
   image: string;
@@ -14,10 +15,10 @@ const TicketHistoryItem: React.FC<Props> = ({ image, title, subtitle, price }) =
     <View style={styles.row}>
       <Image source={{ uri: image }} style={styles.thumb} />
       <View style={styles.info}>
-        <Text style={styles.title} numberOfLines={1}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        <AppText style={styles.title} numberOfLines={1}>{title}</AppText>
+        <AppText style={styles.subtitle}>{subtitle}</AppText>
       </View>
-      <Text style={styles.price}>{price}</Text>
+      <AppText style={styles.price}>{price}</AppText>
     </View>
   );
 };

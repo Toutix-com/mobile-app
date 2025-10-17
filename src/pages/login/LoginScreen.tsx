@@ -1,9 +1,7 @@
 import React, { useEffect } from 'react';
 import {
   View,
-  Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
   Image,
   Platform,
@@ -19,6 +17,8 @@ import GoogleSignInService from '../../services/GoogleSignInService';
 import AppleSignInService from '../../services/AppleSignInService';
 import { setUser, userStore, handleGoogleSignIn, handleAppleSignIn, handleContinue, setShowAuthStack } from './store/login.store';
 import { useSignal } from '@preact/signals-react';
+import { Button, AppText, Icon } from '../../components';
+import { X } from 'lucide-react-native';
 import { tokens, getSpacing, normalize } from '../../design-system';
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -35,9 +35,16 @@ const LoginScreen: React.FC = () => {
 
   return (
     <BlurredCirclesBackground>
-      <TouchableOpacity style={styles.closeButton} onPress={() => setShowAuthStack(false)}>
-        <Text style={styles.closeButtonText}>✕</Text>
-      </TouchableOpacity>
+      <Icon 
+        icon={<X />}
+        size={20}
+        color="#FFFFFF"
+        backgroundColor="rgba(255, 255, 255, 0.15)"
+        rounded
+        padding={12}
+        style={styles.closeButton}
+        onPress={() => setShowAuthStack(false)}
+      />
 
       <View style={styles.logoContainer}>
         <Image
@@ -45,14 +52,14 @@ const LoginScreen: React.FC = () => {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.tagline}>Find It, Book It, Live It</Text>
+        <AppText style={styles.tagline}>Find It, Book It, Live It</AppText>
       </View>
 
       <View style={styles.formContainer}>
-        <Text style={styles.title}>Log in or sign up</Text>
+        <AppText style={styles.title}>Log in or sign up</AppText>
         
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email or mobile</Text>
+          <AppText style={styles.label}>Email or mobile</AppText>
           <TextInput
             style={styles.input}
             placeholder="Email/ mobile number"
@@ -69,46 +76,43 @@ const LoginScreen: React.FC = () => {
             editable={!userStore.value.isLoading}
           />
         </View>
-        <Text style={styles.description}>We'll send you a code to log in to your account</Text>
+        <AppText style={styles.description}>We'll send you a code to log in to your account</AppText>
         
-        <TouchableOpacity 
-          style={[styles.loginButton, userStore.value.isLoading && { opacity: 0.7 }]} 
+        <Button 
+          title="Continue"
+          loading={userStore.value.isLoading}
           disabled={userStore.value.isLoading}
           onPress={() => handleContinue(navigation)}
-        >
-          <Text style={styles.loginButtonText}>Continue</Text>
-        </TouchableOpacity>
+          fullWidth
+          style={styles.loginButton}
+        />
 
         <View style={styles.dividerContainer}>
           <View style={styles.divider} />
-          <Text style={styles.dividerText}>Or</Text>
+          <AppText style={styles.dividerText}>Or</AppText>
           <View style={styles.divider} />
         </View>
 
-        <View style={styles.socialButtonsContainer}>
-          <TouchableOpacity 
-            style={[styles.socialButton, userStore.value.isLoading && { opacity: 0.7 }]} 
-            onPress={() => handleGoogleSignIn(navigation)}
-            disabled={userStore.value.isLoading}
-          >
-            <GoogleIcon width={24} height={24} />
-            <Text style={styles.socialButtonText}>
-              {userStore.value.isLoading ? 'Connecting...' : 'Continue with Google'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.socialButtonsContainer}>
-          <TouchableOpacity 
-            style={[styles.socialButton, userStore.value.isLoading && { opacity: 0.7 }]}
-            onPress={() => handleAppleSignIn(navigation)}
-            disabled={userStore.value.isLoading}
-          >
-            <AppleIcon width={24} height={24} />
-            <Text style={styles.socialButtonText}>
-              {userStore.value.isLoading ? 'Connecting...' : 'Continue with Apple'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <Button 
+          title={userStore.value.isLoading ? 'Connecting...' : 'Continue with Google'}
+          variant="social"
+          leftIcon={<GoogleIcon width={20} height={20} />}
+          loading={userStore.value.isLoading}
+          disabled={userStore.value.isLoading}
+          onPress={() => handleGoogleSignIn(navigation)}
+          fullWidth
+          style={styles.socialButton}
+        />
+        <Button 
+          title={userStore.value.isLoading ? 'Connecting...' : 'Continue with Apple'}
+          variant="social"
+          leftIcon={<AppleIcon width={20} height={20} />}
+          loading={userStore.value.isLoading}
+          disabled={userStore.value.isLoading}
+          onPress={() => handleAppleSignIn(navigation)}
+          fullWidth
+          style={styles.socialButton}
+        />
       </View>
     </BlurredCirclesBackground>
   );
@@ -215,10 +219,6 @@ const styles = StyleSheet.create({
     color: tokens.colors.textSecondary, // Using semantic color
     paddingHorizontal: normalize(12),
     fontSize: normalize(tokens.typography.fontSize.sm),
-  },
-  socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
   },
   socialButton: {
     flexDirection: 'row',
