@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, SafeAreaView, ActivityIndicator, Text, TouchableOpacity, Linking, Platform, Alert } from 'react-native';
+import { View, ScrollView, StyleSheet, SafeAreaView, ActivityIndicator, TouchableOpacity, Linking, Platform, Alert } from 'react-native';
 import { useSignals } from '@preact/signals-react/runtime';
 // Placeholder imports for modular components
 import EventHeader from './components/EventHeader';
@@ -24,6 +24,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import Divider from '@components/divider';
 import { normalize } from '@utils/responsive';
+import { Button, AppText, Icon } from '../../components';
 
 const EventDetailsScreen = () => {
   useSignals();
@@ -36,7 +37,7 @@ const EventDetailsScreen = () => {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#0C0453" />
-        <Text style={{ marginTop: 16, color: '#666' }}>Loading event details...</Text>
+        <AppText style={{ marginTop: 16, color: '#666' }}>Loading event details...</AppText>
       </SafeAreaView>
     );
   }
@@ -45,7 +46,7 @@ const EventDetailsScreen = () => {
   if (eventError.value) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: '#ff0000', textAlign: 'center', padding: 20 }}>{eventError.value}</Text>
+        <AppText style={{ color: '#ff0000', textAlign: 'center', padding: 20 }}>{eventError.value}</AppText>
       </SafeAreaView>
     );
   }
@@ -56,7 +57,7 @@ const EventDetailsScreen = () => {
   if (!event) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: '#666', textAlign: 'center', padding: 20 }}>No event data available</Text>
+        <AppText style={{ color: '#666', textAlign: 'center', padding: 20 }}>No event data available</AppText>
       </SafeAreaView>
     );
   }
@@ -138,30 +139,21 @@ const EventDetailsScreen = () => {
           />
           <Divider dividerStyle={{ marginVertical: normalize(10), marginHorizontal: normalize(16) }} />
           <EventPriceFooter price={priceRange} />
-          <TouchableOpacity
-                  onPress={() => {
-                    if (event.status !== 'SOLD_OUT') {
-                      (navigation as any).navigate('EventTickets');
-                    }
-                  }}
-                  disabled={event.status === 'SOLD_OUT'}
-                  style={{ 
-                    flex: 1, 
-                    marginHorizontal: 5, 
-                    backgroundColor: event.status === 'SOLD_OUT' ? '#ccc' : '#0C0453', 
-                    borderRadius: 8, 
-                    paddingVertical: 14, 
-                    alignItems: 'center' 
-                  }}
-                >
-                  <Text style={{ 
-                    color: event.status === 'SOLD_OUT' ? '#666' : '#fff', 
-                    fontWeight: 'bold', 
-                    fontSize: 16 
-                  }}>
-                    {event.status === 'SOLD_OUT' ? 'Sold Out' : 'Get tickets'}
-                  </Text>
-                </TouchableOpacity>
+          <Button
+            title={event.status === 'SOLD_OUT' ? 'Sold Out' : 'Get tickets'}
+            variant={event.status === 'SOLD_OUT' ? 'secondary' : 'primary'}
+            disabled={event.status === 'SOLD_OUT'}
+            onPress={() => {
+              if (event.status !== 'SOLD_OUT') {
+                (navigation as any).navigate('EventTickets');
+              }
+            }}
+            style={{ 
+              flex: 1, 
+              marginHorizontal: 5
+            }}
+            
+          />
             <EventDetailsModal
           visible={showDetailsModal.value}
           onClose={() => setShowDetailsModal(false)}

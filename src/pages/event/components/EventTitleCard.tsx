@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { normalize } from '@utils/responsive';
 import ShowMoreText from './ShowMoreText';
+import { AppText } from '../../../components';
 
 interface EventTitleCardProps {
   title: string;
@@ -15,12 +16,12 @@ interface EventTitleCardProps {
 const EventTitleCard: React.FC<EventTitleCardProps> = ({ title, date, time, onShowMore, isExpanded, description }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title} numberOfLines={2}>{title}</Text>
-      <Text style={styles.datetime}>{date} • {time}</Text>
-      <Text style={styles.label}>Details</Text>
-      <Text style={styles.description} numberOfLines={6}>{description}</Text>
+      <AppText style={styles.title} numberOfLines={2}>{title}</AppText>
+      <AppText style={styles.datetime}>{date} • {time}</AppText>
+      <AppText style={styles.label}>Details</AppText>
+      <AppText style={styles.description} numberOfLines={6}>{description}</AppText>
       <TouchableOpacity style={styles.showMoreBtn} onPress={onShowMore}>
-        <Text style={styles.showMoreText}>{'Show more'}</Text>
+        <AppText style={styles.showMoreText}>{'Show more'}</AppText>
       </TouchableOpacity>
     </View>
   );

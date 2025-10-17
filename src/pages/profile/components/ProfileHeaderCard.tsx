@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useSignals } from '@preact/signals-react/runtime';
 import { userStore } from '../../login/store/login.store';
 import { normalize } from '../../../utils/responsive';
 import { Pencil, Phone , Cake, House} from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { AppText } from '../../../components';
 
 const ProfileHeaderCard: React.FC = () => {
   useSignals();
@@ -28,14 +29,14 @@ const ProfileHeaderCard: React.FC = () => {
           <Image source={{ uri: user.image }} style={styles.avatar} />
         ) : (
           <View style={styles.avatarPlaceholder}>
-            <Text style={styles.avatarText}>
+            <AppText style={styles.avatarText}>
               {user.firstName?.[0] || user.lastName?.[0] || 'U'}
-            </Text>
+            </AppText>
           </View>
         )}
         <View style={styles.info}>
-          <Text style={styles.name}>{fullName}</Text>
-          <Text style={styles.email}>{user.email || 'No email'}</Text>
+          <AppText style={styles.name}>{fullName}</AppText>
+          <AppText style={styles.email}>{user.email || 'No email'}</AppText>
         </View>
         <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
           <Pencil color="#0C0453" size={normalize(16)} />
@@ -47,20 +48,20 @@ const ProfileHeaderCard: React.FC = () => {
         <Phone color='white' size={normalize(17)} />
         </View>
         
-        <Text style={styles.detailText}>{user.contactNumber || 'No phone number'}</Text>
+        <AppText style={styles.detailText}>{user.contactNumber || 'No phone number'}</AppText>
       </View>
       <View style={styles.detailRow}>
         <View style={styles.detailIcon}>
         <Cake color='white' size={normalize(17)} />
         </View>
-        <Text style={styles.detailText}>{formattedBirthday}</Text>
+        <AppText style={styles.detailText}>{formattedBirthday}</AppText>
       </View>
       <View style={styles.detailRow}>
         <View style={styles.detailIcon}>
         <House color='white' size={normalize(17)} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.detailText}>{user.address || 'No address'}</Text>
+          <AppText style={styles.detailText}>{user.address || 'No address'}</AppText>
         </View>
       </View>
     </View>

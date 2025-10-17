@@ -1,9 +1,7 @@
 import React, { useEffect } from 'react';
 import {
   View,
-  Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
   Image,
   Platform,
@@ -19,6 +17,8 @@ import GoogleSignInService from '../../services/GoogleSignInService';
 import AppleSignInService from '../../services/AppleSignInService';
 import { setUser, userStore, handleGoogleSignIn, handleAppleSignIn, handleContinue, setShowAuthStack } from './store/login.store';
 import { useSignal } from '@preact/signals-react';
+import { Button, AppText, Icon } from '../../components';
+import { X } from 'lucide-react-native';
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
 const { width } = Dimensions.get('window');
@@ -34,9 +34,16 @@ const LoginScreen: React.FC = () => {
 
   return (
     <GradientLayout>
-      <TouchableOpacity style={styles.closeButton} onPress={() => setShowAuthStack(false)}>
-        <Text style={styles.closeButtonText}>✕</Text>
-      </TouchableOpacity>
+      <Icon 
+        icon={<X />}
+        size={20}
+        color="#FFFFFF"
+        backgroundColor="rgba(255, 255, 255, 0.15)"
+        rounded
+        padding={12}
+        style={styles.closeButton}
+        onPress={() => setShowAuthStack(false)}
+      />
 
       <View style={styles.logoContainer}>
         <Image
@@ -44,14 +51,14 @@ const LoginScreen: React.FC = () => {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.tagline}>Find It, Book It, Live It</Text>
+        <AppText style={styles.tagline}>Find It, Book It, Live It</AppText>
       </View>
 
       <View style={styles.formContainer}>
-        <Text style={styles.title}>Log in or sign up</Text>
+        <AppText style={styles.title}>Log in or sign up</AppText>
         
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email or mobile</Text>
+          <AppText style={styles.label}>Email or mobile</AppText>
           <TextInput
             style={styles.input}
             placeholder="Email/ mobile number"
@@ -68,46 +75,43 @@ const LoginScreen: React.FC = () => {
             editable={!userStore.value.isLoading}
           />
         </View>
-        <Text style={styles.description}>We'll send you a code to log in to your account</Text>
+        <AppText style={styles.description}>We'll send you a code to log in to your account</AppText>
         
-        <TouchableOpacity 
-          style={[styles.loginButton, userStore.value.isLoading && { opacity: 0.7 }]} 
+        <Button 
+          title="Continue"
+          loading={userStore.value.isLoading}
           disabled={userStore.value.isLoading}
           onPress={() => handleContinue(navigation)}
-        >
-          <Text style={styles.loginButtonText}>Continue</Text>
-        </TouchableOpacity>
+          fullWidth
+          style={styles.loginButton}
+        />
 
         <View style={styles.dividerContainer}>
           <View style={styles.divider} />
-          <Text style={styles.dividerText}>Or</Text>
+          <AppText style={styles.dividerText}>Or</AppText>
           <View style={styles.divider} />
         </View>
 
-        <View style={styles.socialButtonsContainer}>
-          <TouchableOpacity 
-            style={[styles.socialButton, userStore.value.isLoading && { opacity: 0.7 }]} 
-            onPress={() => handleGoogleSignIn(navigation)}
-            disabled={userStore.value.isLoading}
-          >
-            <GoogleIcon width={20} height={20} />
-            <Text style={styles.socialButtonText}>
-              {userStore.value.isLoading ? 'Connecting...' : 'Continue with Google'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.socialButtonsContainer}>
-          <TouchableOpacity 
-            style={[styles.socialButton, userStore.value.isLoading && { opacity: 0.7 }]}
-            onPress={() => handleAppleSignIn(navigation)}
-            disabled={userStore.value.isLoading}
-          >
-            <AppleIcon width={20} height={20} />
-            <Text style={styles.socialButtonText}>
-              {userStore.value.isLoading ? 'Connecting...' : 'Continue with Apple'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <Button 
+          title={userStore.value.isLoading ? 'Connecting...' : 'Continue with Google'}
+          variant="social"
+          leftIcon={<GoogleIcon width={20} height={20} />}
+          loading={userStore.value.isLoading}
+          disabled={userStore.value.isLoading}
+          onPress={() => handleGoogleSignIn(navigation)}
+          fullWidth
+          style={styles.socialButton}
+        />
+        <Button 
+          title={userStore.value.isLoading ? 'Connecting...' : 'Continue with Apple'}
+          variant="social"
+          leftIcon={<AppleIcon width={20} height={20} />}
+          loading={userStore.value.isLoading}
+          disabled={userStore.value.isLoading}
+          onPress={() => handleAppleSignIn(navigation)}
+          fullWidth
+          style={styles.socialButton}
+        />
       </View>
     </GradientLayout>
   );
@@ -121,17 +125,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: Platform.OS === 'ios' ? 50 : 50,
     left: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '300',
   },
   logoContainer: {
     alignItems: 'center',
@@ -215,17 +208,8 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   loginButton: {
-    backgroundColor: '#1E1B4B',
-    borderRadius: 8,
-    padding: 16,
-    alignItems: 'center',
     marginBottom: 16,
-    marginTop:'20%'
-  },
-  loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    marginTop: '20%',
   },
   forgotPassword: {
     alignItems: 'center',
@@ -250,27 +234,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 14,
   },
-  socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
   socialButton: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-    borderRadius: 8,
-    padding: 12,
     marginBottom: 12,
-    borderColor:'#0C0453',
-    borderWidth:1,
-    flex:1,
-    marginHorizontal:3
-  },
-  socialButtonText: {
-    fontSize: 16,
-    color: '#000000',
-    fontWeight: '500',
-    marginLeft: 12,
   },
   socialTextWithIcon: {
     marginLeft: 12,

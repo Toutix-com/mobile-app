@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { View, ImageBackground, TouchableOpacity, StyleSheet, Text, FlatList, Dimensions, ScrollView } from 'react-native';
+import { View, ImageBackground, TouchableOpacity, StyleSheet, FlatList, Dimensions, ScrollView } from 'react-native';
 import { X, Share2, Heart, ChevronLeft, Share } from 'lucide-react-native';
 import { normalize } from '../../../utils/responsive';
+import { AppText, Icon } from '../../../components';
 
 interface EventHeaderProps {
     imageUrls: string[]; // Changed from single imageUrl to array of imageUrls
@@ -43,26 +44,37 @@ const EventHeader: React.FC<EventHeaderProps> = ({
             imageStyle={{ borderTopLeftRadius: 18, borderTopRightRadius: 18 }}
         >
             <View style={styles.topRow}>
-                <TouchableOpacity style={styles.iconBtn} onPress={onBack}>
-                    <View style={styles.iconBackground}>
-                        <ChevronLeft color="#fff" size={24} />
-                    </View>
-                </TouchableOpacity>
+                <Icon 
+                    icon={<ChevronLeft />}
+                    size={24}
+                    color="#fff"
+                    backgroundColor="rgba(0,0,0,0.4)"
+                    rounded
+                    padding={8}
+                    onPress={onBack}
+                />
                 <View style={{ flexDirection: 'row' }}>
-                    <TouchableOpacity style={styles.iconBtn} onPress={onShare}>
-                        <View style={styles.iconBackground}>
-                            <Share color="#fff" size={22} />
-                        </View>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.iconBtn} onPress={onFavorite}>
-                        <View style={styles.iconBackground}>
-                            <Heart color={isFavorite ? '#FF6B6B' : '#fff'} fill={isFavorite ? '#FF6B6B' : 'transparent'} size={22} />
-                        </View>
-                    </TouchableOpacity>
+                    <Icon 
+                        icon={<Share />}
+                        size={22}
+                        color="#fff"
+                        backgroundColor="rgba(0,0,0,0.4)"
+                        rounded
+                        padding={8}
+                        onPress={onShare}
+                    />
+                    <Icon 
+                        icon={<Heart color={isFavorite ? '#FF6B6B' : '#fff'} fill={isFavorite ? '#FF6B6B' : 'transparent'} />}
+                        size={22}
+                        backgroundColor="rgba(0,0,0,0.4)"
+                        rounded
+                        padding={8}
+                        onPress={onFavorite}
+                    />
                 </View>
             </View>
             <View style={styles.limitedBadge}>
-                <Text style={styles.limitedBadgeText}>{status}</Text>
+                <AppText style={styles.limitedBadgeText}>{status}</AppText>
             </View>
         </ImageBackground>
     );

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Platform,
@@ -21,6 +20,7 @@ import { setUser, userStore } from '../login/store/login.store';
 import * as Keychain from 'react-native-keychain';
 import { LoginType } from '../login/enums/auth-enum';
 import { useSignals } from '@preact/signals-react/runtime';
+import { Button, AppText, Icon } from '../../components';
 
 type OTPVerificationScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'OTPVerification'>;
 
@@ -59,9 +59,16 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
 
   return (
     <GradientLayout>
-      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <ChevronLeft color="#FFFFFF" size={24} />
-      </TouchableOpacity>
+      <Icon 
+        icon={<ChevronLeft />}
+        size={24}
+        color="#FFFFFF"
+        backgroundColor="rgba(0, 0, 0, 0.3)"
+        rounded
+        padding={8}
+        onPress={handleBack}
+        style={styles.backButton}
+      />
 
       <View style={styles.logoContainer}>
         <Image
@@ -69,14 +76,14 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.tagline}>Find It, Book It, Live It</Text>
+        <AppText style={styles.tagline}>Find It, Book It, Live It</AppText>
       </View>
 
         <View style={styles.card}>
-          <Text style={styles.title}>Verify your {route.params.type === LoginType.EMAIL ? 'email' : 'mobile number'}</Text>
-          <Text style={styles.subtitle}>
-            We've sent a code to {route.params.type === LoginType.EMAIL ? route.params.email : route.params.phoneNumber}
-          </Text>
+          <AppText style={styles.title}>Verify your {route.params.type === LoginType.EMAIL ? 'email' : 'mobile number'}</AppText>
+          <AppText style={styles.subtitle}>
+            We've sent a code to {route.params.type === LoginType.EMAIL ? route.params.email : route.params.mobileNumber}
+          </AppText>
 
           <View style={styles.otpContainer}>
             {userStore.value.otp?.map((digit: string, index: number) => (
@@ -100,27 +107,26 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
                   autoComplete="off"
                   textContentType="oneTimeCode"
                 />
-                {index === 2 && <Text style={styles.otpSeparator}>-</Text>}
+                {index === 2 && <AppText style={styles.otpSeparator}>-</AppText>}
               </React.Fragment>
             ))}
           </View>
 
-          <TouchableOpacity 
-            style={[
-              styles.verifyButton,
-              userStore.value.otp?.every((d: string) => d) && styles.verifyButtonActive
-            ]} 
+          <Button
+            title="Verify"
+            variant="primary"
+            disabled={!userStore.value.otp?.every((d: string) => d)}
             onPress={() => handleVerify(route, navigation)}
-          >
-            <Text style={styles.verifyButtonText}>Verify</Text>
-          </TouchableOpacity>
+            style={userStore.value.otp?.every((d: string) => d) ? {...styles.verifyButton, ...styles.verifyButtonActive} : styles.verifyButton}
+            fullWidth
+          />
 
           <View style={styles.resendContainer}>
-            <Text style={styles.resendText}>Didn't get the code?</Text>
+            <AppText style={styles.resendText}>Didn't get the code?</AppText>
             <TouchableOpacity onPress={() => handleResend(route, setTimeLeft, timeLeft.value)} disabled={timeLeft.value > 0}>
-              <Text style={[styles.resendButton, timeLeft.value > 0 && styles.resendButtonDisabled]}>
+              <AppText style={timeLeft.value > 0 ? {...styles.resendButton, ...styles.resendButtonDisabled} : styles.resendButton}>
                 Resend {timeLeft.value > 0 ? `in ${formatTime(timeLeft.value)}` : ''}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           </View>
         </View>

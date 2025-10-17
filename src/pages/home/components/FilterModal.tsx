@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   TouchableOpacity,
   Animated,
@@ -16,6 +15,7 @@ import Divider from '../../../components/divider';
 import moment from 'moment';
 import { useSignals } from '@preact/signals-react/runtime';
 import { allCities, selectedCities, selectCity, deselectCity, startDate, endDate, setStartDate, setEndDate, selectedCategories, setSelectedCategories, allVenues, selectedVenues, selectVenue, deselectVenue } from '../store/home.store';
+import { Button, AppText, Icon } from '../../../components';
 
 const { width } = Dimensions.get('window');
 
@@ -269,13 +269,17 @@ const FilterModal: React.FC<FilterModalProps> = ({
         >
           <ScrollView showsVerticalScrollIndicator={false}>
             <View style={{ marginTop: normalize(50) }}>
-              <TouchableOpacity onPress={handleCloseFilter}>
-                <X color="#000" size={normalize(20)} />
-              </TouchableOpacity>
-              <Text style={{ fontWeight: 'bold', fontSize: 22, marginTop: normalize(20) }}>Filter events</Text>
+              <Icon 
+                icon={<X />}
+                size={normalize(20)}
+                color="#000"
+                onPress={handleCloseFilter}
+                style={{ alignSelf: 'flex-start' }}
+              />
+              <AppText style={{ fontWeight: 'bold', fontSize: 22, marginTop: normalize(20) }}>Filter events</AppText>
 
               {/* Cities */}
-              <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(10), marginBottom: normalize(10), color: '#444' }}>Cities</Text>
+              <AppText style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(10), marginBottom: normalize(10), color: '#444' }}>Cities</AppText>
               {citiesToShow.map(city => (
                 <View key={city.label} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, justifyContent: 'space-between' }}>
                   <CheckBox
@@ -287,11 +291,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </View>
               ))}
               <TouchableOpacity style={{ marginBottom: 8 }} onPress={onShowAllCities}>
-                <Text style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15 }}>Show all cities</Text>
+                <AppText style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15 }}>Show all cities</AppText>
               </TouchableOpacity>
 
               {/* Venues */}
-              <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(10), marginBottom: normalize(10), color: '#444' }}>Venues</Text>
+              <AppText style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(10), marginBottom: normalize(10), color: '#444' }}>Venues</AppText>
               {venuesToShow.map(venue => (
                 <View key={venue.label} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, justifyContent: 'space-between' }}>
                   <CheckBox
@@ -303,11 +307,11 @@ const FilterModal: React.FC<FilterModalProps> = ({
                 </View>
               ))}
               <TouchableOpacity style={{ marginBottom: 8 }} onPress={onShowAllVenues}>
-                <Text style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15 }}>Show all venues</Text>
+                <AppText style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15 }}>Show all venues</AppText>
               </TouchableOpacity>
 
               {/* Categories */}
-              <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(10), marginBottom: normalize(10), color: '#444' }}>Categories</Text>
+              <AppText style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(10), marginBottom: normalize(10), color: '#444' }}>Categories</AppText>
               {categoryOptions.map(category => (
                 <View key={category} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, justifyContent: 'space-between' }}>
                   <CheckBox
@@ -320,7 +324,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
               ))}
 
               {/* Start date */}
-              <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(18), marginBottom: normalize(10), color: '#444' }}>Start date</Text>
+              <AppText style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(18), marginBottom: normalize(10), color: '#444' }}>Start date</AppText>
               {startDateOptions.map(opt => (
                 <TouchableOpacity
                   key={opt}
@@ -333,15 +337,15 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   }}>
                     {isStartDateRadioChecked(opt) && <View style={{ width: 12, height: 12, backgroundColor: '#1a237e', borderRadius: 6 }} />}
                   </View>
-                  <Text style={{ color: '#222', fontSize: 15 }}>{opt}</Text>
+                  <AppText style={{ color: '#222', fontSize: 15 }}>{opt}</AppText>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity style={{ marginBottom: 8 }} onPress={() => onShowDatePicker('startDate')}>
-                <Text style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15 }}>Choose a date</Text>
+                <AppText style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15 }}>Choose a date</AppText>
               </TouchableOpacity>
 
               {/* End date */}
-              <Text style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(18), marginBottom: normalize(10), color: '#444' }}>End date</Text>
+              <AppText style={{ fontWeight: '600', fontSize: 16, marginTop: normalize(18), marginBottom: normalize(10), color: '#444' }}>End date</AppText>
               {endDateOptions.map(opt => (
                 <TouchableOpacity
                   key={opt}
@@ -354,27 +358,27 @@ const FilterModal: React.FC<FilterModalProps> = ({
                   }}>
                     {isEndDateRadioChecked(opt) && <View style={{ width: 12, height: 12, backgroundColor: '#1a237e', borderRadius: 6 }} />}
                   </View>
-                  <Text style={{ color: '#222', fontSize: 15 }}>{opt}</Text>
+                  <AppText style={{ color: '#222', fontSize: 15 }}>{opt}</AppText>
                 </TouchableOpacity>
               ))}
               <TouchableOpacity style={{ marginBottom: 16 }} onPress={() => onShowDatePicker('endDate')}>
-                <Text style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15 }}>Choose a date</Text>
+                <AppText style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15 }}>Choose a date</AppText>
               </TouchableOpacity>
               <Divider dividerStyle={{ marginVertical: normalize(10) }} />
               {/* Footer buttons */}
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: normalize(10), marginBottom: normalize(20) }}>
-                <TouchableOpacity
+                <Button
+                  title="Cancel"
+                  variant="secondary"
                   onPress={handleCloseFilter}
-                  style={{ flex: 1, marginHorizontal: 5, borderRadius: 8, paddingVertical: 14, alignItems: 'center' }}
-                >
-                  <Text style={{ color: '#0C0453', fontWeight: 'bold', fontSize: 16 }}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                  style={{ flex: 1, marginHorizontal: 5 }}
+                />
+                <Button
+                  title="Apply filters"
+                  variant="primary"
                   onPress={onApplyFilters}
-                  style={{ flex: 1, marginLeft: 5, backgroundColor: '#0C0453', borderRadius: 8, paddingVertical: 14, alignItems: 'center' }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Apply filters</Text>
-                </TouchableOpacity>
+                  style={{ flex: 1, marginLeft: 5 }}
+                />
               </View>
             </View>
           </ScrollView>

@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
@@ -64,6 +63,7 @@ import DatePickerBottomSheet from './components/DatePickerBottomSheet';
 import EventCard from '../../components/EventCard';
 import { Music, Drama, Dribbble, Baby, FileText, Heart } from 'lucide-react-native';
 import { fetchEventById } from '@pages/event/store/event.store';
+import { Button, AppText, Icon } from '../../components';
 
 const { width, height } = Dimensions.get('window');
 
@@ -146,7 +146,7 @@ const SearchScreen: React.FC = () => {
 
   const handleEventPress = async (event: any) => {
     await fetchEventById(event.id);
-    navigation.navigate('EventDetails');
+    (navigation as any).navigate('EventDetails');
   };
 
   const handleFavoritePress = (eventId: string) => {
@@ -209,15 +209,15 @@ const SearchScreen: React.FC = () => {
   const getResultsTitle = () => {
     if (currentCategory) {
       return (
-        <Text style={styles.resultsTitle}>
-          Showing all <Text style={styles.boldText}>{currentCategory}</Text> <Text style={styles.boldText}>category</Text> events
-        </Text>
+        <AppText style={styles.resultsTitle}>
+          Showing all <AppText style={styles.boldText}>{currentCategory}</AppText> <AppText style={styles.boldText}>category</AppText> events
+        </AppText>
       );
     }
     return (
-      <Text style={styles.resultsTitle}>
-        Showing <Text style={styles.boldText}>{searchResults.value.length}</Text> <Text style={styles.boldText}>matched</Text> events for your search
-      </Text>
+      <AppText style={styles.resultsTitle}>
+        Showing <AppText style={styles.boldText}>{searchResults.value.length}</AppText> <AppText style={styles.boldText}>matched</AppText> events for your search
+      </AppText>
     );
   };
 
@@ -237,9 +237,13 @@ const SearchScreen: React.FC = () => {
             <View style={styles.gradientTop} />
             <View style={styles.gradientHeader}>
               <View style={styles.resultsHeader}>
-                <TouchableOpacity onPress={handleClose} style={styles.backButtonResults}>
-                  <ChevronLeft color="#000" size={24} />
-                </TouchableOpacity>
+                <Icon 
+                  icon={<ChevronLeft />}
+                  size={24}
+                  color="#000"
+                  onPress={handleClose}
+                  style={styles.backButtonResults}
+                />
                 <View style={styles.resultsTitleContainer}>
                   {getResultsTitle()}
                 </View>
@@ -265,13 +269,17 @@ const SearchScreen: React.FC = () => {
         <>
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-              <ArrowLeft color="#000" size={24} />
-            </TouchableOpacity>
+            <Icon 
+              icon={<ArrowLeft />}
+              size={24}
+              color="#000"
+              onPress={handleClose}
+              style={styles.closeButton}
+            />
           </View>
 
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-            <Text style={styles.title}>Search events</Text>
+            <AppText style={styles.title}>Search events</AppText>
 
             <View style={styles.searchContainer}>
               {/* Event Name Search */}
@@ -302,9 +310,9 @@ const SearchScreen: React.FC = () => {
               {/* City Filter */}
               <TouchableOpacity style={styles.inputContainer} onPress={handleCityPress}>
                 <MapPin color="#666" size={20} style={styles.inputIcon} />
-                <Text style={[styles.input, selectedCity.value ? styles.selectedText : styles.placeholderText]}>
+                <AppText style={[styles.input, selectedCity.value ? styles.selectedText : styles.placeholderText]}>
                   {selectedCity.value || 'Select a city...'}
-                </Text>
+                </AppText>
                 {selectedCity.value && (
                   <TouchableOpacity onPress={handleClearCity} style={styles.clearButton}>
                     <X color="#666" size={16} />
@@ -315,9 +323,9 @@ const SearchScreen: React.FC = () => {
               {/* Venue Filter */}
               <TouchableOpacity style={styles.inputContainer} onPress={handleVenuePress}>
                 <Building2 color="#666" size={20} style={styles.inputIcon} />
-                <Text style={[styles.input, selectedVenue.value ? styles.selectedText : styles.placeholderText]}>
+                <AppText style={[styles.input, selectedVenue.value ? styles.selectedText : styles.placeholderText]}>
                   {selectedVenue.value || 'Select a venue...'}
-                </Text>
+                </AppText>
                 {selectedVenue.value && (
                   <TouchableOpacity onPress={handleClearVenue} style={styles.clearButton}>
                     <X color="#666" size={16} />
@@ -328,9 +336,9 @@ const SearchScreen: React.FC = () => {
               {/* Date Filter */}
               <TouchableOpacity style={styles.inputContainer} onPress={handleDatePress}>
                 <Calendar color="#666" size={20} style={styles.inputIcon} />
-                <Text style={[styles.input, (selectedDate.value || selectedMonth.value) ? styles.selectedText : styles.placeholderText]}>
+                <AppText style={[styles.input, (selectedDate.value || selectedMonth.value) ? styles.selectedText : styles.placeholderText]}>
                   {selectedDate.value || selectedMonth.value || 'Pick a date...'}
-                </Text>
+                </AppText>
                 {(selectedDate.value || selectedMonth.value) && (
                   <TouchableOpacity onPress={handleClearDate} style={styles.clearButton}>
                     <X color="#666" size={16} />
@@ -342,7 +350,7 @@ const SearchScreen: React.FC = () => {
             {/* Categories Section */}
             {showOnlyCategories && (
               <View style={styles.categoriesContainer}>
-                <Text style={styles.categoriesTitle}>Browse by category</Text>
+                <AppText style={styles.categoriesTitle}>Browse by category</AppText>
                 <View style={styles.categoriesGrid}>
                   {categories.map((category, index) => (
                     <TouchableOpacity
@@ -353,7 +361,7 @@ const SearchScreen: React.FC = () => {
                       }}
                     >
                       <category.icon color="#0C0453" size={20} style={styles.categoryIcon} />
-                      <Text style={styles.categoryText}>{category.name}</Text>
+                      <AppText style={styles.categoryText}>{category.name}</AppText>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -363,7 +371,7 @@ const SearchScreen: React.FC = () => {
             {/* Trending Section */}
             {showOnlyTrending && (
               <View style={styles.trendingContainer}>
-                <Text style={styles.trendingTitle}>Trending</Text>
+                <AppText style={styles.trendingTitle}>Trending</AppText>
                 {trendingEvents.value.map((event) => (
                   <TouchableOpacity
                     key={event.id}
@@ -375,7 +383,7 @@ const SearchScreen: React.FC = () => {
                     }}
                   >
                     <Flame color="#FF6B6B" size={16} style={styles.trendingIcon} />
-                    <Text style={styles.trendingText}>{event.name}</Text>
+                    <AppText style={styles.trendingText}>{event.name}</AppText>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -395,14 +403,14 @@ const SearchScreen: React.FC = () => {
                       }}
                     >
                       <Search color="#666" size={16} style={styles.suggestionIcon} />
-                      <Text style={styles.suggestionText}>{event.name}</Text>
+                      <AppText style={styles.suggestionText}>{event.name}</AppText>
                     </TouchableOpacity>
                   ))
                 ) : (
                   <View style={styles.noResultsContainer}>
-                    <Text style={styles.noResultsText}>
+                    <AppText style={styles.noResultsText}>
                       Sorry! couldn't find any event with this name
-                    </Text>
+                    </AppText>
                   </View>
                 )}
               </View>
@@ -410,14 +418,18 @@ const SearchScreen: React.FC = () => {
 
             {/* Footer Buttons */}
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-              <Text style={styles.searchButtonText}>
-                Search {eventCount.value > 0 ? `(${eventCount.value})` : ''}
-              </Text>
-            </TouchableOpacity>
+            <Button
+              title="Cancel"
+              variant="secondary"
+              onPress={handleCancel}
+              style={styles.cancelButton}
+            />
+            <Button
+              title={`Search ${eventCount.value > 0 ? `(${eventCount.value})` : ''}`}
+              variant="primary"
+              onPress={handleSearch}
+              style={styles.searchButton}
+            />
           </View>
 
           <View style={{ height: normalize(100) }} />

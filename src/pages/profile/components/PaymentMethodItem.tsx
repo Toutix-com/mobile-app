@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { normalize } from '../../../utils/responsive';
 import type { PaymentMethod } from '../store/profile.store';
 import { ChevronRight } from 'lucide-react-native';
+import { AppText } from '../../../components';
 
 const brandStyles: Record<string, { bg: string; fg: string; label: string }> = {
   visa: { bg: '#1A1F71', fg: '#fff', label: 'VISA' },
@@ -21,11 +22,11 @@ const PaymentMethodItem: React.FC<Props> = ({ method, onPress }) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={[styles.brandBadge, { backgroundColor: badge.bg }]}> 
-        <Text style={[styles.brandText, { color: badge.fg }]}>{badge.label}</Text>
+        <AppText style={[styles.brandText, { color: badge.fg }]}>{badge.label}</AppText>
       </View>
       <View style={styles.info}>
-        <Text style={styles.nickname}>{method.nickname}</Text>
-        <Text style={styles.meta}>{`•••• ${method.last4}`}</Text>
+        <AppText style={styles.nickname}>{method.nickname}</AppText>
+        <AppText style={styles.meta}>{`•••• ${method.last4}`}</AppText>
       </View>
       <ChevronRight color="#0C0453" size={normalize(18)} />
     </TouchableOpacity>

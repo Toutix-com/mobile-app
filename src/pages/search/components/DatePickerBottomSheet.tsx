@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import BottomSheet from '../../../components/bottomsheet';
 import { X, ChevronLeft, ChevronRight, Calendar } from 'lucide-react-native';
 import { normalize } from '../../../utils/responsive';
 import { useSignals } from '@preact/signals-react/runtime';
 import { selectedDate, setSelectedDate, selectedMonth, setSelectedMonth, updateEventCount } from '../store/search.store';
+import { Button, AppText, Icon } from '../../../components';
 
 const { width } = Dimensions.get('window');
 
@@ -144,37 +145,53 @@ const DatePickerBottomSheet: React.FC<DatePickerBottomSheetProps> = ({
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Pick a date</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <X color="#000" size={24} />
-          </TouchableOpacity>
+          <AppText style={styles.title}>Pick a date</AppText>
+          <Icon 
+            icon={<X />}
+            size={24}
+            color="#000"
+            onPress={onClose}
+            style={styles.closeButton}
+          />
         </View>
 
-        <Text style={styles.subtitle}>Show events up to selected date</Text>
+        <AppText style={styles.subtitle}>Show events up to selected date</AppText>
 
         {/* Calendar Section */}
         <View style={styles.calendarContainer}>
           <View style={styles.monthHeader}>
             <View style={styles.monthHeaderRow}>
-            <Text style={styles.monthTitle}>{months[currentMonth]} {currentYear}</Text>
-            <TouchableOpacity onPress={() => navigateMonth('next')} style={styles.navButtonMonthNext}>
-                <ChevronRight color="#000" size={20} />
-              </TouchableOpacity>
+            <AppText style={styles.monthTitle}>{months[currentMonth]} {currentYear}</AppText>
+            <Icon 
+              icon={<ChevronRight />}
+              size={20}
+              color="#000"
+              onPress={() => navigateMonth('next')}
+              style={styles.navButtonMonthNext}
+            />
             </View>
             <View style={styles.navigationButtons}>
-              <TouchableOpacity onPress={() => navigateMonth('prev')} style={styles.navButton}>
-                <ChevronLeft color="#000" size={25} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigateMonth('next')} style={styles.navButton}>
-                <ChevronRight color="#000" size={25} />
-              </TouchableOpacity>
+              <Icon 
+                icon={<ChevronLeft />}
+                size={25}
+                color="#000"
+                onPress={() => navigateMonth('prev')}
+                style={styles.navButton}
+              />
+              <Icon 
+                icon={<ChevronRight />}
+                size={25}
+                color="#000"
+                onPress={() => navigateMonth('next')}
+                style={styles.navButton}
+              />
             </View>
           </View>
 
           {/* Days of Week */}
           <View style={styles.daysOfWeek}>
             {daysOfWeek.map((day) => (
-              <Text key={day} style={styles.dayOfWeek}>{day}</Text>
+              <AppText key={day} style={styles.dayOfWeek}>{day}</AppText>
             ))}
           </View>
 
@@ -192,13 +209,13 @@ const DatePickerBottomSheet: React.FC<DatePickerBottomSheetProps> = ({
                 disabled={!day}
               >
                 {day && (
-                  <Text style={[
+                  <AppText style={[
                     styles.dayText,
                     isSelectedDate(day) ? styles.selectedDayText : null,
                     isToday(day) && !isSelectedDate(day) ? styles.todayText : null
                   ]}>
                     {day}
-                  </Text>
+                  </AppText>
                 )}
               </TouchableOpacity>
             ))}
