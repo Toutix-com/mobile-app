@@ -1,5 +1,5 @@
 import React , { useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
 import { useSignals } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
 import ProfileHeaderCard from './components/ProfileHeaderCard';
@@ -25,6 +25,7 @@ import { userStore } from '../login/store/login.store';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { AppText, Icon, Button } from '../../components';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 type ProfileScreenNavigationProp = CompositeNavigationProp<
@@ -53,7 +54,7 @@ const ProfileScreen: React.FC = () => {
       <View style={styles.container}>
         {/* Header */}
         <View style={[styles.header, { marginTop: normalize(50), marginLeft: normalize(20) }]}>
-          <Text style={styles.headerTitle}>Profile</Text>
+          <AppText style={styles.headerTitle}>Profile</AppText>
         </View>
         
         <View style={styles.notLoggedInContainer}>
@@ -63,13 +64,13 @@ const ProfileScreen: React.FC = () => {
           </View>
           
           {/* Message */}
-          <Text style={styles.notLoggedInMessage}>
+          <AppText style={styles.notLoggedInMessage}>
             Hey, looks like you are not logged in
-          </Text>
+          </AppText>
           
           {/* Login Button */}
           <TouchableOpacity style={styles.loginButton} onPress={handleLoginPress}>
-            <Text style={styles.loginButtonText}>Log in now</Text>
+            <AppText style={styles.loginButtonText}>Log in now</AppText>
           </TouchableOpacity>
         </View>
       </View>
@@ -82,7 +83,7 @@ const ProfileScreen: React.FC = () => {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
+          <AppText style={styles.headerTitle}>Profile</AppText>
           <View style={styles.headerButtons}>
             <TouchableOpacity style={styles.bellButton}>
               <Bell color="#0C0453" size={normalize(18)} />
@@ -93,7 +94,7 @@ const ProfileScreen: React.FC = () => {
         {/* Loading State */}
         {isLoadingProfile.value && (
           <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>...</Text>
+            <AppText style={styles.loadingText}>...</AppText>
           </View>
         )}
 
@@ -108,16 +109,16 @@ const ProfileScreen: React.FC = () => {
             {/* Logout */}
             <TouchableOpacity style={styles.logoutButton} onPress={() => handleLogout(navigation)}>
               <LogOut color="#D73A49" size={normalize(16)} />
-              <Text style={styles.logoutText}>Log out</Text>
+              <AppText style={styles.logoutText}>Log out</AppText>
             </TouchableOpacity>
 
             {/* Payment methods */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Payment methods</Text>
+                <AppText style={styles.sectionTitle}>Payment methods</AppText>
                 <TouchableOpacity style={styles.addNewButton}>
                   <Plus color="#0C0453" size={normalize(16)} />
-                  <Text style={styles.addNewText}>Add new</Text>
+                  <AppText style={styles.addNewText}>Add new</AppText>
                 </TouchableOpacity>
               </View>
               <View style={styles.cardList}>
@@ -131,9 +132,9 @@ const ProfileScreen: React.FC = () => {
 
             {/* Notifications */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Notifications</Text>
+              <AppText style={styles.sectionTitle}>Notifications</AppText>
               <View style={styles.toggleRow}>
-                <Text style={styles.toggleLabel}>Email notifications</Text>
+                <AppText style={styles.toggleLabel}>Email notifications</AppText>
                 <Switch
                   value={emailNotifications.value}
                   onValueChange={setEmailNotifications}
@@ -142,7 +143,7 @@ const ProfileScreen: React.FC = () => {
                 />
               </View>
               <View style={styles.toggleRow}>
-                <Text style={styles.toggleLabel}>App notifications</Text>
+                <AppText style={styles.toggleLabel}>App notifications</AppText>
                 <Switch
                   value={appNotifications.value}
                   onValueChange={setAppNotifications}
@@ -155,9 +156,9 @@ const ProfileScreen: React.FC = () => {
             {/* Ticket history */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>Ticket purchase history</Text>
+                <AppText style={styles.sectionTitle}>Ticket purchase history</AppText>
                 <TouchableOpacity style={{zIndex: 1000}} onPress={() => handleViewAllTicketHistory(navigation)}>
-                  <Text style={styles.viewAllText}>View all</Text>
+                  <AppText style={styles.viewAllText}>View all</AppText>
                 </TouchableOpacity>
               </View>
               <View style={styles.historyList}>

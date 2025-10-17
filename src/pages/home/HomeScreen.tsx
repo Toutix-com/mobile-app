@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import {
   StyleSheet,
   View,
-  Text,
   TextInput,
   ScrollView,
   FlatList,
@@ -59,6 +58,7 @@ import {
 import { useSignals } from '@preact/signals-react/runtime';
 import { fetchEventById } from '../event/store/event.store';
 import { userStore } from '@pages/login/store/login.store';
+import { Button, AppText, Icon } from '../../components';
 const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
@@ -144,19 +144,31 @@ const HomeScreen = () => {
         ListHeaderComponent={
           <>
             <View style={styles.header}>
-              <TouchableOpacity style={styles.searchContainer} onPress={() => (navigation as any).navigate('Search')}>
-                <Search color="#666" size={normalize(20)} />
-                <TextInput
-                  placeholder="Search events"
-                  style={styles.searchInput}
-                  placeholderTextColor="#666"
-                  editable={false}
-                  pointerEvents="none"
-                />
-                <TouchableOpacity style={styles.filterButton} onPress={openFilter}>
-                  <SlidersHorizontal color="#fff" size={normalize(20)} />
-                </TouchableOpacity>
-              </TouchableOpacity>
+              <Button 
+                variant="ghost"
+                style={styles.searchContainer} 
+                onPress={() => (navigation as any).navigate('Search')}
+              >
+                <View style={styles.searchContent}>
+                  <Icon icon={<Search />} size="md" color="#666" />
+                  <TextInput
+                    placeholder="Search events"
+                    style={styles.searchInput}
+                    placeholderTextColor="#666"
+                    editable={false}
+                    pointerEvents="none"
+                  />
+                  <Icon 
+                    icon={<SlidersHorizontal />} 
+                    size="md" 
+                    color="#fff"
+                    backgroundColor="#0C0453"
+                    rounded
+                    padding={12}
+                    onPress={openFilter}
+                  />
+                </View>
+              </Button>
             </View>
 
             {!hasActiveFilters() && (
@@ -172,12 +184,12 @@ const HomeScreen = () => {
                       onPress={() => setSelectedCategory(selectedCategory === category.name ? null : category.name)}
                     >
                       <category.icon color={selectedCategory === category.name ? "#fff" : "#333"} size={normalize(18)} />
-                      <Text style={[
+                      <AppText style={[
                         styles.categoryText,
-                        selectedCategory === category.name && { color: '#fff' }
+                        selectedCategory === category.name ? { color: '#fff' } : {}
                       ]}>
                         {category.name}
-                      </Text>
+                      </AppText>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -186,7 +198,7 @@ const HomeScreen = () => {
 
             {!hasActiveFilters() && (
               <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { marginBottom: normalize(15) }]}>Featured events</Text>
+                <AppText style={[styles.sectionTitle, { marginBottom: normalize(15) }]}>Featured events</AppText>
                 <FlatList
                   ref={flatListRef}
                   horizontal
@@ -205,13 +217,19 @@ const HomeScreen = () => {
                             blurAmount={10}
                           />
                           <View>
-                            <Text style={styles.featuredTitle}>{item.title}</Text>
-                            <Text style={styles.featuredVenue}>{item.venue}</Text>
-                            <Text style={styles.featuredDate}>{item.date}</Text>
+                            <AppText style={styles.featuredTitle}>{item.title}</AppText>
+                            <AppText style={styles.featuredVenue}>{item.venue}</AppText>
+                            <AppText style={styles.featuredDate}>{item.date}</AppText>
                           </View>
-                          <TouchableOpacity style={styles.arrowButton} onPress={() => handleNextPress(flatListRef)}>
-                            <ArrowRight color="#0C0453" size={normalize(24)} />
-                          </TouchableOpacity>
+                          <Icon 
+                            icon={<ArrowRight />}
+                            size={24}
+                            color="#0C0453"
+                            backgroundColor="#BCCEFF"
+                            rounded
+                            padding={12}
+                            onPress={() => handleNextPress(flatListRef)}
+                          />
                         </View>
                       </ImageBackground>
                     </View>
@@ -235,16 +253,20 @@ const HomeScreen = () => {
               </View>
             )}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: normalize(15) }}>
-              {!hasActiveFilters() ? <Text style={styles.sectionTitle}>More events for you</Text> :
+              {!hasActiveFilters() ? <AppText style={styles.sectionTitle}>More events for you</AppText> :
                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                   <View>
-                    <Text style={styles.sectionTitle}>Showing {filteredEvents.length} events</Text>
+                    <AppText style={styles.sectionTitle}>Showing {filteredEvents.length} events</AppText>
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginRight: normalize(20) }}>
-                    <X color="#0C0453" size={normalize(20)} />
-                    <TouchableOpacity onPress={clearAllFilters}>
-                      <Text style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15}}>Clear</Text>
-                    </TouchableOpacity>
+                    <Icon icon={<X />} size="md" color="#0C0453" />
+                    <Button 
+                      variant="ghost" 
+                      onPress={clearAllFilters}
+                      style={{ padding: 0 }}
+                    >
+                      <AppText style={{ color: '#0C0453', textDecorationLine: 'underline', fontSize: 15}}>Clear</AppText>
+                    </Button>
                   </View>
                 </View>}
             </View>
@@ -372,8 +394,6 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#fff',
     borderRadius: normalize(30),
     paddingLeft: normalize(15),
@@ -384,6 +404,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
+    minHeight: 60,
+  },
+  searchContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   searchInput: {
     flex: 1,
@@ -391,14 +417,6 @@ const styles = StyleSheet.create({
     height: normalize(50),
     fontSize: normalize(16),
     color: '#333',
-  },
-  filterButton: {
-    width: normalize(44),
-    height: normalize(44),
-    borderRadius: normalize(22),
-    backgroundColor: '#0C0453',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   categoriesContainer: {
     paddingLeft: normalize(20),
@@ -469,11 +487,6 @@ const styles = StyleSheet.create({
     color: '#E0E0E0',
     fontSize: normalize(14),
     marginTop: normalize(4),
-  },
-  arrowButton: {
-    backgroundColor: '#BCCEFF',
-    padding: normalize(12),
-    borderRadius: normalize(22),
   },
   pagination: {
     flexDirection: 'row',

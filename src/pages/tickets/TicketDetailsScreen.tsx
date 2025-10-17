@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Modal, StatusBar, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, Image, TouchableOpacity, Modal, StatusBar, Platform, ScrollView } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSignals } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
@@ -8,6 +8,7 @@ import { fetchUserProfile, userStore } from '../login/store/login.store';
 import { X, Maximize2, MapPin, CalendarDays, Clock, User as UserIcon, AlignLeft, Hash, User } from 'lucide-react-native';
 import { handleLoginPress } from '@pages/profile/store/profile.store';
 import { fetchEventById } from '@pages/event/store/event.store';
+import { Button, AppText, Icon } from '../../components';
 
 const TicketDetailsScreen: React.FC = () => {
   useSignals();
@@ -48,20 +49,24 @@ const TicketDetailsScreen: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity style={styles.screenCloseBtn} onPress={() => navigation.goBack()}>
-        <X color="black" size={normalize(22)} />
-      </TouchableOpacity>
+      <Icon 
+        icon={<X />}
+        size={normalize(22)}
+        color="black"
+        onPress={() => navigation.goBack()}
+        style={styles.screenCloseBtn}
+      />
       <View style={styles.card}>
         <View style={styles.headerRow}>
           <View style={styles.titleRow}>
             <Image source={{ uri: item.event?.image }} style={styles.thumb} />
             <View style={{ flex: 1 }}>
-              <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
+              <AppText style={styles.title} numberOfLines={2}>{item.title}</AppText>
               <TouchableOpacity onPress={() => 
                 fetchEventById(item.event?.id || '').then(() => {
                   navigation.navigate('EventDetails', { id: item.event?.id });
                 })}>
-                <Text style={styles.link}>View event</Text>
+                <AppText style={styles.link}>View event</AppText>
               </TouchableOpacity>
             </View>
           </View>
@@ -74,7 +79,7 @@ const TicketDetailsScreen: React.FC = () => {
             <Image source={{ uri: qrUrl }} style={styles.qr} resizeMode="contain" />
             {qrExpired.value && (
               <View style={styles.expiredBadge}>
-                <Text style={styles.expiredText}>QR code Expired</Text>
+                <AppText style={styles.expiredText}>QR code Expired</AppText>
               </View>
             )}
             <TouchableOpacity style={styles.expandBtn} onPress={openQrFullscreen}>
@@ -83,15 +88,18 @@ const TicketDetailsScreen: React.FC = () => {
           </View>
           {!qrExpired.value ? (
             <>
-              <Text style={styles.qrNote}>QR code for this ticket will regenerated in:</Text>
-              <Text style={styles.qrTimer}>{`${Math.floor(qrSecondsRemaining.value/60).toString().padStart(2,'0')}:${(qrSecondsRemaining.value%60).toString().padStart(2,'0')}`}</Text>
+              <AppText style={styles.qrNote}>QR code for this ticket will regenerated in:</AppText>
+              <AppText style={styles.qrTimer}>{`${Math.floor(qrSecondsRemaining.value/60).toString().padStart(2,'0')}:${(qrSecondsRemaining.value%60).toString().padStart(2,'0')}`}</AppText>
             </>
           ) : (
             <View style={styles.reloadRow}>
-              <Text style={styles.reloadHint}>New QR code available</Text>
-              <TouchableOpacity style={styles.reloadButton} onPress={reloadQrNow}>
-                <Text style={styles.reloadButtonText}>Reload now</Text>
-              </TouchableOpacity>
+              <AppText style={styles.reloadHint}>New QR code available</AppText>
+              <Button
+                title="Reload now"
+                variant="primary"
+                onPress={reloadQrNow}
+                style={styles.reloadButton}
+              />
             </View>
           )}
         </View>
@@ -102,41 +110,41 @@ const TicketDetailsScreen: React.FC = () => {
           <View style={styles.iconBg}>
             <MapPin color="white" size={normalize(18)} />
           </View>
-          <Text style={styles.sectionTitle}>Venue</Text>
+          <AppText style={styles.sectionTitle}>Venue</AppText>
         </View>
-        <Text style={styles.sectionValue}>{item.event?.location?.name || '-'}</Text>
+        <AppText style={styles.sectionValue}>{item.event?.location?.name || '-'}</AppText>
       </View>
 
       <View style={styles.rowTwoCols}>
         <View style={[styles.section, { flex: 1.5, marginRight: normalize(12) }]}>
-          <View style={styles.rowIconText}><View style={styles.iconBg}><CalendarDays color="white" size={normalize(18)} /></View><Text style={styles.sectionTitle}>Date</Text></View>
-          <Text style={styles.sectionValue}>{item.dateLabel}</Text>
+          <View style={styles.rowIconText}><View style={styles.iconBg}><CalendarDays color="white" size={normalize(18)} /></View><AppText style={styles.sectionTitle}>Date</AppText></View>
+          <AppText style={styles.sectionValue}>{item.dateLabel}</AppText>
         </View>
         <View style={[styles.section, { flex: 1, marginLeft: normalize(12) }]}>
-          <View style={styles.rowIconText}><View style={styles.iconBg}><Clock color="white" size={normalize(18)} /></View><Text style={styles.sectionTitle}>Time</Text></View>
-          <Text style={styles.sectionValue}>{item.timeLabel}</Text>
+          <View style={styles.rowIconText}><View style={styles.iconBg}><Clock color="white" size={normalize(18)} /></View><AppText style={styles.sectionTitle}>Time</AppText></View>
+          <AppText style={styles.sectionValue}>{item.timeLabel}</AppText>
         </View>
       </View>
 
       <View style={styles.section}>
-        <View style={styles.rowIconText}><View style={styles.iconBg}><UserIcon color="white" size={normalize(18)} /></View><Text style={styles.sectionTitle}>Ticket purchaser</Text></View>
-        <Text style={styles.sectionValue}>{currentUser.firstName} {currentUser.lastName}</Text>
+        <View style={styles.rowIconText}><View style={styles.iconBg}><UserIcon color="white" size={normalize(18)} /></View><AppText style={styles.sectionTitle}>Ticket purchaser</AppText></View>
+        <AppText style={styles.sectionValue}>{currentUser.firstName} {currentUser.lastName}</AppText>
       </View>
 
       <View style={styles.section}>
-        <View style={styles.rowIconText}><View style={styles.iconBg}><AlignLeft color="white" size={normalize(18)} /></View><Text style={styles.sectionTitle}>Ticket type</Text></View>
-        <Text style={styles.sectionValue}>{item.ticketCategory?.title}</Text>
+        <View style={styles.rowIconText}><View style={styles.iconBg}><AlignLeft color="white" size={normalize(18)} /></View><AppText style={styles.sectionTitle}>Ticket type</AppText></View>
+        <AppText style={styles.sectionValue}>{item.ticketCategory?.title}</AppText>
       </View>
 
       <View style={styles.section}>
-        <View style={styles.rowIconText}><View style={styles.iconBg}><AlignLeft color="white" size={normalize(18)} /></View><Text style={styles.sectionTitle}>Description</Text></View>
-        <Text style={styles.sectionValue}>Ticket grants access to Zone area</Text>
+        <View style={styles.rowIconText}><View style={styles.iconBg}><AlignLeft color="white" size={normalize(18)} /></View><AppText style={styles.sectionTitle}>Description</AppText></View>
+        <AppText style={styles.sectionValue}>Ticket grants access to Zone area</AppText>
       </View>
 
       <View style={styles.section}>
-        <View style={styles.rowIconText}><View style={styles.iconBg}><Hash color="white" size={normalize(18)} /></View><Text style={styles.sectionTitle}>Seats</Text></View>
+        <View style={styles.rowIconText}><View style={styles.iconBg}><Hash color="white" size={normalize(18)} /></View><AppText style={styles.sectionTitle}>Seats</AppText></View>
         <View style={styles.seatsWrap}>
-        <View style={styles.seatBadge}><Text style={styles.seatText}>{item.seatId}</Text></View>
+        <View style={styles.seatBadge}><AppText style={styles.seatText}>{item.seatId}</AppText></View>
         </View>
       </View>
 
@@ -145,7 +153,7 @@ const TicketDetailsScreen: React.FC = () => {
       <Modal visible={qrExpanded.value} animationType="fade" onRequestClose={closeQrFullscreen}>
         <TouchableOpacity style={styles.fullscreen} activeOpacity={1} onPress={closeQrFullscreen}>
           <StatusBar hidden translucent backgroundColor="#ffffff" barStyle="dark-content" />
-          <Text style={styles.fullscreenHint}>Tap anywhere to exit from full screen mode</Text>
+          <AppText style={styles.fullscreenHint}>Tap anywhere to exit from full screen mode</AppText>
           <Image source={{ uri: qrUrl }} style={styles.qrLarge} resizeMode="contain" />
         </TouchableOpacity>
       </Modal>

@@ -1,9 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Modal, Platform, Alert, ScrollView } from 'react-native';
+import { View, StyleSheet, TextInput, TouchableOpacity, Image, Modal, Platform, Alert, ScrollView } from 'react-native';
 import { useSignals } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
 import { Camera, X, Calendar, ArrowLeft } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { AppText, Icon, Button } from '../../components';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { userStore } from '../login/store/login.store';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -63,7 +64,7 @@ const EditProfileScreen: React.FC = () => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Edit profile</Text>
+        <AppText style={styles.headerTitle}>Edit profile</AppText>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -84,7 +85,7 @@ const EditProfileScreen: React.FC = () => {
                 >
                   {isImageLoading.value ? (
                     <View style={styles.loadingOverlay}>
-                      <Text style={styles.loadingText}>Loading...</Text>
+                      <AppText style={styles.loadingText}>Loading...</AppText>
                     </View>
                   ) : (
                     <Camera color="#FFFFFF" size={normalize(20)} />
@@ -93,9 +94,9 @@ const EditProfileScreen: React.FC = () => {
               </View>
             ) : showImageRemoved.value ? (
               <View style={styles.profilePicturePlaceholder}>
-                <Text style={styles.profilePictureText}>
+                <AppText style={styles.profilePictureText}>
                   {userStore.value.firstName?.[0] || userStore.value.lastName?.[0] || 'U'}
-                </Text>
+                </AppText>
                 {/* Change image overlay on placeholder */}
                 <TouchableOpacity 
                   style={styles.changeImageOverlay} 
@@ -104,7 +105,7 @@ const EditProfileScreen: React.FC = () => {
                 >
                   {isImageLoading.value ? (
                     <View style={styles.loadingOverlay}>
-                      <Text style={styles.loadingText}>Loading...</Text>
+                      <AppText style={styles.loadingText}>Loading...</AppText>
                     </View>
                   ) : (
                     <Camera color="#FFFFFF" size={normalize(20)} />
@@ -122,7 +123,7 @@ const EditProfileScreen: React.FC = () => {
                 >
                   {isImageLoading.value ? (
                     <View style={styles.loadingOverlay}>
-                      <Text style={styles.loadingText}>Loading...</Text>
+                      <AppText style={styles.loadingText}>Loading...</AppText>
                     </View>
                   ) : (
                     <Camera color="#FFFFFF" size={normalize(20)} />
@@ -162,7 +163,7 @@ const EditProfileScreen: React.FC = () => {
                 disabled={isImageLoading.value}
               >
                 <X color="#D73A49" size={normalize(16)} />
-                <Text style={[styles.actionButtonText, { color: '#D73A49' }]}>Remove picture</Text>
+                <AppText style={[styles.actionButtonText, { color: '#D73A49' }]}>Remove picture</AppText>
               </TouchableOpacity>
             )}
             
@@ -175,7 +176,7 @@ const EditProfileScreen: React.FC = () => {
                 }}
                 disabled={isImageLoading.value}
               >
-                <Text style={[styles.actionButtonText, { color: '#0C0453' }]}>Undo</Text>
+                <AppText style={[styles.actionButtonText, { color: '#0C0453' }]}>Undo</AppText>
               </TouchableOpacity>
             )}
           </View>
@@ -186,13 +187,13 @@ const EditProfileScreen: React.FC = () => {
           {/* Error Display */}
           {error.value && (
             <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error.value}</Text>
+              <AppText style={styles.errorText}>{error.value}</AppText>
             </View>
           )}
 
           {/* First Name */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>First name</Text>
+            <AppText style={styles.inputLabel}>First name</AppText>
             <TextInput
               style={styles.input}
               value={profileFormData.value.firstName}
@@ -204,7 +205,7 @@ const EditProfileScreen: React.FC = () => {
 
           {/* Last Name */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Last name</Text>
+            <AppText style={styles.inputLabel}>Last name</AppText>
             <TextInput
               style={styles.input}
               value={profileFormData.value.lastName}
@@ -216,7 +217,7 @@ const EditProfileScreen: React.FC = () => {
 
           {/* Email */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email</Text>
+            <AppText style={styles.inputLabel}>Email</AppText>
             <TextInput
               style={[styles.input, styles.disabledInput]}
               value={userStore.value.email || ''}
@@ -228,7 +229,7 @@ const EditProfileScreen: React.FC = () => {
 
           {/* Phone Number */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Phone number</Text>
+            <AppText style={styles.inputLabel}>Phone number</AppText>
             <TextInput
               style={styles.input}
               value={profileFormData.value.contactNumber}
@@ -241,7 +242,7 @@ const EditProfileScreen: React.FC = () => {
 
           {/* Birthday */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Birthday (Optional)</Text>
+            <AppText style={styles.inputLabel}>Birthday (Optional)</AppText>
             <TouchableOpacity 
               style={styles.birthdayInputContainer}
               onPress={() => showDatePicker.value = true}
@@ -261,7 +262,7 @@ const EditProfileScreen: React.FC = () => {
 
           {/* Address */}
           <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Address (Optional)</Text>
+            <AppText style={styles.inputLabel}>Address (Optional)</AppText>
             <TextInput
               style={[styles.input, styles.addressInput]}
               value={profileFormData.value.address}
@@ -277,7 +278,7 @@ const EditProfileScreen: React.FC = () => {
         {/* Action Buttons */}
       <View style={styles.actionButtons}>
         <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.closeButtonText}>Close</Text>
+          <AppText style={styles.closeButtonText}>Close</AppText>
         </TouchableOpacity>
         
         <TouchableOpacity 
@@ -285,9 +286,9 @@ const EditProfileScreen: React.FC = () => {
           onPress={() => handleSaveChanges(navigation)} 
           disabled={isLoading.value}
         >
-          <Text style={styles.saveButtonText}>
+          <AppText style={styles.saveButtonText}>
             {isLoading.value ? 'Saving...' : 'Save changes'}
-          </Text>
+          </AppText>
         </TouchableOpacity>
       </View>
       <View style={{height: normalize(100)}}></View>

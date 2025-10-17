@@ -1,7 +1,6 @@
 import React from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Image,
   StyleSheet,
@@ -18,6 +17,7 @@ import {
   CheckCircle,
 } from 'lucide-react-native';
 import { getOrderSummary } from './store/checkout.store';
+import { Button, AppText, Icon } from '../../components';
 
 const SuccessReceiptScreen: React.FC = () => {
   useSignals();
@@ -27,7 +27,7 @@ const SuccessReceiptScreen: React.FC = () => {
   if (!orderSummary) {
     return (
       <View style={styles.container}>
-        <Text>No order data available</Text>
+        <AppText>No order data available</AppText>
       </View>
     );
   }
@@ -53,9 +53,13 @@ const SuccessReceiptScreen: React.FC = () => {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <X color="#000" size={24} />
-        </TouchableOpacity>
+        <Icon 
+          icon={<X />}
+          size={24}
+          color="#000"
+          onPress={() => navigation.goBack()}
+          style={styles.closeButton}
+        />
         <View style={styles.placeholder} />
       </View>
 
@@ -63,22 +67,22 @@ const SuccessReceiptScreen: React.FC = () => {
         {/* Success Message */}
         <View style={styles.successContainer}>
           <View style={styles.successIcon}>
-            <CheckCircle color="#008136" size={24} />
-            <Text style={styles.successTitle}>Ticket purchase successful</Text>
+            <Icon icon={<CheckCircle />} size={24} color="#008136" />
+            <AppText style={styles.successTitle}>Ticket purchase successful</AppText>
           </View>
           
-          <Text style={styles.successMessage}>
+          <AppText style={styles.successMessage}>
             Thank you for your payment. This transaction is now completed
-          </Text>
+          </AppText>
         </View>
 
         {/* Event Details Card */}
         <View style={styles.eventCard}>
           <Image source={{ uri: event.image }} style={styles.eventImage} />
           <View style={styles.eventDetails}>
-            <Text style={styles.eventTitle} numberOfLines={2}>{event.name}</Text>
-            <Text style={styles.eventDateLocationTitle}>{'Date'}</Text>
-            <Text style={styles.eventDate}>
+            <AppText style={styles.eventTitle} numberOfLines={2}>{event.name}</AppText>
+            <AppText style={styles.eventDateLocationTitle}>{'Date'}</AppText>
+            <AppText style={styles.eventDate}>
               {new Date(event.startTimeStamp).toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 day: 'numeric', 
@@ -89,19 +93,19 @@ const SuccessReceiptScreen: React.FC = () => {
                 minute: '2-digit',
                 hour12: true 
               })}
-            </Text>
-            <Text style={styles.eventDateLocationTitle}>{'Location'}</Text>
-            <Text style={styles.eventLocation}>{event.location.name}</Text>
+            </AppText>
+            <AppText style={styles.eventDateLocationTitle}>{'Location'}</AppText>
+            <AppText style={styles.eventLocation}>{event.location.name}</AppText>
           </View>
           {/* Order Summary */}
         <View style={styles.orderSummary}>
-          <Text style={styles.orderTitle}>Your order</Text>
+          <AppText style={styles.orderTitle}>Your order</AppText>
           {tickets.map((ticket, index) => (
             <View key={index} style={styles.orderItem}>
-              <Text style={styles.orderItemText}>
+              <AppText style={styles.orderItemText}>
                 {ticket.quantity}  x  {ticket.category.title}
-              </Text>
-              <Text style={styles.orderItemPrice}>${ticket.total.toFixed(2)}</Text>
+              </AppText>
+              <AppText style={styles.orderItemPrice}>${ticket.total.toFixed(2)}</AppText>
             </View>
           ))}
         </View>
@@ -111,29 +115,31 @@ const SuccessReceiptScreen: React.FC = () => {
 
         {/* Confirmation and Help */}
         <View style={styles.confirmationContainer}>
-          <Text style={styles.confirmationText}>
+          <AppText style={styles.confirmationText}>
             A confirmation email has been sent to your registered email.
-          </Text>
-          <Text style={styles.helpText}>
-            Need help? <Text style={styles.contactLink} onPress={handleContactUs}>Contact us</Text>
-          </Text>
+          </AppText>
+          <AppText style={styles.helpText}>
+            Need help? <AppText style={styles.contactLink} onPress={handleContactUs}>Contact us</AppText>
+          </AppText>
         </View>
       </ScrollView>
 
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.viewTicketsButton}
+        <Button
+          title="View your tickets"
+          variant="primary"
           onPress={handleViewTickets}
-        >
-          <Text style={styles.viewTicketsButtonText}>View your tickets</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.moreEventsButton}
+          style={styles.viewTicketsButton}
+          fullWidth
+        />
+        <Button
+          title="More events"
+          variant="secondary"
           onPress={handleMoreEvents}
-        >
-          <Text style={styles.moreEventsButtonText}>More events</Text>
-        </TouchableOpacity>
+          style={styles.moreEventsButton}
+          fullWidth
+        />
       </View>
       <View style={styles.footer}/>
     </ScrollView>

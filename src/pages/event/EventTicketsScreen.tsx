@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import { View, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
 import { X , Plus } from 'lucide-react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { 
@@ -17,6 +17,7 @@ import {
 } from './store/event.store';
 import { useSignals } from '@preact/signals-react/runtime';
 import { normalize } from '../../utils/responsive';
+import { Button, AppText, Icon } from '../../components';
 
 const EventTicketsScreen = () => {
   useSignals();
@@ -43,23 +44,26 @@ const EventTicketsScreen = () => {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <X color="#222" size={28} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Available tickets</Text>
+          <Icon 
+            icon={<X />}
+            size={28}
+            color="#222"
+            onPress={() => navigation.goBack()}
+          />
+          <AppText style={styles.headerTitle}>Available tickets</AppText>
         </View>
 
         {/* Event summary */}
         <View style={styles.eventCard}>
           <Image source={{ uri: event.image }} style={styles.eventImage} />
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.eventTitle} numberOfLines={1}>{event.name}</Text>
-            <Text style={styles.eventDate}>
+            <AppText style={styles.eventTitle} numberOfLines={1}>{event.name}</AppText>
+            <AppText style={styles.eventDate}>
               {formatEventDate(event.startTimeStamp)}
-            </Text>
-            <Text style={styles.eventTime}>
+            </AppText>
+            <AppText style={styles.eventTime}>
               {formatEventTimeRange(event.startTimeStamp, event.endTimeStamp)}
-            </Text>
+            </AppText>
           </View>
         </View>
 
@@ -70,25 +74,31 @@ const EventTicketsScreen = () => {
             return (
               <View key={cat.id} style={styles.ticketRow}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.ticketTitle}>{cat.title}</Text>
-                  <Text style={styles.ticketPrice}>${cat.price}</Text>
-                  <Text style={styles.ticketDesc}>{cat.description}</Text>
+                  <AppText style={styles.ticketTitle}>{cat.title}</AppText>
+                  <AppText style={styles.ticketPrice}>${cat.price}</AppText>
+                  <AppText style={styles.ticketDesc}>{cat.description}</AppText>
                 </View>
                 <View style={styles.qtyBox}>
                   {qty > 0 ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center' ,backgroundColor:'#EDEFF4' , borderRadius: 8  }}>
                       <TouchableOpacity style={styles.qtyBtn} onPress={() => removeTicket(cat.id)}>
-                        <Text style={styles.qtyBtnText}>-</Text>
+                        <AppText style={styles.qtyBtnText}>-</AppText>
                       </TouchableOpacity>
-                      <Text style={styles.qtyCount}>{qty}</Text>
+                      <AppText style={styles.qtyCount}>{qty}</AppText>
                       <TouchableOpacity style={styles.qtyBtn} onPress={() => addTicket(cat.id, cat.maxTicketCount)}>
-                        <Text style={styles.qtyBtnText}>+</Text>
+                        <AppText style={styles.qtyBtnText}>+</AppText>
                       </TouchableOpacity>
                     </View>
                   ) : (
-                    <TouchableOpacity style={styles.addBtn} onPress={() => addTicket(cat.id, cat.maxTicketCount)}>
-                      <Plus color="#fff" size={24} />
-                    </TouchableOpacity>
+                    <Icon 
+                      icon={<Plus />}
+                      size={24}
+                      color="#fff"
+                      backgroundColor="#0C0453"
+                      style={styles.addBtn}
+                      padding={8}
+                      onPress={() => addTicket(cat.id, cat.maxTicketCount)}
+                    />
                   )}
                 </View>
               </View>
@@ -99,31 +109,30 @@ const EventTicketsScreen = () => {
         {/* Footer */}
         <View style={styles.footer}>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Sub total</Text>
-            <Text style={styles.summaryValue}>${subtotal.toFixed(2)}</Text>
+            <AppText style={styles.summaryLabel}>Sub total</AppText>
+            <AppText style={styles.summaryValue}>${subtotal.toFixed(2)}</AppText>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Transaction fee</Text>
-            <Text style={styles.summaryValue}>${transactionFee.toFixed(2)}</Text>
+            <AppText style={styles.summaryLabel}>Transaction fee</AppText>
+            <AppText style={styles.summaryValue}>${transactionFee.toFixed(2)}</AppText>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabelBold}>Total</Text>
-            <Text style={styles.summaryValueBold}>${total.toFixed(2)}</Text>
+            <AppText style={styles.summaryLabelBold}>Total</AppText>
+            <AppText style={styles.summaryValueBold}>${total.toFixed(2)}</AppText>
           </View>
           <View style={{ flexDirection: 'row', gap: normalize(10) , marginBottom: normalize(80), flex: 1, marginTop: normalize(20) }}>
-            <TouchableOpacity
-            style={[styles.checkoutBtn, { backgroundColor: subtotal > 0 ? '#18104B' : '#C7C7D9' }]}
-            disabled={subtotal === 0}
-            onPress={() => {
-              if (subtotal > 0) {
-                navigation.navigate('TicketCheckout' as never);
-              }
-            }}
-          >
-            <Text style={styles.checkoutBtnText}>
-              {'Continue to pay'}
-            </Text>
-          </TouchableOpacity>
+            <Button
+              title="Continue to pay"
+              variant={subtotal > 0 ? "primary" : "secondary"}
+              disabled={subtotal === 0}
+              onPress={() => {
+                if (subtotal > 0) {
+                  navigation.navigate('TicketCheckout' as never);
+                }
+              }}
+              style={styles.checkoutBtn}
+              fullWidth
+            />
           </View>
           
         </View>
@@ -152,9 +161,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 18,
     marginTop: normalize(40),
+    alignItems: 'flex-start',
   },
   headerTitle: {
-    marginTop: normalize(30),
+    marginTop: normalize(20),
     fontWeight: 'bold',
     fontSize: 20,
     color: '#222',

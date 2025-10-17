@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   Image,
   StyleSheet,
@@ -52,6 +51,8 @@ import {
   resetReservationTimer
 } from './store/checkout.store';
 import { createMockPaymentIntent } from '../../services/stripeService';
+import { showErrorToast } from '@components/toast';
+import { Button, AppText, Icon } from '../../components';
 
 const TicketCheckoutScreen: React.FC = () => {
   useSignals();
@@ -87,7 +88,7 @@ const TicketCheckoutScreen: React.FC = () => {
   if (!orderSummary) {
     return (
       <View style={styles.container}>
-        <Text>No order data available</Text>
+        <AppText>No order data available</AppText>
       </View>
     );
   }
@@ -95,20 +96,19 @@ const TicketCheckoutScreen: React.FC = () => {
   const hanldeBuy = async () => {
     startReservationTimer(300);
     loadCheckoutObject(navigation).then(async () => {
-      console.log("Checkout Object Loaded");
+      await initializePaymentSheet();
       if (checkoutPayload.value?.isFreeCheckout) {
-        navigation.navigate('SuccessReceipt');
+        (navigation as any).navigate('SuccessReceipt');
         return;
       }
-      initializePaymentSheet();
+      
       const { error } = await presentPaymentSheet();
       if (error) {
         console.log(error, "Error Payment Sheet");
-        Alert.alert('Payment Failed', error.message || 'Please try again');
+        showErrorToast(error.message || 'Payment failed. Please try again.');
       } else {
         console.log("Payment Sheet Presented Successfully");
-        // Navigate to success receipt page
-        navigation.navigate('SuccessReceipt' as never);
+        (navigation as any).navigate('SuccessReceipt');
       }
     });
   }
@@ -122,10 +122,14 @@ const TicketCheckoutScreen: React.FC = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <X color="#000" size={24} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Ticket summary</Text>
+        <Icon 
+          icon={<X />}
+          size={24}
+          color="#000"
+          onPress={() => navigation.goBack()}
+          style={styles.closeButton}
+        />
+        <AppText style={styles.headerTitle}>Ticket summary</AppText>
         <View style={styles.placeholder} />
       </View>
 
@@ -134,9 +138,9 @@ const TicketCheckoutScreen: React.FC = () => {
         <View style={styles.eventCard}>
           <Image source={{ uri: event.image }} style={styles.eventImage} />
           <View style={styles.eventDetails}>
-            <Text style={styles.eventTitle} numberOfLines={2}>Night Pulse: An Immersive Ele...</Text>
-            <Text style={styles.eventDate}>Saturday, August 10, 2025</Text>
-            <Text style={styles.eventTime}>5:00PM - 3:00AM</Text>
+            <AppText style={styles.eventTitle} numberOfLines={2}>Night Pulse: An Immersive Ele...</AppText>
+            <AppText style={styles.eventDate}>Saturday, August 10, 2025</AppText>
+            <AppText style={styles.eventTime}>5:00PM - 3:00AM</AppText>
           </View>
         </View>
 
@@ -144,8 +148,8 @@ const TicketCheckoutScreen: React.FC = () => {
         <View style={styles.ticketItems}>
           {tickets.map((ticket, index) => (
             <View style={styles.ticketItem} key={index}>
-              <Text style={styles.ticketItemText}>{ticket.quantity} X {ticket.category.title}</Text>
-              <Text style={styles.ticketItemPrice}>${ticket.total.toFixed(2)}</Text>
+              <AppText style={styles.ticketItemText}>{ticket.quantity} X {ticket.category.title}</AppText>
+              <AppText style={styles.ticketItemPrice}>${ticket.total.toFixed(2)}</AppText>
             </View>
           ))}
         </View>
@@ -153,28 +157,28 @@ const TicketCheckoutScreen: React.FC = () => {
         {/* Cost Breakdown */}
         <View style={styles.costBreakdown}>
           <View style={styles.costRow}>
-            <Text style={styles.costLabel}>Sub total</Text>
-            <Text style={styles.costValue}>${subtotal.toFixed(2)}</Text>
+            <AppText style={styles.costLabel}>Sub total</AppText>
+            <AppText style={styles.costValue}>${subtotal.toFixed(2)}</AppText>
           </View>
           <View style={styles.costRow}>
-            <Text style={styles.costLabel}>Transaction fee</Text>
-            <Text style={styles.costValue}>${transactionFee.toFixed(2)}</Text>
+            <AppText style={styles.costLabel}>Transaction fee</AppText>
+            <AppText style={styles.costValue}>${transactionFee.toFixed(2)}</AppText>
           </View>
           {discount > 0 && (
             <View style={styles.costRow}>
-              <Text style={styles.costLabel}>Discount</Text>
-              <Text style={[styles.costValue, styles.discountValue]}>-${discount.toFixed(2)}</Text>
+              <AppText style={styles.costLabel}>Discount</AppText>
+              <AppText style={[styles.costValue, styles.discountValue]}>-${discount.toFixed(2)}</AppText>
             </View>
           )}
           <View style={[styles.costRow, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
+            <AppText style={styles.totalLabel}>Total</AppText>
+            <AppText style={styles.totalValue}>${total.toFixed(2)}</AppText>
           </View>
         </View>
 
         {/* Payment Section */}
         <View style={styles.paymentSection}>
-          <Text style={styles.paymentTitle}>Have a coupon?</Text>
+          <AppText style={styles.paymentTitle}>Have a coupon?</AppText>
           
           <View style={styles.paymentForm}>
             <View style={[styles.inputGroup, styles.couponInputRow]}>
@@ -190,10 +194,11 @@ const TicketCheckoutScreen: React.FC = () => {
                 editable={!appliedCoupon.value}
               />
               <TouchableOpacity 
-                style={[
-                  styles.applyCouponButton, 
-                  (couponCode.value.trim().length > 0 || appliedCoupon.value) && styles.applyCouponButtonActive
-                ]}
+                style={
+                  (couponCode.value.trim().length > 0 || appliedCoupon.value) 
+                    ? [styles.applyCouponButton, styles.applyCouponButtonActive]
+                    : styles.applyCouponButton
+                }
                 onPress={() => {
                   if (appliedCoupon.value) {
                     removeCoupon();
@@ -201,19 +206,18 @@ const TicketCheckoutScreen: React.FC = () => {
                     applyCoupon(couponCode.value);
                   }
                 }}
-                disabled={!appliedCoupon.value && couponCode.value.trim().length === 0}
               >
-                {appliedCoupon.value ? (
-                  <Trash2 
-                    color="#fff" 
-                    size={20} 
-                  />
-                ) : (
-                  <CheckCircle 
-                    color={couponCode.value.trim().length > 0 ? "#fff" : "#000"} 
-                    size={24} 
-                  />
-                )}
+                <Icon 
+                  icon={
+                    appliedCoupon.value ? (
+                      <Trash2 />
+                    ) : (
+                      <CheckCircle />
+                    )
+                  }
+                  size={appliedCoupon.value ? 20 : 24}
+                  color={appliedCoupon.value ? "#fff" : (couponCode.value.trim().length > 0 ? "#fff" : "#000")}
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -221,23 +225,23 @@ const TicketCheckoutScreen: React.FC = () => {
 
         {/* Reservation Timer */}
         <View style={styles.reservationContainer}>
-          <Text style={styles.reservationText}>
-            Your tickets are reserved for you until: <Text style={styles.reservationTime}>{`${Math.floor(reservationSecondsRemaining.value/60)}:${(reservationSecondsRemaining.value%60).toString().padStart(2,'0')}`}</Text>
-          </Text>
+          <AppText style={styles.reservationText}>
+            Your tickets are reserved for you until: <AppText style={styles.reservationTime}>{`${Math.floor(reservationSecondsRemaining.value/60)}:${(reservationSecondsRemaining.value%60).toString().padStart(2,'0')}`}</AppText>
+          </AppText>
         </View>
       </ScrollView>
 
       {/* Pay Button */}
       <View style={styles.payButtonContainer}>
-        <TouchableOpacity
-          style={[styles.payButton, (isProcessingPayment.value || isReservationExpired.value) && styles.payButtonDisabled]}
-          onPress={hanldeBuy}
+        <Button
+          title={isProcessingPayment.value ? 'Processing...' : 'Pay'}
+          variant="primary"
+          loading={isProcessingPayment.value}
           disabled={isProcessingPayment.value || isReservationExpired.value}
-        >
-          <Text style={styles.payButtonText}>
-            {isProcessingPayment.value ? 'Processing...' : 'Pay'}
-          </Text>
-        </TouchableOpacity>
+          onPress={hanldeBuy}
+          style={styles.payButton}
+          fullWidth
+        />
       </View>
       <View style={{height:normalize(90)}}/>
     </ScrollView>

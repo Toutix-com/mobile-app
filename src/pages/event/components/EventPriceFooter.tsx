@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { AppText } from '../../../components';
 
 interface EventPriceFooterProps {
   price: string;
@@ -8,7 +9,7 @@ interface EventPriceFooterProps {
 const EventPriceFooter: React.FC<EventPriceFooterProps> = ({ price }) => {
   return (
     <View style={styles.footer}>
-      <Text style={styles.price}>{`Tickets from ${price}`}</Text>
+      <AppText style={styles.price}>{`Tickets from ${price}`}</AppText>
     </View>
   );
 };

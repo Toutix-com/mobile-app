@@ -4,6 +4,7 @@ import { setUser, userStore, setShowAuthStack } from '../../login/store/login.st
 import { verifyOtp, loginWithOtp } from '../../../services/ApiService';
 import * as Keychain from 'react-native-keychain';
 import { signal } from '@preact/signals-react';
+import { showSuccessToast, showErrorToast } from '../../../components/toast';
 
 export const timeLeft = signal<number>(45);
 export const setTimeLeft = (n: number) => { timeLeft.value = n; };
@@ -44,7 +45,7 @@ export const handleVerify = async (route: any, navigation: any) => {
   try {
     const [data, error] = await verifyOtp({ email: route.params.email || null, otp: otpString, phoneNumber: route.params.phoneNumber || null });
     if (error) {
-      Alert.alert('Error', (error).response?.data?.message || 'Invalid OTP');
+      showErrorToast((error).response?.data?.message || 'Invalid OTP');
       return;
     }
     if (data) {
@@ -58,12 +59,13 @@ export const handleVerify = async (route: any, navigation: any) => {
       
       await Keychain.setGenericPassword('auth', (data as any).token);
       setShowAuthStack(false); // Hide auth stack and return to app stack
+      showSuccessToast('OTP verified successfully!');
       if ((data as any).isNewUser) {
         navigation.navigate('Register');
       }
     }
   } catch (e) {
-    Alert.alert('Error', 'Failed to verify OTP');
+    showErrorToast('Failed to verify OTP');
   }
 };
 
@@ -73,13 +75,13 @@ export const handleResend = async (route: any, setTimeLeft: (n: number) => void,
       const payload = route.params.email ? { email: route.params.email } : { phoneNumber: route.params.phoneNumber };
       const [, error] = await loginWithOtp(payload);
       if (error) {
-        Alert.alert('Error', (error as any).response?.data?.message || 'Failed to resend OTP');
+        showErrorToast((error as any).response?.data?.message || 'Failed to resend OTP');
         return;
       }
       setTimeLeft(45);
-      Alert.alert('Success', 'OTP resent successfully');
+      showSuccessToast('OTP resent successfully');
     } catch (e) {
-      Alert.alert('Error', 'Failed to resend OTP');
+      showErrorToast('Failed to resend OTP');
     }
   }
 };

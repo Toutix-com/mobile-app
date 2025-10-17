@@ -1,9 +1,7 @@
 import React, { useEffect } from 'react';
 import {
   View,
-  Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
   Image,
   Platform,
@@ -12,13 +10,16 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AuthStack';
-import GradientLayout from '../../components/layouts/GradientLayout';
+import BlurredCirclesBackground from '../../components/layouts/BlurredCirclesBackground';
 import GoogleIcon from '@assets/icons/google.svg';
 import AppleIcon from '@assets/icons/apple.svg';
 import GoogleSignInService from '../../services/GoogleSignInService';
 import AppleSignInService from '../../services/AppleSignInService';
 import { setUser, userStore, handleGoogleSignIn, handleAppleSignIn, handleContinue, setShowAuthStack } from './store/login.store';
 import { useSignal } from '@preact/signals-react';
+import { Button, AppText, Icon } from '../../components';
+import { X } from 'lucide-react-native';
+import { tokens, getSpacing, normalize } from '../../design-system';
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
 const { width } = Dimensions.get('window');
@@ -33,10 +34,17 @@ const LoginScreen: React.FC = () => {
   }, []);
 
   return (
-    <GradientLayout>
-      <TouchableOpacity style={styles.closeButton} onPress={() => setShowAuthStack(false)}>
-        <Text style={styles.closeButtonText}>✕</Text>
-      </TouchableOpacity>
+    <BlurredCirclesBackground>
+      <Icon 
+        icon={<X />}
+        size={20}
+        color="#FFFFFF"
+        backgroundColor="rgba(255, 255, 255, 0.15)"
+        rounded
+        padding={12}
+        style={styles.closeButton}
+        onPress={() => setShowAuthStack(false)}
+      />
 
       <View style={styles.logoContainer}>
         <Image
@@ -44,18 +52,18 @@ const LoginScreen: React.FC = () => {
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.tagline}>Find It, Book It, Live It</Text>
+        <AppText style={styles.tagline}>Find It, Book It, Live It</AppText>
       </View>
 
       <View style={styles.formContainer}>
-        <Text style={styles.title}>Log in or sign up</Text>
+        <AppText style={styles.title}>Log in or sign up</AppText>
         
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email or mobile</Text>
+          <AppText style={styles.label}>Email or mobile</AppText>
           <TextInput
             style={styles.input}
             placeholder="Email/ mobile number"
-            placeholderTextColor="#A0A0A0"
+            placeholderTextColor={tokens.colors.textSecondary}
             value={userStore?.value.email}
             onChangeText={(e) => {
               setUser({
@@ -68,48 +76,45 @@ const LoginScreen: React.FC = () => {
             editable={!userStore.value.isLoading}
           />
         </View>
-        <Text style={styles.description}>We'll send you a code to log in to your account</Text>
+        <AppText style={styles.description}>We'll send you a code to log in to your account</AppText>
         
-        <TouchableOpacity 
-          style={[styles.loginButton, userStore.value.isLoading && { opacity: 0.7 }]} 
+        <Button 
+          title="Continue"
+          loading={userStore.value.isLoading}
           disabled={userStore.value.isLoading}
           onPress={() => handleContinue(navigation)}
-        >
-          <Text style={styles.loginButtonText}>Continue</Text>
-        </TouchableOpacity>
+          fullWidth
+          style={styles.loginButton}
+        />
 
         <View style={styles.dividerContainer}>
           <View style={styles.divider} />
-          <Text style={styles.dividerText}>Or</Text>
+          <AppText style={styles.dividerText}>Or</AppText>
           <View style={styles.divider} />
         </View>
 
-        <View style={styles.socialButtonsContainer}>
-          <TouchableOpacity 
-            style={[styles.socialButton, userStore.value.isLoading && { opacity: 0.7 }]} 
-            onPress={() => handleGoogleSignIn(navigation)}
-            disabled={userStore.value.isLoading}
-          >
-            <GoogleIcon width={20} height={20} />
-            <Text style={styles.socialButtonText}>
-              {userStore.value.isLoading ? 'Connecting...' : 'Continue with Google'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.socialButtonsContainer}>
-          <TouchableOpacity 
-            style={[styles.socialButton, userStore.value.isLoading && { opacity: 0.7 }]}
-            onPress={() => handleAppleSignIn(navigation)}
-            disabled={userStore.value.isLoading}
-          >
-            <AppleIcon width={20} height={20} />
-            <Text style={styles.socialButtonText}>
-              {userStore.value.isLoading ? 'Connecting...' : 'Continue with Apple'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <Button 
+          title={userStore.value.isLoading ? 'Connecting...' : 'Continue with Google'}
+          variant="social"
+          leftIcon={<GoogleIcon width={20} height={20} />}
+          loading={userStore.value.isLoading}
+          disabled={userStore.value.isLoading}
+          onPress={() => handleGoogleSignIn(navigation)}
+          fullWidth
+          style={styles.socialButton}
+        />
+        <Button 
+          title={userStore.value.isLoading ? 'Connecting...' : 'Continue with Apple'}
+          variant="social"
+          leftIcon={<AppleIcon width={20} height={20} />}
+          loading={userStore.value.isLoading}
+          disabled={userStore.value.isLoading}
+          onPress={() => handleAppleSignIn(navigation)}
+          fullWidth
+          style={styles.socialButton}
+        />
       </View>
-    </GradientLayout>
+    </BlurredCirclesBackground>
   );
 };
 
@@ -119,164 +124,119 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 50,
-    left: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    top: Platform.OS === 'ios' ? normalize(50) : normalize(50),
+    left: normalize(20),
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: tokens.borderRadius.full,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '300',
+    color: tokens.colors.textInverse, // Using semantic color - white text on dark background
+    fontSize: normalize(tokens.typography.fontSize.lg),
+    fontWeight: tokens.typography.fontWeight.normal,
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: Platform.OS === 'ios' ? 120 : 120,
-    paddingHorizontal: 20,
+    marginTop: Platform.OS === 'ios' ? normalize(120) : normalize(120),
+    paddingHorizontal: normalize(20),
   },
   logo: {
     width: width * 0.45,
-    height: 35,
-    tintColor: '#FFFFFF',
+    height: normalize(35),
+    tintColor: tokens.colors.textInverse, // Using semantic color - white logo on dark background
   },
   tagline: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: '600',
-    marginTop: 14,
+    color: tokens.colors.textInverse, // Using semantic color - white text on dark background
+    fontSize: normalize(tokens.typography.fontSize['3xl']),
+    fontWeight: tokens.typography.fontWeight.bold,
+    marginTop: normalize(14),
     textAlign: 'center',
   },
   formContainer: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
-    marginTop: 44,
+    backgroundColor: tokens.colors.background, // Using semantic color
+    borderTopLeftRadius: normalize(24),
+    borderTopRightRadius: normalize(24),
+    padding: normalize(24),
+    marginTop: normalize(44),
     flex: 1,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+    paddingBottom: Platform.OS === 'ios' ? normalize(34) : normalize(24),
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 24,
+    fontSize: normalize(tokens.typography.fontSize['2xl']),
+    fontWeight: tokens.typography.fontWeight.bold,
+    color: tokens.colors.text, // Using semantic color
+    marginBottom: normalize(24),
   },
-  description:{
-    fontSize: 14,
-    fontWeight: '400',
-    color: '#5C636E',
-    marginBottom: 24,
+  description: {
+    fontSize: normalize(tokens.typography.fontSize.sm),
+    fontWeight: tokens.typography.fontWeight.normal,
+    color: tokens.colors.textSecondary, // Using semantic color
+    marginBottom: normalize(24),
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: normalize(16),
   },
   label: {
-    fontSize: 16,
-    color: '#000000',
-    marginBottom: 8,
+    fontSize: normalize(tokens.typography.fontSize.base),
+    color: tokens.colors.text, // Using semantic color
+    marginBottom: normalize(8),
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
-    color: '#000000',
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 4,
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: '#1E1B4B',
-    borderColor: '#1E1B4B',
-  },
-  checkmark: {
-    color: '#FFFFFF',
-    fontSize: 14,
-  },
-  checkboxLabel: {
-    fontSize: 16,
-    color: '#000000',
+    borderColor: tokens.colors.border, // Using semantic color
+    borderRadius: tokens.borderRadius.default,
+    padding: normalize(16),
+    fontSize: normalize(tokens.typography.fontSize.base),
+    color: tokens.colors.text, // Using semantic color
   },
   loginButton: {
-    backgroundColor: '#1E1B4B',
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: tokens.colors.primary, // Using semantic color
+    borderRadius: tokens.borderRadius.full,
+    padding: normalize(16),
     alignItems: 'center',
-    marginBottom: 16,
-    marginTop:'20%'
+    marginBottom: normalize(24),
+    marginTop: '20%',
   },
   loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  forgotPassword: {
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  forgotPasswordText: {
-    color: '#1E1B4B',
-    fontSize: 14,
+    color: tokens.colors.textInverse, // Using semantic color
+    fontSize: normalize(tokens.typography.fontSize.base),
+    fontWeight: tokens.typography.fontWeight.bold,
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: normalize(24),
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: tokens.colors.border, // Using semantic color
   },
   dividerText: {
-    color: '#6B7280',
-    paddingHorizontal: 12,
-    fontSize: 14,
-  },
-  socialButtonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    color: tokens.colors.textSecondary, // Using semantic color
+    paddingHorizontal: normalize(12),
+    fontSize: normalize(tokens.typography.fontSize.sm),
   },
   socialButton: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'flex-start',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    borderColor:'#0C0453',
-    borderWidth:1,
-    flex:1,
-    marginHorizontal:3
+    alignItems: 'center',
+    borderRadius: tokens.borderRadius.full,
+    padding: normalize(12),
+    paddingHorizontal: normalize(16),
+    marginBottom: normalize(12),
+    borderColor: tokens.colors.primary, // Using semantic color
+    borderWidth: 1,
+    flex: 1,
+    marginHorizontal: normalize(3),
   },
   socialButtonText: {
-    fontSize: 16,
-    color: '#000000',
-    fontWeight: '500',
-    marginLeft: 12,
-  },
-  socialTextWithIcon: {
-    marginLeft: 12,
-  },
-  socialPrefix: {
-    color: '#666666',
+    fontSize: normalize(tokens.typography.fontSize.base),
+    color: tokens.colors.primary, // Using semantic color
+    fontWeight: tokens.typography.fontWeight.medium,
+    marginLeft: normalize(12),
   },
 });
 

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
   Platform,
@@ -14,13 +13,15 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { ChevronLeft } from 'lucide-react-native';
 import { AuthStackParamList } from '../../navigation/AuthStack';
-import GradientLayout from '../../components/layouts/GradientLayout';
+import BlurredCirclesBackground from '../../components/layouts/BlurredCirclesBackground';
 import { verifyOtp, loginWithOtp } from '../../services/ApiService';
 import { handleOtpChange, handleKeyPress, handleVerify, handleResend, formatTime, timeLeft, setTimeLeft } from './store/otpVerify.store';
 import { setUser, userStore } from '../login/store/login.store';
 import * as Keychain from 'react-native-keychain';
 import { LoginType } from '../login/enums/auth-enum';
 import { useSignals } from '@preact/signals-react/runtime';
+import { Button, AppText, Icon } from '../../components';
+import { tokens, normalize } from '../../design-system';
 
 type OTPVerificationScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'OTPVerification'>;
 
@@ -58,10 +59,17 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
   };
 
   return (
-    <GradientLayout>
-      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <ChevronLeft color="#FFFFFF" size={24} />
-      </TouchableOpacity>
+    <BlurredCirclesBackground>
+      <Icon 
+        icon={<ChevronLeft />}
+        size={24}
+        color="#FFFFFF"
+        backgroundColor="rgba(0, 0, 0, 0.3)"
+        rounded
+        padding={8}
+        onPress={handleBack}
+        style={styles.backButton}
+      />
 
       <View style={styles.logoContainer}>
         <Image
@@ -69,14 +77,14 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
           style={styles.logo}
           resizeMode="contain"
         />
-        <Text style={styles.tagline}>Find It, Book It, Live It</Text>
+        <AppText style={styles.tagline}>Find It, Book It, Live It</AppText>
       </View>
 
         <View style={styles.card}>
-          <Text style={styles.title}>Verify your {route.params.type === LoginType.EMAIL ? 'email' : 'mobile number'}</Text>
-          <Text style={styles.subtitle}>
-            We've sent a code to {route.params.type === LoginType.EMAIL ? route.params.email : route.params.phoneNumber}
-          </Text>
+          <AppText style={styles.title}>Verify your {route.params.type === LoginType.EMAIL ? 'email' : 'mobile number'}</AppText>
+          <AppText style={styles.subtitle}>
+            We've sent a code to {route.params.type === LoginType.EMAIL ? route.params.email : route.params.mobileNumber}
+          </AppText>
 
           <View style={styles.otpContainer}>
             {userStore.value.otp?.map((digit: string, index: number) => (
@@ -100,137 +108,137 @@ const OTPVerificationScreen: React.FC<OTPVerificationScreenProps> = ({ route }) 
                   autoComplete="off"
                   textContentType="oneTimeCode"
                 />
-                {index === 2 && <Text style={styles.otpSeparator}>-</Text>}
+                {index === 2 && <AppText style={styles.otpSeparator}>-</AppText>}
               </React.Fragment>
             ))}
           </View>
 
-          <TouchableOpacity 
-            style={[
-              styles.verifyButton,
-              userStore.value.otp?.every((d: string) => d) && styles.verifyButtonActive
-            ]} 
+          <Button
+            title="Verify"
+            variant="primary"
+            disabled={!userStore.value.otp?.every((d: string) => d)}
             onPress={() => handleVerify(route, navigation)}
-          >
-            <Text style={styles.verifyButtonText}>Verify</Text>
-          </TouchableOpacity>
+            style={userStore.value.otp?.every((d: string) => d) ? {...styles.verifyButton, ...styles.verifyButtonActive} : styles.verifyButton}
+            fullWidth
+          />
 
           <View style={styles.resendContainer}>
-            <Text style={styles.resendText}>Didn't get the code?</Text>
+            <AppText style={styles.resendText}>Didn't get the code?</AppText>
             <TouchableOpacity onPress={() => handleResend(route, setTimeLeft, timeLeft.value)} disabled={timeLeft.value > 0}>
-              <Text style={[styles.resendButton, timeLeft.value > 0 && styles.resendButtonDisabled]}>
+              <AppText style={timeLeft.value > 0 ? {...styles.resendButton, ...styles.resendButtonDisabled} : styles.resendButton}>
                 Resend {timeLeft.value > 0 ? `in ${formatTime(timeLeft.value)}` : ''}
-              </Text>
+              </AppText>
             </TouchableOpacity>
           </View>
         </View>
      
-    </GradientLayout>
+    </BlurredCirclesBackground>
   );
 };
 
 const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 50,
-    left: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    top: Platform.OS === 'ios' ? normalize(50) : normalize(50),
+    left: normalize(20),
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: tokens.borderRadius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: Platform.OS === 'ios' ? 120 : 120,
-    marginBottom: 40,
+    marginTop: Platform.OS === 'ios' ? normalize(120) : normalize(120),
+    marginBottom: normalize(40),
   },
   logo: {
-    width: 150,
-    height: 35,
-    tintColor: '#FFFFFF',
+    width: normalize(150),
+    height: normalize(35),
+    tintColor: tokens.colors.textInverse,
   },
   tagline: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: '600',
-    marginTop: 20,
+    color: tokens.colors.textInverse,
+    fontSize: normalize(tokens.typography.fontSize['3xl']),
+    fontWeight: tokens.typography.fontWeight.bold,
+    marginTop: normalize(20),
     textAlign: 'center',
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
+    backgroundColor: tokens.colors.background,
+    borderTopLeftRadius: normalize(24),
+    borderTopRightRadius: normalize(24),
+    padding: normalize(24),
     flex: 1,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 12,
+    fontSize: normalize(tokens.typography.fontSize['3xl']),
+    fontWeight: tokens.typography.fontWeight.bold,
+    color: tokens.colors.text,
+    marginBottom: normalize(12),
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666666',
-    marginBottom: 32,
+    fontSize: normalize(tokens.typography.fontSize.base),
+    color: tokens.colors.textSecondary,
+    marginBottom: normalize(32),
   },
   otpContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: normalize(32),
   },
   otpInput: {
-    width: 45,
-    height: 45,
+    width: normalize(45),
+    height: normalize(45),
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
+    borderColor: tokens.colors.border,
+    borderRadius: tokens.borderRadius.default,
     textAlign: 'center',
-    fontSize: 20,
-    marginHorizontal: 4,
-    color: '#000000',
-    backgroundColor: '#FFFFFF',
+    fontSize: normalize(tokens.typography.fontSize.xl),
+    marginHorizontal: normalize(4),
+    color: tokens.colors.text,
+    backgroundColor: tokens.colors.background,
   },
   otpInputFilled: {
-    borderColor: '#06053A',
-    backgroundColor: '#F8F9FA',
+    borderColor: tokens.colors.primary,
+    backgroundColor: tokens.colors.surface,
   },
   otpSeparator: {
-    fontSize: 24,
-    color: '#666666',
-    marginHorizontal: 8,
+    fontSize: normalize(tokens.typography.fontSize['2xl']),
+    color: tokens.colors.textSecondary,
+    marginHorizontal: normalize(8),
   },
   verifyButton: {
-    backgroundColor: '#06053A',
+    backgroundColor: tokens.colors.primary,
     opacity: 0.5,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: tokens.borderRadius.full,
+    padding: normalize(16),
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: normalize(16),
   },
   verifyButtonActive: {
     opacity: 1,
   },
   verifyButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    color: tokens.colors.textInverse,
+    fontSize: normalize(tokens.typography.fontSize.base),
+    fontWeight: tokens.typography.fontWeight.bold,
   },
   resendContainer: {
     alignItems: 'center',
+    marginTop: normalize(16),
   },
   resendText: {
-    color: '#666666',
-    fontSize: 14,
-    marginBottom: 8,
+    color: tokens.colors.textSecondary,
+    fontSize: normalize(tokens.typography.fontSize.sm),
+    marginBottom: normalize(16),
   },
   resendButton: {
-    color: '#06053A',
-    fontSize: 14,
+    color: tokens.colors.primary,
+    fontSize: normalize(tokens.typography.fontSize.sm),
   },
   resendButtonDisabled: {
     opacity: 0.5,

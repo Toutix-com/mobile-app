@@ -1,5 +1,6 @@
 import React from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import AppText from '../text/AppText';
 
 interface CheckBoxProps {
   checked: boolean;
@@ -18,7 +19,7 @@ const CheckBox: React.FC<CheckBoxProps> = ({ checked, onPress, label, style, lab
     <View style={[styles.box, checked && styles.boxChecked]}>
       {checked && <View style={styles.innerBox} />}
     </View>
-    <Text style={[styles.label, labelStyle]}>{label}</Text>
+    <AppText style={[styles.label, labelStyle || {}]}>{label}</AppText>
   </TouchableOpacity>
 );
 
