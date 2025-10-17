@@ -13,7 +13,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/AuthStack';
-import GradientLayout from '../../components/layouts/GradientLayout';
+import BlurredCirclesBackground from '../../components/layouts/BlurredCirclesBackground';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import DatePicker from 'react-native-date-picker';
 import { Calendar, ChevronLeft } from 'lucide-react-native';
@@ -23,6 +23,7 @@ import { handleInputChange, handleSubmit, showDatePicker, setShowDatePicker } fr
 import { RegisterFormFields } from '../login/enums/auth-enum';
 import { useSignals } from '@preact/signals-react/runtime';
 import { Button, AppText, Icon } from '../../components';
+import { tokens, normalize } from '../../design-system';
 
 type RegisterScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Register'>;
 
@@ -43,7 +44,8 @@ const RegisterScreen: React.FC = () => {
   };
 
   return (
-    <GradientLayout>
+      
+    <BlurredCirclesBackground>
       <Icon 
         icon={<ChevronLeft />}
         size={24}
@@ -83,7 +85,7 @@ const RegisterScreen: React.FC = () => {
               <TextInput
                 style={styles.input}
                 placeholder="First name"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={tokens.colors.textSecondary}
                 value={user.value.firstName}
                 onChangeText={(value) => handleInputChange(RegisterFormFields.FIRST_NAME, value)}
               />
@@ -94,7 +96,7 @@ const RegisterScreen: React.FC = () => {
               <TextInput
                 style={styles.input}
                 placeholder="Last name"
-                placeholderTextColor="#A0A0A0"
+                placeholderTextColor={tokens.colors.textSecondary}
                 value={user.value.lastName}
                 onChangeText={(value) => handleInputChange(RegisterFormFields.LAST_NAME, value)}
               />
@@ -106,12 +108,13 @@ const RegisterScreen: React.FC = () => {
                 style={[styles.input, { flexDirection: 'row', alignItems: 'center' }]}
                 onPress={() => setShowDatePicker(true)}
               >
-                <AppText style={{ flex: 1, color: user.value.birthday ? '#000' : '#A0A0A0' }}>
+                <AppText style={{ flex: 1, color: user.value.birthday ? tokens.colors.text : tokens.colors.textSecondary }}>
                   {user.value.birthday
                     ? moment(user.value.birthday).format('DD/MM/YYYY')
                     : 'Select your date of birth'}
                 </AppText>
                 <Calendar color="#A0A0A0" size={20} />
+                <Calendar color={tokens.colors.textSecondary} size={20} />
               </Pressable>
               <DatePicker
                 modal
@@ -137,19 +140,19 @@ const RegisterScreen: React.FC = () => {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </GradientLayout>
+    </BlurredCirclesBackground>
   );
 };
 
 const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 20,
-    left: 20,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    top: Platform.OS === 'ios' ? normalize(50) : normalize(20),
+    left: normalize(20),
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: tokens.borderRadius.full,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 1,
@@ -176,119 +179,119 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   closeButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '300',
+    color: tokens.colors.textInverse,
+    fontSize: normalize(tokens.typography.fontSize.lg),
+    fontWeight: tokens.typography.fontWeight.normal,
   },
   logoContainer: {
     alignItems: 'center',
-    marginTop: Platform.OS === 'ios' ? 120 : 90,
-    paddingHorizontal: 20,
+    marginTop: Platform.OS === 'ios' ? normalize(120) : normalize(90),
+    paddingHorizontal: normalize(20),
   },
   logo: {
-    width: 150,
-    height: 35,
-    tintColor: '#FFFFFF',
+    width: normalize(150),
+    height: normalize(35),
+    tintColor: tokens.colors.textInverse,
   },
   tagline: {
-    color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: '600',
-    marginTop: 24,
+    color: tokens.colors.textInverse,
+    fontSize: normalize(tokens.typography.fontSize['3xl']),
+    fontWeight: tokens.typography.fontWeight.bold,
+    marginTop: normalize(24),
     textAlign: 'center',
   },
   loginLinkContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 24,
+    marginTop: normalize(24),
   },
   loginText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: tokens.colors.textInverse,
+    fontSize: normalize(tokens.typography.fontSize.base),
   },
   loginLink: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: tokens.colors.textInverse,
+    fontSize: normalize(tokens.typography.fontSize.base),
     textDecorationLine: 'underline',
   },
   formContainer: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 24,
+    backgroundColor: tokens.colors.background,
+    borderTopLeftRadius: normalize(24),
+    borderTopRightRadius: normalize(24),
+    padding: normalize(24),
     marginTop: "20%",
     flex: 1
   },
   title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#000000',
-    marginBottom: 24,
+    fontSize: normalize(tokens.typography.fontSize['2xl']),
+    fontWeight: tokens.typography.fontWeight.bold,
+    color: tokens.colors.text,
+    marginBottom: normalize(24),
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: normalize(16),
   },
   label: {
-    fontSize: 16,
-    color: '#000000',
-    marginBottom: 8,
+    fontSize: normalize(tokens.typography.fontSize.base),
+    color: tokens.colors.text,
+    marginBottom: normalize(8),
   },
   input: {
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 8,
-    padding: 16,
-    fontSize: 16,
+    borderColor: tokens.colors.border,
+    borderRadius: tokens.borderRadius.default,
+    padding: normalize(16),
+    fontSize: normalize(tokens.typography.fontSize.base),
   },
   registerButton: {
-    backgroundColor: '#0C0453',
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: tokens.colors.primary,
+    borderRadius: tokens.borderRadius.full,
+    padding: normalize(16),
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: normalize(8),
   },
   registerButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
+    color: tokens.colors.textInverse,
+    fontSize: normalize(tokens.typography.fontSize.base),
+    fontWeight: tokens.typography.fontWeight.bold,
   },
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 24,
+    marginVertical: normalize(24),
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E5E5E5',
+    backgroundColor: tokens.colors.border,
   },
   dividerText: {
-    color: '#666666',
-    paddingHorizontal: 16,
-    fontSize: 14,
+    color: tokens.colors.textSecondary,
+    paddingHorizontal: normalize(16),
+    fontSize: normalize(tokens.typography.fontSize.sm),
   },
   socialButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: Platform.OS === 'ios' ? 34 : 24,
+    marginBottom: Platform.OS === 'ios' ? normalize(34) : normalize(24),
   },
   socialButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    padding: 16,
-    borderColor: '#0C0453',
+    borderRadius: tokens.borderRadius.default,
+    padding: normalize(16),
+    borderColor: tokens.colors.primary,
     borderWidth: 1,
     flex: 1,
-    marginHorizontal: 3,
+    marginHorizontal: normalize(3),
   },
   socialButtonText: {
-    fontSize: 16,
-    color: '#000000',
-    fontWeight: '500',
-    marginLeft: 12,
+    fontSize: normalize(tokens.typography.fontSize.base),
+    color: tokens.colors.text,
+    fontWeight: tokens.typography.fontWeight.medium,
+    marginLeft: normalize(12),
   },
 });
 
