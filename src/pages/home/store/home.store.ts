@@ -1,23 +1,40 @@
 import { signal } from '@preact/signals-react';
-import { getEvents, getCities, getVenues } from '../../../services/eventService';
+import { getEvents, getCities, getVenues, getRecentEvents } from '../../../services/eventService';
 
-// Temporary featuredEvents until we can import from constants
-const featuredEvents = [
-  {
-    id: '1',
-    title: 'Moshing music fest - 2025',
-    venue: 'Belgrave Music hall',
-    date: 'August 13 2025 at 3:30 AM',
-    image: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&q=80',
-  },
-  {
-    id: '2',
-    title: 'Indie Rock Concert',
-    venue: 'The Garage',
-    date: 'September 5 2025 at 8:00 PM',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&q=80',
-  },
-];
+// Featured events signal populated from Recent API
+export interface FeaturedEventItem {
+  id: string;
+  title: string;
+  venue: string;
+  date: string;
+  image: string;
+}
+
+export const featuredEventsSignal = signal<FeaturedEventItem[]>([]);
+
+export const fetchFeaturedEvents = async (offsetParam: number = 0, limitParam: number = 9) => {
+  try {
+    const response: any = await getRecentEvents(offsetParam, limitParam);
+    const list = response?.[0]?.data?.list || response?.[0]?.list || [];
+    const mapped: FeaturedEventItem[] = list.map((e: any) => {
+      const start = e.startTimeStamp ? new Date(e.startTimeStamp) : null;
+      const formattedDate = start
+        ? `${start.toLocaleString('en-US', { month: 'long' })} ${start.getDate()} ${start.getFullYear()} at ${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+        : '';
+      return {
+        id: e.id,
+        title: e.name ?? '',
+        venue: e.location?.name ?? '',
+        date: formattedDate,
+        image: e.image ?? '',
+      };
+    });
+    featuredEventsSignal.value = mapped;
+  } catch (err) {
+    // Leave existing value; log for dev visibility
+    console.log('Failed to fetch featured events', err);
+  }
+};
 
 export interface City {
   id: string;
@@ -241,7 +258,7 @@ export const loadMoreEvents = async () => {
 
 // UI handlers
 export const handleNextPress = (flatListRef: any) => {
-  if (activeIndex.value < featuredEvents.length - 1) {
+  if (activeIndex.value < featuredEventsSignal.value.length - 1) {
     flatListRef.current?.scrollToIndex({
       animated: true,
       index: activeIndex.value + 1,

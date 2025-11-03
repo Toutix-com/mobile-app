@@ -31,18 +31,12 @@ import {
 } from 'lucide-react-native';
 import { normalize } from '../../utils/responsive';
 import { BlurView } from '@react-native-community/blur';
-import { categories, featuredEvents } from '../../contants/HomeConstant';
+import { categories } from '../../contants/HomeConstant';
 import AllCitiesBottomSheet from './components/AllCitiesBottomSheet';
 import AllVenuesBottomSheet from './components/AllVenuesBottomSheet';
 import FilterModal from './components/FilterModal';
 import DatePickerBottomSheet from './components/DatePickerBottomSheet';
 import EventCard from '../../components/EventCard';
-import { startDate, endDate,
-      selectedCategories, setEndDate, setSelectedCities, 
-      setSelectedCategories,
-      allCities, allVenues, setAllCities, setAllVenues,
-      filteredCities, selectVenue, deselectVenue, clearSelectedVenues, citySearch, setCitySearch, moreEvents, setMoreEvents, offset, hasMore, setOffset, setHasMore,
-      } from './store/home.store';
 import { 
   selectedCities,
   setStartDate, setDateType, allCitiesSheetOpen, selectedVenues, filteredVenues, allVenuesSheetOpen,
@@ -53,19 +47,20 @@ import {
   loadMoreEvents, handleNextPress, openFilter, handleShowAllCities, handleShowAllVenues,
   handleUseSelectedCities, handleUseSelectedVenues, handleClearVenues,
   clearAllFilters, mapFilteredAllCities, mapFilteredAllVenues, getFilteredEvents,
-  hasActiveFilters, initializeData, initializeSelectedItems, handleSelectVenueInSheet
+  hasActiveFilters, initializeData, initializeSelectedItems, handleSelectVenueInSheet, setMoreEvents, setOffset,setHasMore,
+  featuredEventsSignal, fetchFeaturedEvents
 } from './store/home.store';
 import { useSignals } from '@preact/signals-react/runtime';
 import { fetchEventById } from '../event/store/event.store';
 import { userStore } from '@pages/login/store/login.store';
 import { Button, AppText, Icon } from '../../components';
+import { fetchUserProfileData } from '../profile/store/profile.store';
 const { width } = Dimensions.get('window');
 
 const HomeScreen = () => {
   useSignals();
   const navigation = useNavigation();
   const flatListRef = useRef<FlatList>(null);
-  const LIMIT = 9;
 
   const isLoggedIn = userStore.value.email || (userStore.value as any).mobileNumber;
 
@@ -78,27 +73,32 @@ const HomeScreen = () => {
     initializeData();
     initializeSelectedItems();
     loadMoreEvents();
-    console.log("hasActiveFilters", hasActiveFilters());
-    
   }, []);
 
+  useEffect(() => {
+    console.log("isLoggedIn", isLoggedIn);
+    if (isLoggedIn) {
+      fetchUserProfileData();
+    }
+  }, [isLoggedIn]);
 
 
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (featuredEvents.length > 1) {
-        const nextIndex = (activeIndex.value + 1) % featuredEvents.length;
+    const interval = setTimeout(() => {
+      console.log("featuredEventsSignal.value", featuredEventsSignal.value);
+      if (featuredEventsSignal.value.length > 1) {
+        const nextIndex = (activeIndex.value + 1) % featuredEventsSignal.value.length;
         setActiveIndex(nextIndex);
         flatListRef.current?.scrollToIndex({
           animated: true,
           index: nextIndex,
         });
       }
-    }, 7000);
+    }, 100);
 
     return () => clearInterval(interval);
-  }, [activeIndex.value, featuredEvents.length]);
+  }, [activeIndex.value, featuredEventsSignal.value.length]);
 
 
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 51 }).current;
@@ -124,6 +124,11 @@ const HomeScreen = () => {
 
   const filteredEvents = getFilteredEvents(selectedCategory);
 
+  // Fetch featured events on mount
+  useEffect(() => {
+    fetchFeaturedEvents(0, 9);
+  }, []);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -140,36 +145,40 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Sticky Search Bar */}
+      <View style={styles.stickySearch}>
+        <Button 
+          variant="ghost"
+          style={styles.searchContainer} 
+          onPress={() => (navigation as any).navigate('Search')}
+        >
+          <View style={styles.searchContent}>
+            <Icon icon={<Search />} size="md" color="#666" />
+            <TextInput
+              placeholder="Search events"
+              style={styles.searchInput}
+              placeholderTextColor="#666"
+              editable={false}
+              pointerEvents="none"
+            />
+            <Icon 
+              icon={<SlidersHorizontal />} 
+              size="md" 
+              color="#fff"
+              backgroundColor="#0C0453"
+              rounded
+              padding={12}
+              onPress={openFilter}
+            />
+          </View>
+        </Button>
+      </View>
       <FlatList
+        key={`events-list-${filteredEvents.length}`}
         ListHeaderComponent={
           <>
-            <View style={styles.header}>
-              <Button 
-                variant="ghost"
-                style={styles.searchContainer} 
-                onPress={() => (navigation as any).navigate('Search')}
-              >
-                <View style={styles.searchContent}>
-                  <Icon icon={<Search />} size="md" color="#666" />
-                  <TextInput
-                    placeholder="Search events"
-                    style={styles.searchInput}
-                    placeholderTextColor="#666"
-                    editable={false}
-                    pointerEvents="none"
-                  />
-                  <Icon 
-                    icon={<SlidersHorizontal />} 
-                    size="md" 
-                    color="#fff"
-                    backgroundColor="#0C0453"
-                    rounded
-                    padding={12}
-                    onPress={openFilter}
-                  />
-                </View>
-              </Button>
-            </View>
+            {/* Spacer for sticky search bar height */}
+            <View style={{ height: normalize(110) }} />
 
             {!hasActiveFilters() && (
               <View style={styles.categoriesContainer}>
@@ -202,8 +211,8 @@ const HomeScreen = () => {
                 <FlatList
                   ref={flatListRef}
                   horizontal
-                  data={featuredEvents}
-                  keyExtractor={item => item.id}
+                  data={featuredEventsSignal.value}
+                  keyExtractor={(item, index) => `featured-${item.id}-${index}`}
                   renderItem={({ item }) => (
                     <View style={styles.featuredCardContainer}>
                       <ImageBackground
@@ -228,7 +237,13 @@ const HomeScreen = () => {
                             backgroundColor="#BCCEFF"
                             rounded
                             padding={12}
-                            onPress={() => handleNextPress(flatListRef)}
+                            onPress={async () => {
+                              try {
+                                await fetchEventById(item.id);
+                                (navigation as any).navigate('EventDetails');
+                              } catch (error) {
+                              }
+                            }}
                           />
                         </View>
                       </ImageBackground>
@@ -240,7 +255,7 @@ const HomeScreen = () => {
                   viewabilityConfig={viewabilityConfig}
                 />
                 <View style={styles.pagination}>
-                  {featuredEvents.map((_, index) => (
+                  {featuredEventsSignal.value.map((_, index) => (
                     <View
                       key={index}
                       style={[
@@ -287,9 +302,10 @@ const HomeScreen = () => {
             showPrice={true}
           />
         )}
-        keyExtractor={item => item.id}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         onEndReached={loadMoreEvents}
         onEndReachedThreshold={0.5}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -385,6 +401,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F6FA',
     paddingTop: normalize(50),
   },
+  stickySearch: {
+    position: 'absolute',
+    top: normalize(70),
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+    paddingHorizontal: normalize(20),
+    // Visuals are taken from searchContainer to avoid duplicate styling
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -398,7 +423,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize(30),
     paddingLeft: normalize(15),
     paddingRight: normalize(5),
-    paddingVertical: normalize(5),
+    paddingVertical: normalize(0),
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
@@ -589,10 +614,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   gap: {
-    height: normalize(120),
+    height: normalize(80),
   },
   loadingIndicator: {
-    marginVertical: normalize(20),
+    marginVertical: normalize(10),
   },
 });
 
