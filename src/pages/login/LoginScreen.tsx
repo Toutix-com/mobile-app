@@ -101,6 +101,7 @@ const LoginScreen: React.FC = () => {
           disabled={userStore.value.isLoading}
           onPress={() => handleGoogleSignIn(navigation)}
           fullWidth
+          size="small"
           style={styles.socialButton}
         />
         <Button 
@@ -111,6 +112,7 @@ const LoginScreen: React.FC = () => {
           disabled={userStore.value.isLoading}
           onPress={() => handleAppleSignIn(navigation)}
           fullWidth
+          size="small"
           style={styles.socialButton}
         />
       </View>
@@ -224,12 +226,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: tokens.borderRadius.full,
-    padding: normalize(12),
+    padding: normalize(0),
     paddingHorizontal: normalize(16),
     marginBottom: normalize(12),
     borderColor: tokens.colors.primary, // Using semantic color
     borderWidth: 1,
-    flex: 1,
     marginHorizontal: normalize(3),
   },
   socialButtonText: {

@@ -165,7 +165,7 @@ const EventDetailsScreen = () => {
         </Animated.View>
 
         <Animated.ScrollView 
-          contentContainerStyle={{ paddingBottom: 0 }} 
+          contentContainerStyle={{ paddingBottom: 120 }} 
           showsVerticalScrollIndicator={false}
           onScroll={Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
@@ -219,23 +219,24 @@ const EventDetailsScreen = () => {
             />
             <Divider dividerStyle={{ marginVertical: normalize(10), marginHorizontal: normalize(16) }} />
             <EventPriceFooter price={priceRange} />
-            <Button
-              title={event.status === 'SOLD_OUT' ? 'Sold Out' : 'Get tickets'}
-              variant={event.status === 'SOLD_OUT' ? 'secondary' : 'primary'}
-              disabled={event.status === 'SOLD_OUT'}
-              onPress={() => {
-                if (event.status !== 'SOLD_OUT') {
-                  (navigation as any).navigate('EventTickets');
-                }
-              }}
-              style={{ 
-                flex: 1, 
-                marginHorizontal: 5
-              }}
-              
-            />
           </Animated.View>
         </Animated.ScrollView>
+        
+        {/* Sticky Footer with Get Tickets Button */}
+        <View style={styles.stickyFooter}>
+          <Button
+            title={event.status === 'SOLD_OUT' ? 'Sold Out' : 'Get tickets'}
+            variant={event.status === 'SOLD_OUT' ? 'secondary' : 'primary'}
+            disabled={event.status === 'SOLD_OUT'}
+            onPress={() => {
+              if (event.status !== 'SOLD_OUT') {
+                (navigation as any).navigate('EventTickets');
+              }
+            }}
+            style={styles.getTicketsButton}
+            fullWidth
+          />
+        </View>
         
         <EventDetailsModal
           visible={showDetailsModal.value}
@@ -274,6 +275,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
+  },
+  stickyFooter: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 90 : 70, // Account for tab bar height
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 10,
+    zIndex: 1000,
+  },
+  getTicketsButton: {
+    marginHorizontal: 0,
   },
 });
 
