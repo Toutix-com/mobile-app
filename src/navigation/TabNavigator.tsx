@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image, StyleSheet, View } from 'react-native';
 import { Home, Ticket, Store, User } from 'lucide-react-native';
+import { Icon } from '../components';
 
 
 import HomeStack from './HomeStack';
@@ -13,7 +14,10 @@ import { useSignals } from '@preact/signals-react/runtime';
 import ProfileStack from './ProfileStack';
 
 const Tab = createBottomTabNavigator();
-const isLoggedIn = userStore.value.email || userStore.value.mobileNumber;
+const isLoggedIn = userStore.value.email || userStore.value.phoneNumber;
+
+console.log(isLoggedIn, "TAB" , userStore.value);
+
 
 const TabNavigator = () => {
   useSignals();
@@ -55,10 +59,10 @@ const TabNavigator = () => {
         component={HomeStack}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Home
+            <Icon
+              icon={<Home strokeWidth={focused ? 2.5 : 2} />}
+              size={normalize(20)}
               color={color}
-              size={normalize(28)}
-              strokeWidth={focused ? 2.5 : 2}
             />
           ),
         }}
@@ -68,10 +72,10 @@ const TabNavigator = () => {
         component={TicketsStack}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ticket
+            <Icon
+              icon={<Ticket strokeWidth={focused ? 2.5 : 2} />}
+              size={normalize(20)}
               color={color}
-              size={normalize(28)}
-              strokeWidth={focused ? 2.5 : 2}
             />
           ),
         }}
@@ -82,10 +86,10 @@ const TabNavigator = () => {
         options={{
           tabBarLabel: 'marketplace',
           tabBarIcon: ({ color, focused }) => (
-            <Store
+            <Icon
+              icon={<Store strokeWidth={focused ? 2.5 : 2} />}
+              size={normalize(20)}
               color={color}
-              size={normalize(28)}
-              strokeWidth={focused ? 2.5 : 2}
             />
           ),
         }}
@@ -98,10 +102,10 @@ const TabNavigator = () => {
             isLoggedIn && userStore.value.image ? (
               <Image source={{ uri: userStore.value.image || '' }} style={styles.avatar} />
             ) : (
-              <User
+              <Icon
+                icon={<User strokeWidth={focused ? 2.5 : 2} />}
+                size={normalize(20)}
                 color={color}
-                size={normalize(28)}
-                strokeWidth={focused ? 2.5 : 2}
               />
             )
           ),
@@ -117,8 +121,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 0,
     elevation: 0,
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    height: normalize(90),
-    paddingTop: normalize(10),
+    height: normalize(75),
+    paddingBottom: normalize(10),
   },
   tabBarLabel: {
     fontSize: normalize(12),

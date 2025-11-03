@@ -8,6 +8,11 @@ export const getEvents = (offset: number, limit: number) => {
   return commonApiWrapper(api.post('/event/query', { params: { offset, limit } }));
 };
 
+// Recent events (for featured carousel)
+export const getRecentEvents = (offset: number, limit: number) => {
+  return commonApiWrapper(api.get(`/event/recent?offset=${offset}&limit=${limit}`));
+};
+
 export const getCities = () => {
   return commonApiWrapper(api.get('/city/names'));
 };

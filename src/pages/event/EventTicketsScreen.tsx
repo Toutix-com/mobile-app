@@ -150,7 +150,6 @@ const styles = StyleSheet.create({
   },
   container: {
     width: '100%',
-    maxWidth: 400,
     backgroundColor: '#fff',
     borderRadius: 18,
     padding: 0,
@@ -230,8 +229,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   qtyBtn: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     borderRadius: 8,
     backgroundColor: '#F0F0F0',
     justifyContent: 'center',
@@ -249,8 +248,8 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   addBtn: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     borderRadius: 8,
     backgroundColor: '#0C0453',
     justifyContent: 'center',
