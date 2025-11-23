@@ -1,9 +1,8 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 import { inlinePromise, InlineArrayResult } from './promise-util';
-import { API_BASE_URL } from '@env';
 
 export const api: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: 'https://stg.api.toutix.com',
 });
 
 export interface ApiListResponse<T> {

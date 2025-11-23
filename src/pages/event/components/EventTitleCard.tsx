@@ -2,7 +2,8 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { normalize } from '@utils/responsive';
 import ShowMoreText from './ShowMoreText';
-import { AppText } from '../../../components';
+import { AppText, Icon } from '../../../components';
+import { Calendar, CardSim, Ellipsis } from 'lucide-react-native';
 
 interface EventTitleCardProps {
   title: string;
@@ -16,13 +17,19 @@ interface EventTitleCardProps {
 const EventTitleCard: React.FC<EventTitleCardProps> = ({ title, date, time, onShowMore, isExpanded, description }) => {
   return (
     <View style={styles.container}>
-      <AppText style={styles.title} numberOfLines={2}>{title}</AppText>
-      <AppText style={styles.datetime}>{date} • {time}</AppText>
-      <AppText style={styles.label}>Details</AppText>
+      <AppText variant='h2' style={styles.title} numberOfLines={2}>{title}</AppText>
+      <View style={styles.dateContainer}>
+      <Icon icon={<Calendar />} size={15} color='white' backgroundColor='#0C0453' rounded padding={4} />
+      <AppText variant='bodyBold'  style={styles.datetime}>{date} • {time}</AppText>
+      </View>
+      <View style={styles.detailsContainer}>
+      <Icon icon={<CardSim />} size={15} color='white' backgroundColor='#0C0453' rounded padding={4} />
+      <AppText variant='bodyBold' style={styles.label}>Details</AppText>
+      </View>
+      <View style={styles.descriptionContainer}>
       <AppText style={styles.description} numberOfLines={6}>{description}</AppText>
-      <TouchableOpacity style={styles.showMoreBtn} onPress={onShowMore}>
-        <AppText style={styles.showMoreText}>{'Show more'}</AppText>
-      </TouchableOpacity>
+      <Icon icon={<Ellipsis />} size={20} color='#1B2026' padding={4} style={{alignSelf: 'flex-end'}} onPress={onShowMore} />
+      </View>
     </View>
   );
 };
@@ -44,8 +51,6 @@ const styles = StyleSheet.create({
     marginTop: normalize(30),
   },
   datetime: {
-    color: '#444',
-    fontSize: 16,
     marginBottom: 8,
     marginTop: normalize(10),
   },
@@ -65,9 +70,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   label: {
-    fontWeight: '600',
-    fontSize: 14,
-    color: '#1B2026',
+    marginBottom: 8,
     marginTop: normalize(10),
   },
   description: {
@@ -76,6 +79,25 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: normalize(10),
     lineHeight: normalize(20),
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(10),
+    width: '90%',
+  },
+  detailsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(10),
+    width: '90%',
+    marginTop: normalize(10),
+  },
+  descriptionContainer: {
+    width: '100%',
+    paddingHorizontal: normalize(10),
+    marginTop: normalize(10),
+    backgroundColor: '#F6F8FB',
   },
 });
 

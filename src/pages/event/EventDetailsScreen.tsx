@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   },
   stickyFooter: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 90 : 70, // Account for tab bar height
+    bottom: Platform.OS === 'ios' ? 40 : 40, // Account for tab bar height
     left: 0,
     right: 0,
     paddingHorizontal: 16,

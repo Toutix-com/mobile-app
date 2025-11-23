@@ -145,30 +145,30 @@ const styles = StyleSheet.create({
 
   // Size variants - Container
   smallContainer: {
-    paddingVertical: normalize(8),
-    paddingHorizontal: normalize(12),
-    minHeight: normalize(32),
+    paddingVertical: normalize(6),
+    paddingHorizontal: normalize(10),
+    minHeight: normalize(28),
   },
   mediumContainer: {
-    paddingVertical: normalize(12),
-    paddingHorizontal: normalize(16),
-    minHeight: normalize(44),
+    paddingVertical: normalize(9),
+    paddingHorizontal: normalize(12),
+    minHeight: normalize(40),
   },
   largeContainer: {
-    paddingVertical: normalize(16),
-    paddingHorizontal: normalize(20),
-    minHeight: normalize(52),
+    paddingVertical: normalize(14),
+    paddingHorizontal: normalize(18),
+    minHeight: normalize(48),
   },
 
   // Size variants - Text
   smallText: {
-    fontSize: normalize(14),
+    fontSize: normalize(11),
   },
   mediumText: {
-    fontSize: normalize(16),
+    fontSize: normalize(13),
   },
   largeText: {
-    fontSize: normalize(18),
+    fontSize: normalize(15),
   },
 
   // Base text style

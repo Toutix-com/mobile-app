@@ -28,15 +28,29 @@ const TabNavigator = () => {
         const state = navigation.getState();
         const currentRoute = state.routes[state.index];
 
-        const isSearchScreen = currentRoute?.name === 'HomeStack' && 
+        // Check if current screen is Search or EventDetails within HomeStack
+        const isTicketCheckoutScreen  = currentRoute?.name === 'Home' && 
           currentRoute?.state?.routes && 
           currentRoute.state.index !== undefined &&
-          currentRoute.state.routes[currentRoute.state.index]?.name === 'Search';
+          currentRoute.state.routes[currentRoute.state.index]?.name === 'TicketCheckout';
+        
+        const isEventTicketsScreen = currentRoute?.name === 'Home' && 
+          currentRoute?.state?.routes && 
+          currentRoute.state.index !== undefined &&
+          currentRoute.state.routes[currentRoute.state.index]?.name === 'EventTickets';
+        
+        const isEventDetailsScreen = currentRoute?.name === 'Home' && 
+          currentRoute?.state?.routes && 
+          currentRoute.state.index !== undefined &&
+          currentRoute.state.routes[currentRoute.state.index]?.name === 'EventDetails';
+        
+        const shouldHideTabBar = isTicketCheckoutScreen || isEventDetailsScreen || isEventTicketsScreen;
+        
         
         return {
           headerShown: false,
           tabBarShowLabel: true,
-          tabBarStyle: isSearchScreen ? { display: 'none' } : styles.tabBar,
+          tabBarStyle: shouldHideTabBar ? { display: 'none' } : styles.tabBar,
           tabBarLabelStyle: styles.tabBarLabel,
           tabBarActiveTintColor: '#0C0453',
           tabBarInactiveTintColor: '#8E8E93',

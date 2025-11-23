@@ -2,7 +2,8 @@ import { normalize } from '@utils/responsive';
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import EventMap from './EventMap';
-import { AppText } from '../../../components';
+import { AppText, Icon } from '../../../components';
+import { MapPin } from 'lucide-react-native';
 
 interface EventLocationSectionProps {
   venue: string;
@@ -15,20 +16,21 @@ interface EventLocationSectionProps {
 const EventLocationSection: React.FC<EventLocationSectionProps> = ({ venue, address, onShowMap, lat, lon }) => {
   return (
     <View style={styles.container}>
-      <AppText style={styles.label}>Location</AppText>
-      <AppText style={styles.venue}>{venue}</AppText>
+      <View style={styles.locationContainer}>
+        <Icon icon={<MapPin />} size={15} color='white' backgroundColor='#0C0453' rounded padding={4} />
+        <AppText variant='bodyBold' style={styles.venue}>{venue}</AppText>
+      </View>
       <AppText style={styles.address} numberOfLines={2}>{address}</AppText>
+      
       {lat && lon && (
             <EventMap
               lat={lat}
               lon={lon}
               name={venue}
               address={address}
+              onPress={onShowMap}
             />
           )}
-      <TouchableOpacity style={styles.mapBtn} onPress={onShowMap}>
-        <AppText style={styles.mapBtnText}>Show on map</AppText>
-      </TouchableOpacity>
     </View>
   );
 };
@@ -48,16 +50,13 @@ const styles = StyleSheet.create({
     marginTop: normalize(10),
   },
   venue: {
-    fontWeight: 'bold',
-    fontSize: 15,
-    color: '#0D1117',
     marginBottom: 2,
-    marginTop: normalize(5),
   },
   address: {
     color: '#5C636E',
     fontSize: 14,
     marginBottom: 10,
+    paddingLeft: normalize(30),
   },
   mapBtn: {
     borderWidth: 1,
@@ -80,6 +79,12 @@ const styles = StyleSheet.create({
     height: normalize(120),
     borderRadius: 12,
     overflow: 'hidden',
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(10),
+    width: '100%',
   },
 });
 
