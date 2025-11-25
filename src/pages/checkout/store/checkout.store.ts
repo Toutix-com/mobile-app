@@ -164,7 +164,6 @@ export const applyCoupon = async (code: string) => {
     }
 
     const [data, error] = await validateCouponAPI(code, selectedEvent.value.id);
-    console.log(data, error, "Data and Error");
     if (error) {
       couponError.value = 'Invalid coupon code';
       return;
@@ -172,7 +171,6 @@ export const applyCoupon = async (code: string) => {
 
     const couponData = data as CouponData;
 
-    console.log(couponData, "Coupon Data");
     
     // Check if coupon is expired
     if (couponData.expire && new Date(couponData.expire) < new Date()) {
@@ -271,7 +269,6 @@ export const getOrderSummary = () => {
 };
 
 export const loadCheckoutObject = async (navigation: any) => {
-    console.log(getOrderSummary(), "Order Summary");
     const orderSummary = getOrderSummary();
     
     const ticketPayload = (orderSummary?.tickets || []).map((e) => ({
@@ -282,7 +279,6 @@ export const loadCheckoutObject = async (navigation: any) => {
         ticketPayload as any,
         couponCode.value ?? "",
     );
-    console.log(response, error, "Response and Error");
     if (!response || error) {
         const errorObject = getErrorDataFromResponse(error);
         return;

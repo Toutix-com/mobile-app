@@ -55,7 +55,6 @@ export const handleVerify = async (route: any, navigation: any) => {
         role: (data as any).role,
         isAuthenticated: true,
       });
-      console.log("data", data);
       
       await Keychain.setGenericPassword('auth', (data as any).token);
       setShowAuthStack(false); // Hide auth stack and return to app stack

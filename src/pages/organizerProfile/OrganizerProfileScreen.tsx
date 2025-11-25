@@ -20,7 +20,6 @@ const OrganizerProfileScreen: React.FC = () => {
 
   const hasEvents = (organizerUpcoming.value.length + organizerPast.value.length) > 0;
 
-  console.log("organizerProfile", organizerProfile.value);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>

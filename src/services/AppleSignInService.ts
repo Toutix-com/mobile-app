@@ -1,5 +1,6 @@
 import { appleAuth } from '@invertase/react-native-apple-authentication';
 import { loginWithApple } from './ApiService';
+import { showErrorToast } from '@components/toast';
 
 // Simple base64 decoder for React Native
 function base64Decode(str: string): string {
@@ -47,7 +48,6 @@ async function onAppleButtonPress(): Promise<AppleSignInResult> {
       throw new Error('No identity token received from Apple');
     }
 
-    console.log("Apple Sign-In Response:", response);
     
     // Extract email from JWT token if not provided directly
     let userEmail = response.email;
@@ -61,9 +61,8 @@ async function onAppleButtonPress(): Promise<AppleSignInResult> {
         const decodedPayload = base64Decode(paddedPayload);
         const payload = JSON.parse(decodedPayload);
         userEmail = payload.email;
-        console.log("Email extracted from JWT:", userEmail);
       } catch (error) {
-        console.error("Error decoding JWT token:", error);
+        showErrorToast('Failed to sign in with Apple');
       }
     }
 
@@ -81,7 +80,6 @@ async function onAppleButtonPress(): Promise<AppleSignInResult> {
     };
 
   } catch (err: any) {
-    console.error('Apple sign in error', err);
     return {
       success: false,
       error: err.message || 'Apple sign in failed'

@@ -1,7 +1,8 @@
 import { normalize } from '@utils/responsive';
 import React from 'react';
 import { View, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import { ChevronRight, Building2 } from 'lucide-react-native';
+import { Icon } from '../../../components';
 import { AppText } from '../../../components';
 
 interface EventHostSectionProps {
@@ -14,7 +15,11 @@ interface EventHostSectionProps {
 const EventHostSection: React.FC<EventHostSectionProps> = ({ avatarUrl, hostName, eventsHosted, onViewProfile }) => {
   return (
     <>
-    <AppText style={styles.label}>Organized by</AppText>
+    <View style={styles.container}>
+      <Icon icon={<Building2 />} size={15} color='white' backgroundColor='#0C0453' rounded padding={4} />
+      <AppText variant='bodyBold' style={styles.label}>Organized by</AppText>
+    </View>
+    
     <View style={styles.container}>
       <Image source={{ uri: avatarUrl }} style={styles.avatar} />
       <View style={{ flex: 1, marginLeft: 12 }}>
@@ -52,7 +57,7 @@ const styles = StyleSheet.create({
   eventsHosted: {
     color: '#666',
     fontSize: 13,
-    marginTop: 2,
+    marginTop: 0,
   },
   
   profileBtnText: {
@@ -62,12 +67,8 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   label: {
-    fontWeight: '600',
-    fontSize: 14,
-    color: '#1B2026',
     marginBottom: 6,
     marginLeft: normalize(16),
-    marginTop: normalize(10),
   },
   profileBtn: {
     flexDirection: 'row',

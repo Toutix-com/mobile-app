@@ -39,7 +39,6 @@ const ProfileScreen: React.FC = () => {
   const isLoggedIn = userStore.value.email || userStore.value.phoneNumber;
   const navigation = useNavigation<ProfileScreenNavigationProp>();
 
-  console.log("isAuthenticated", userStore.value);
 
   useEffect(() => {
     if (isLoggedIn) {

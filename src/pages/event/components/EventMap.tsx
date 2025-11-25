@@ -8,9 +8,10 @@ interface EventMapProps {
   lon: number;
   name: string;
   address?: string;
+  onPress?: () => void;
 }
 
-const EventMap: React.FC<EventMapProps> = ({ lat, lon, name, address }) => {
+const EventMap: React.FC<EventMapProps> = ({ lat, lon, name, address, onPress }) => {
   
   // Validate coordinates
   if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
@@ -44,13 +45,14 @@ const EventMap: React.FC<EventMapProps> = ({ lat, lon, name, address }) => {
         loadingEnabled={false}
         loadingIndicatorColor="#666666"
         loadingBackgroundColor="#ffffff"
-        googleRenderer="LEGACY"  
-        onMapReady={() => console.log('Map is ready')}
+        googleRenderer="LEGACY"
+        
       >
         <Marker 
           coordinate={{ latitude: lat, longitude: lon }} 
-          title={"sasasj"}
+          title={name}
           description={address}
+          onPress={onPress}
         />
       </MapView>
     </View>

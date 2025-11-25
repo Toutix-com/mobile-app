@@ -40,10 +40,6 @@ const DatePickerBottomSheet: React.FC<DatePickerBottomSheetProps> = ({
   const firstDay = useMemo(() => new Date(year, month, 1).getDay(), [year, month]);
   const daysInMonth = useMemo(() => new Date(year, month + 1, 0).getDate(), [year, month]);
 
-  useEffect(() => {
-    console.log("Start Date Updated:", startDate.value);
-  }, [startDate.value]);
-
   // Build calendar grid as weeks
   const weeks = useMemo(() => {
     const days = [];

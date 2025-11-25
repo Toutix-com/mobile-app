@@ -1,6 +1,7 @@
 import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
 import { getAuthToken } from '../utils/authToken';
 import { api, commonApiWrapper } from '../utils/apiUtils';
+import { showErrorToast } from '@components/toast';
 
 // Stripe configuration
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_your_publishable_key_here'; // Replace with your actual key
@@ -64,7 +65,6 @@ export const createPaymentIntent = async (request: PaymentIntentRequest): Promis
 
     return data.data;
   } catch (error: any) {
-    console.error('Error creating payment intent:', error);
     throw new Error(error.message || 'Failed to create payment intent');
   }
 };
@@ -81,7 +81,6 @@ export const confirmPayment = async (
       paymentIntentId: 'pi_mock_' + Date.now(),
     };
   } catch (error: any) {
-    console.error('Error confirming payment:', error);
     return {
       success: false,
       error: error.message || 'Payment confirmation failed',
@@ -118,8 +117,7 @@ export const getPaymentMethods = async (): Promise<any[]> => {
 
     return data.data || [];
   } catch (error: any) {
-    console.error('Error fetching payment methods:', error);
-    return [];
+    showErrorToast('Failed to fetch payment methods');
   }
 };
 
@@ -146,7 +144,7 @@ export const savePaymentMethod = async (paymentMethodId: string): Promise<boolea
     const data = await response.json();
     return data.status === 200;
   } catch (error: any) {
-    console.error('Error saving payment method:', error);
+    showErrorToast('Failed to save payment method');
     return false;
   }
 };

@@ -129,14 +129,18 @@ const SuccessReceiptScreen: React.FC = () => {
         <Button
           title="View your tickets"
           variant="primary"
+          size='small'
           onPress={handleViewTickets}
           style={styles.viewTicketsButton}
+          textStyle={styles.viewTicketsButtonText}
           fullWidth
         />
         <Button
           title="More events"
           variant="secondary"
+          size='small'
           onPress={handleMoreEvents}
+          textStyle={styles.moreEventsButtonText}
           style={styles.moreEventsButton}
           fullWidth
         />
@@ -302,10 +306,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     borderRadius: 30,
-    paddingVertical: 16,
+    paddingVertical: 8,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#0C0453',
   },
   viewTicketsButtonText: {
     color: '#0C0453',
@@ -316,7 +319,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0C0453',
     borderRadius: 30,
-    paddingVertical: 16,
+    paddingVertical: 8,
     alignItems: 'center',
   },
   moreEventsButtonText: {
