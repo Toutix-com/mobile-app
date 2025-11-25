@@ -17,6 +17,8 @@ export interface IconProps {
   rounded?: boolean;
   /** Padding around icon */
   padding?: number;
+  /** Border radius for icon container */
+  borderRadius?: number;
   /** Custom container style */
   style?: ViewStyle;
   /** On press handler */
@@ -29,6 +31,7 @@ const Icon: React.FC<IconProps> = ({
   color = '#000000',
   backgroundColor,
   rounded = false,
+  borderRadius,
   padding,
   style,
   onPress,
@@ -53,7 +56,7 @@ const Icon: React.FC<IconProps> = ({
 
   const containerStyle: ViewStyle = {
     ...(backgroundColor && { backgroundColor }),
-    ...(rounded && { borderRadius: iconSize }),
+    ...(rounded && { borderRadius: borderRadius || iconSize }),
     ...(padding && { padding: normalize(padding) }),
   };
 

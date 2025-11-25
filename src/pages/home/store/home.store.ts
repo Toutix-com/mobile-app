@@ -1,5 +1,6 @@
 import { signal } from '@preact/signals-react';
 import { getEvents, getCities, getVenues, getRecentEvents } from '../../../services/eventService';
+import { showErrorToast } from '@components/toast';
 
 // Featured events signal populated from Recent API
 export interface FeaturedEventItem {
@@ -32,7 +33,7 @@ export const fetchFeaturedEvents = async (offsetParam: number = 0, limitParam: n
     featuredEventsSignal.value = mapped;
   } catch (err) {
     // Leave existing value; log for dev visibility
-    console.log('Failed to fetch featured events', err);
+    showErrorToast('Failed to fetch featured events');
   }
 };
 
@@ -112,9 +113,7 @@ export const setDateType = (type: string) => {
 }
 
 export const setAllCities = (cities: City[]) => {
-    console.log(cities, "cities store");
     allCities.value = cities;
-    console.log(cities, "cities store");
 }
 
 export const setAllVenues = (venues: Venue[]) => {
@@ -171,7 +170,6 @@ export function setVenueSearch(search: string) {
 
 export function setMoreEvents(events: Event[]) {
   moreEvents.value = events;
-  console.log(moreEvents.value, "moreEvents store");
 }
 
 export function setOffset(offsetValue: number) {
@@ -250,7 +248,7 @@ export const loadMoreEvents = async () => {
       setHasMore(false);
     }
   } catch (error) {
-    console.error("Failed to fetch more events", error);
+    showErrorToast('Failed to fetch more events');
   } finally {
     setLoading(false);
   }
@@ -403,14 +401,14 @@ export const initializeData = async () => {
     const citiesResponse: any = await getCities();
     setAllCities(citiesResponse?.[0]?.list || []);
   } catch (err) {
-    console.log(err, "err Cities");
+    showErrorToast('Failed to fetch cities');
   }
   
   try {
     const venuesResponse: any = await getVenues(0, 100);
     setAllVenues(venuesResponse?.[0]?.list || []);
   } catch (err) {
-    console.log(err, "err Venues");
+    showErrorToast('Failed to fetch venues');
   }
 };
 

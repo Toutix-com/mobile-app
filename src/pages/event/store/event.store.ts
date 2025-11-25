@@ -93,7 +93,6 @@ export const fetchEventById = async (eventId: string) => {
       throw new Error('Failed to fetch event details');
     }
   } catch (error: any) {
-    console.error('Error fetching event:', error);
     eventError.value = error?.message || 'Failed to fetch event details';
     selectedEvent.value = null;
   } finally {

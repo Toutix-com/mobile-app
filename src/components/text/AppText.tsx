@@ -13,7 +13,8 @@ export type TextVariant =
   | 'bodySmall'
   | 'caption'
   | 'label'
-  | 'button';
+  | 'button'
+  | 'bodyBold';
 
 export type TextWeight = 'regular' | 'medium' | 'semibold' | 'bold';
 export type TextAlign = 'left' | 'center' | 'right' | 'justify';
@@ -117,6 +118,12 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: '#5C636E',
     lineHeight: normalize(20),
+  },
+  bodyBold: {
+    fontSize: normalize(16),
+    fontWeight: '600',
+    color: '#1B2026',
+    lineHeight: normalize(24),
   },
   caption: {
     fontSize: normalize(12),

@@ -49,7 +49,6 @@ export const logout = async () => {
         // Clear the keychain
         await Keychain.resetGenericPassword();
     } catch (error) {
-        console.error('Error clearing keychain:', error);
     }
     
     userStore.value = {
@@ -70,9 +69,7 @@ export const updateUser = (fields: Partial<UserState>) => {
 export const fetchUserProfile = async () => {
     try {
         const [profileData, error] = await getUserProfile();
-        console.log("profileData", profileData);
         if (error) {
-            console.error('Error fetching user profile:', error);
             return false;
         }
         
@@ -99,7 +96,6 @@ export const fetchUserProfile = async () => {
         
         return false;
     } catch (error) {
-        console.error('Error in fetchUserProfile:', error);
         return false;
     }
 };
@@ -123,7 +119,6 @@ export const handleGoogleSignIn = async (navigation: any) => {
     setUser({ ...userStore.value, isLoading: true });
     try {
         const result = await GoogleSignInService.signIn();
-        console.log("result", result);
         
         if (result && result.idToken) {
             const response: any = await loginWithGoogle(result.idToken);
@@ -160,7 +155,6 @@ export const handleAppleSignIn = async (navigation: any) => {
     setUser({ ...userStore.value, isLoading: true });
     try {
         const result = await AppleSignInService.onAppleButtonPress();
-        console.log("Apple sign in result", result);
         
         if (result.success && result.data) {
             const [data, error] = result.data;
@@ -216,8 +210,6 @@ export const handleContinue = async (navigation: any) => {
 
 
         const [data, error] = response;
-        console.log("data", data);
-        console.log("error", error);
         if (!error) {
             navigation.navigate('OTPVerification', {
                 email: valid.type === LoginType.EMAIL ? valid.value : null,
@@ -275,7 +267,7 @@ export const restoreAuthState = async (): Promise<boolean> => {
             return false;
         }
     } catch (error) {
-        console.error('Error restoring auth state:', error);
+        showErrorToast('Failed to restore auth state');
         // On error, assume not authenticated
         setUser({
             ...userStore.value,

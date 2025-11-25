@@ -73,7 +73,6 @@ const TicketCheckoutScreen: React.FC = () => {
   }, []);
 
   const initializePaymentSheet = async () => {
-    console.log(checkoutPayload.value, "Checkout Payload");
     
     if (checkoutPayload.value?.clientSecret) {
       const { error } = await initPaymentSheet({
@@ -81,7 +80,6 @@ const TicketCheckoutScreen: React.FC = () => {
         merchantDisplayName: 'Toutix',
       });
 
-      console.log(error, "Error");
     }
   }
 
@@ -94,22 +92,25 @@ const TicketCheckoutScreen: React.FC = () => {
   }
 
   const hanldeBuy = async () => {
+    console.log("hanldeBuy");
     startReservationTimer(300);
     loadCheckoutObject(navigation).then(async () => {
+      console.log("loadCheckoutObject");
       await initializePaymentSheet();
       if (checkoutPayload.value?.isFreeCheckout) {
         (navigation as any).navigate('SuccessReceipt');
         return;
       }
-      
+      console.log("checkoutPayload.value", checkoutPayload.value);
       const { error } = await presentPaymentSheet();
+
       if (error) {
-        console.log(error, "Error Payment Sheet");
         showErrorToast(error.message || 'Payment failed. Please try again.');
       } else {
-        console.log("Payment Sheet Presented Successfully");
         (navigation as any).navigate('SuccessReceipt');
       }
+    }).catch((err) => {
+      console.log("err", err);
     });
   }
 

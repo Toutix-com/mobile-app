@@ -96,7 +96,9 @@ const EventTicketsScreen = () => {
                       color="#fff"
                       backgroundColor="#0C0453"
                       style={styles.addBtn}
-                      padding={8}
+                      rounded
+                      borderRadius={16}
+                      padding={4}
                       onPress={() => addTicket(cat.id, cat.maxTicketCount)}
                     />
                   )}
@@ -231,7 +233,7 @@ const styles = StyleSheet.create({
   qtyBtn: {
     width: 30,
     height: 30,
-    borderRadius: 8,
+    borderRadius: 20,
     backgroundColor: '#F0F0F0',
     justifyContent: 'center',
     alignItems: 'center',
@@ -248,10 +250,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   addBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 8,
-    backgroundColor: '#0C0453',
     justifyContent: 'center',
     alignItems: 'center',
   },

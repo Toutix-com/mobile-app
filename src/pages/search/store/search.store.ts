@@ -213,7 +213,6 @@ const parseHumanDate = (dateString: string): Date | null => {
     // Try default parsing
     return new Date(dateString);
   } catch (error) {
-    console.log('Error parsing human date:', error);
     return null;
   }
 };
@@ -252,34 +251,21 @@ export const performSearch = () => {
 
   let filtered: any[] = [];
 
-  console.log('query', query);
-  console.log('city', city , selectedCity.value);
-  console.log('venue', venue);
-  console.log('date', date);
-
   // If no search criteria, return all events
   if (!query && !city && !venue && !date) {
     filtered = moreEvents.value || [];
   } else {
     // Filter moreEvents based on search criteria
     filtered = (moreEvents.value || []).filter((event: any) => {
-      console.log('event', event);
       const matchesQuery = !query || event.name?.toLowerCase().includes(query.toLowerCase());
       const matchesCity = !city || event.location?.city?.name?.toLowerCase().includes(city.toLowerCase());
       const matchesVenue = !venue || event.location?.name?.toLowerCase().includes(venue.toLowerCase());
       const matchesDate = !date || matchesDateFilter(event.startTimeStamp, date);
 
-      console.log('matchesQuery', matchesQuery);
-      console.log('matchesCity', matchesCity);
-      console.log('matchesVenue', matchesVenue);
-      console.log('matchesDate', matchesDate);
-
               // If any condition is true, include the event (OR logic instead of AND)
         return matchesQuery && matchesCity && matchesVenue && matchesDate;
     });
   }
-
-  console.log('filtered', filtered);
 
   // Convert to SearchResultEvent format with proper EventCard structure
   const searchResultsData: SearchResultEvent[] = filtered.map((event: any) => {

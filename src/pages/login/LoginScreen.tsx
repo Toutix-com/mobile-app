@@ -25,7 +25,6 @@ type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'
 const { width } = Dimensions.get('window');
 
 const LoginScreen: React.FC = () => {
-  console.log("userStore", userStore.value);
   useSignal();
   const navigation = useNavigation<LoginScreenNavigationProp>();
 
