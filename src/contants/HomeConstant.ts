@@ -8,6 +8,7 @@ export const categories: Category[] = [
   { name: 'Family', icon: Baby },
   { name: 'Workshops', icon: FileText },
   { name: 'Saved', icon: Heart },
+  
 ];
 
 export const featuredEvents: FeaturedEvent[] = [

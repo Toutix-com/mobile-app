@@ -45,8 +45,7 @@ const EventMap: React.FC<EventMapProps> = ({ lat, lon, name, address, onPress })
         loadingEnabled={false}
         loadingIndicatorColor="#666666"
         loadingBackgroundColor="#ffffff"
-        googleRenderer="LEGACY"  
-        onMapReady={() => console.log('Map is ready')}
+        googleRenderer="LEGACY"
         
       >
         <Marker 

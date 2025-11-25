@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
     minHeight: normalize(28),
   },
   mediumContainer: {
-    paddingVertical: normalize(9),
+    paddingVertical: normalize(5),
     paddingHorizontal: normalize(12),
     minHeight: normalize(40),
   },

@@ -20,12 +20,6 @@ import {
   selectedDate,
   selectedMonth,
   activeInputField,
-  showTrending,
-  showSuggestions,
-  showNoResults,
-  showCategories,
-  trendingEvents,
-  searchSuggestions,
   setSearchQuery,
   setSelectedCity,
   setSelectedVenue,
@@ -56,7 +50,7 @@ import {
   clearSelectedCategory,
   clearSearchResults,
 } from './store/search.store';
-import { moreEvents } from '../home/store/home.store';
+import { featuredEventsSignal, loadMoreEvents, moreEvents } from '../home/store/home.store';
 import CitySelectionBottomSheet from './components/CitySelectionBottomSheet';
 import VenueSelectionBottomSheet from './components/VenueSelectionBottomSheet';
 import DatePickerBottomSheet from './components/DatePickerBottomSheet';
@@ -64,21 +58,16 @@ import EventCard from '../../components/EventCard';
 import { Music, Drama, Dribbble, Baby, FileText, Heart } from 'lucide-react-native';
 import { fetchEventById } from '@pages/event/store/event.store';
 import { Button, AppText, Icon } from '../../components';
+import { categories } from '../../contants/HomeConstant';
 
 const { width, height } = Dimensions.get('window');
 
-const categories = [
-  { name: 'Music', icon: Music },
-  { name: 'Theater', icon: Drama },
-  { name: 'Sports', icon: Dribbble },
-  { name: 'Family', icon: Baby },
-  { name: 'Workshops', icon: FileText },
-  { name: 'Saved', icon: Heart },
-];
+
 
 const SearchScreen: React.FC = () => {
   useSignals();
   const navigation = useNavigation();
+  const hasRequestedEventsRef = React.useRef(false);
   
   // Local state to force re-render when suggestion is selected
   const [localSearchValue, setLocalSearchValue] = React.useState('');
@@ -88,24 +77,44 @@ const SearchScreen: React.FC = () => {
     setLocalSearchValue(searchQuery.value);
   }, [searchQuery.value]);
 
+  React.useEffect(() => {
+    if (!hasRequestedEventsRef.current && (!moreEvents.value || moreEvents.value.length === 0)) {
+      hasRequestedEventsRef.current = true;
+      loadMoreEvents().catch(() => {});
+    }
+  }, [moreEvents.value]);
+  const handleCategorySelect = (categoryName: string) => {
+    selectCategory(categoryName);
+    clearSearchQuery();
+    setLocalSearchValue('');
+    setActiveInputField('eventName');
+  };
+
   // --- UI State Logic ---
   const isInputFocused = activeInputField.value === 'eventName';
   const query = searchQuery.value.trim();
   const isShowingResults = searchResults.value.length > 0 || categoryResults.value.length > 0;
   const currentCategory = selectedCategory.value;
 
-  // Filter trendingEvents and moreEvents by query (case-insensitive, no duplicates)
+  const trendingList = React.useMemo(() => {
+    return featuredEventsSignal.value.map(event => ({
+      id: event.id,
+      name: event.title || '',
+    }));
+  }, [featuredEventsSignal.value]);
+
+  // Filter featured (trending) events and moreEvents by query (case-insensitive, no duplicates)
   type SimpleEvent = { id: string; name: string };
   const filteredResults = React.useMemo(() => {
     const searchValue = localSearchValue || query;
     if (!searchValue) return [];
     const lower = searchValue.toLowerCase();
-    const trending = (trendingEvents.value as SimpleEvent[]).filter((e: SimpleEvent) => e.name.toLowerCase().includes(lower));
+    const trending = (trendingList as SimpleEvent[]).filter((e: SimpleEvent) => e.name.toLowerCase().includes(lower));
     const more = (moreEvents.value as SimpleEvent[]).filter((e: SimpleEvent) => e.name && e.name.toLowerCase().includes(lower));
     const seen = new Set(trending.map((e: SimpleEvent) => e.id));
     const merged = [...trending, ...more.filter((e: SimpleEvent) => !seen.has(e.id))];
     return merged;
-  }, [localSearchValue, query, trendingEvents.value, moreEvents.value]);
+  }, [localSearchValue, query, trendingList, moreEvents.value]);
 
   // --- Render Logic ---
   // 1. Only categories if not focused
@@ -150,18 +159,13 @@ const SearchScreen: React.FC = () => {
   };
 
   const handleFavoritePress = (eventId: string) => {
-    // Toggle favorite status
-    console.log('Toggle favorite for event:', eventId);
   };
 
       const handleSuggestionPress = (suggestion: string) => {
-      console.log('suggestion', suggestion);  
-      console.log('before setSearchQuery, searchQuery.value:', searchQuery.value);
       
       // Update both signal and local state
       setSearchQuery(suggestion);
       setLocalSearchValue(suggestion);
-      console.log('after setSearchQuery, searchQuery.value:', searchQuery.value);
     };
 
   const handleTrendingPress = (trending: string) => {
@@ -286,7 +290,7 @@ const SearchScreen: React.FC = () => {
               <View style={styles.inputContainer}>
                 <Search color="#666" size={20} style={styles.inputIcon} />
                 <TextInput
-                  style={[styles.input, { height: normalize(40) }]}
+                  style={[styles.input, { height: normalize(30) }]}
                   placeholder="Search an event name..."
                   placeholderTextColor="#666"
                   value={localSearchValue || searchQuery.value}
@@ -356,9 +360,7 @@ const SearchScreen: React.FC = () => {
                     <TouchableOpacity
                       key={index}
                       style={styles.categoryButton}
-                      onPress={() => {
-                        selectCategory(category.name);
-                      }}
+                      onPress={() => handleCategorySelect(category.name)}
                     >
                       <category.icon color="#0C0453" size={20} style={styles.categoryIcon} />
                       <AppText style={styles.categoryText}>{category.name}</AppText>
@@ -372,13 +374,11 @@ const SearchScreen: React.FC = () => {
             {showOnlyTrending && (
               <View style={styles.trendingContainer}>
                 <AppText style={styles.trendingTitle}>Trending</AppText>
-                {trendingEvents.value.map((event) => (
+                {trendingList.map((event) => (
                   <TouchableOpacity
                     key={event.id}
                     style={styles.trendingItem}
                     onPress={() => {
-                      console.log("asasas");
-                      
                       handleSuggestionPress(event.name);
                     }}
                   >
@@ -398,7 +398,6 @@ const SearchScreen: React.FC = () => {
                       key={event.id}
                       style={styles.suggestionItem}
                       onPress={() => {
-                        console.log('event', event);
                         handleSuggestionPress(event.name);
                       }}
                     >
@@ -554,6 +553,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   title: {
+    paddingTop: normalize(5),
     fontSize: normalize(28),
     fontWeight: 'bold',
     color: '#000',
@@ -568,12 +568,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: normalize(12),
     paddingHorizontal: normalize(16),
-    paddingVertical: normalize(12),
+    paddingVertical: normalize(8),
     marginBottom: normalize(16),
     shadowRadius: 2,
     borderWidth: 1,
     borderColor: '#B2BBC8',
-    minHeight: normalize(56), // Fixed height for all input fields
+    minHeight: normalize(46), // Fixed height for all input fields
   },
   inputIcon: {
     marginRight: normalize(12),
@@ -606,10 +606,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   categoryButton: {
-    width: (width - 60) / 3,
+    width: (width - 70) / 3,
     backgroundColor: '#F8F9FA',
     borderRadius: normalize(12),
-    padding: normalize(16),
+    padding: normalize(10),
     alignItems: 'center',
     marginBottom: normalize(12),
   },
@@ -694,7 +694,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA',
     borderRadius: normalize(12),
-    paddingVertical: normalize(16),
+    paddingVertical: normalize(8),
     alignItems: 'center',
   },
   cancelButtonText: {
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#0C0453',
     borderRadius: normalize(12),
-    paddingVertical: normalize(16),
+    paddingVertical: normalize(8),
     alignItems: 'center',
   },
   searchButtonText: {

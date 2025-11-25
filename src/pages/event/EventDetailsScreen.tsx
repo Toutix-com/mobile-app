@@ -78,7 +78,6 @@ const EventDetailsScreen = () => {
 
   // Show event details
   const event = selectedEvent.value;
-  console.log("eventLoading", event);
   if (!event) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' }}>
@@ -95,7 +94,6 @@ const EventDetailsScreen = () => {
     const lat = event.location.lat;
     const lon = event.location.lon;
     const label = encodeURIComponent(event.location.name || 'Event Location');
-    console.log(lat, lon, label, "Pressed");
     
     if (Platform.OS === 'ios') {
       const googleMapsUrl = `comgooglemaps://?q=${lat},${lon}`;

@@ -68,7 +68,6 @@ export const fetchOrganizerProfile = async (organizationId: string) => {
   organizerError.value = null;
   try {
     const [data, error] = await getOrganizationProfile(organizationId);
-    console.log("data", data);
     if (error || !data) {
       throw error || new Error('Failed to load organization');
     }
@@ -79,7 +78,7 @@ export const fetchOrganizerProfile = async (organizationId: string) => {
       title: e.name,
       date: new Date(e.startTimeStamp).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
       venue: e.location?.name || '',
-      image: e.image || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=200&auto=format&fit=crop',
+      image: e.image || '',
     });
 
     setOrganizerUpcoming(((data as any).upcomingEvents || []).map(formatEvent));

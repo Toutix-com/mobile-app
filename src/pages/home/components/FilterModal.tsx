@@ -126,8 +126,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
     } else {
       setSelected([...selected, value]);
     }
-    console.log(selected, "selected");
-    console.log(selectedCities, "Selected value");
   };
 
   // For startDate (Date | null)
@@ -178,7 +176,6 @@ const FilterModal: React.FC<FilterModalProps> = ({
         setEndDate(parsed);
       }
     }
-    console.log("End date selected:", value);
   };
 
   // Helper for radio checked state for startDate

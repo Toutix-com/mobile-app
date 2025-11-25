@@ -11,23 +11,12 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import Divider from '../../components/divider';
 import { useNavigation } from '@react-navigation/native';
-import moment from 'moment';
 import {
   Search,
   SlidersHorizontal,
-  Music,
-  Drama,
-  Dribbble,
-  Users,
   ArrowRight,
-  Heart,
-  FileText,
-  Baby,
   X,
-  MapPin,
-  SearchIcon
 } from 'lucide-react-native';
 import { normalize } from '../../utils/responsive';
 import { BlurView } from '@react-native-community/blur';
@@ -41,10 +30,10 @@ import {
   selectedCities,
   setStartDate, setDateType, allCitiesSheetOpen, selectedVenues, filteredVenues, allVenuesSheetOpen,
   setSelectedVenues, venueSearch, setVenueSearch,
-  loading, setLoading,
+  loading,
   filterVisible, setFilterVisible, dateSheetOpen, setDateSheetOpen, activeIndex, setActiveIndex,
   calendarMonth, calendarYear, setCalendarMonth, setCalendarYear,
-  loadMoreEvents, handleNextPress, openFilter, handleShowAllCities, handleShowAllVenues,
+  loadMoreEvents, openFilter, handleShowAllCities, handleShowAllVenues,
   handleUseSelectedCities, handleUseSelectedVenues, handleClearVenues,
   clearAllFilters, mapFilteredAllCities, mapFilteredAllVenues, getFilteredEvents,
   hasActiveFilters, initializeData, initializeSelectedItems, handleSelectVenueInSheet, setMoreEvents, setOffset,setHasMore,
@@ -57,6 +46,7 @@ import { Button, AppText, Icon } from '../../components';
 import { fetchUserProfileData } from '../profile/store/profile.store';
 const { width } = Dimensions.get('window');
 
+
 const HomeScreen = () => {
   useSignals();
   const navigation = useNavigation();
@@ -67,7 +57,6 @@ const HomeScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
-
   useEffect(() => {
     clearAllFilters()
     initializeData();
@@ -76,7 +65,6 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    console.log("isLoggedIn", isLoggedIn);
     if (isLoggedIn) {
       fetchUserProfileData();
     }
@@ -86,7 +74,6 @@ const HomeScreen = () => {
 
   useEffect(() => {
     const interval = setTimeout(() => {
-      console.log("featuredEventsSignal.value", featuredEventsSignal.value);
       if (featuredEventsSignal.value.length > 1) {
         const nextIndex = (activeIndex.value + 1) % featuredEventsSignal.value.length;
         setActiveIndex(nextIndex);
