@@ -46,7 +46,7 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Toutix uses your location to show nearby events and venues that are relevant to you.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs access to your camera to scan QR codes for event tickets and take photos for your profile.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
